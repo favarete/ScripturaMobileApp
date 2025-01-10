@@ -1,0 +1,40 @@
+{
+  "scripturaeditor": {
+    "common_appName": {
+      "full": "Scriptura",
+      "initials": "SCR"
+    },
+    "common_error": "Algo deu errado.",
+    "screen_projects": {
+      "title": "$t(common_appName.full)",
+      "view": "Tela de Projetos",
+      "placeholder": "Pasta Principal"
+    },
+    "screen_chapters": {
+      "title": "$t(common_appName.full)",
+      "view": "Tela de Capítulos"
+    },
+    "screen_content": {
+      "title": "$t(common_appName.full)",
+      "view": "Tela de Conteúdo"
+    },
+    "screen_statistics": {
+      "title": "$t(common_appName.full)",
+      "view": "Tela de Estatísticas"
+    },
+    "screen_settings": {
+      "title": "$t(common_appName.full)",
+      "view": "Tela de Configurações"
+    },
+    "screen_example": {
+      "hello_user": "Oi, meu nome é {{name}}",
+      "title": "Bem-vindo ao $t(common_appName.full)",
+      "description": "Deseja descobrir novos recursos? Clique em um dos três botões na parte inferior da tela. O primeiro permite que você chame uma API REST. O segundo permite que você altere a cor do tema. E o terceiro permite que você altere o idioma."
+    },
+    "error_boundary": {
+      "title": "Ops! Algo deu errado.",
+      "description": "Pedimos desculpas pelo inconveniente. Tente novamente mais tarde.",
+      "cta": "Recarregar a tela"
+    }
+  }
+}

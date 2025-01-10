@@ -1,10 +1,31 @@
 {
-  "app": {
+  "scripturaeditor": {
     "common_appName": {
-      "full": "React Native App",
-      "initials": "RNB"
+      "full": "Scriptura",
+      "initials": "SCR"
     },
     "common_error": "Oops! Something went wrong.",
+    "screen_projects": {
+      "title": "$t(common_appName.full)",
+      "view": "Projects Screen",
+      "placeholder": "Home Folder"
+    },
+    "screen_chapters": {
+      "title": "$t(common_appName.full)",
+      "view": "Chapters Screen"
+    },
+    "screen_content": {
+      "title": "$t(common_appName.full)",
+      "view": "Contents Screen"
+    },
+    "screen_statistics": {
+      "title": "$t(common_appName.full)",
+      "view": "Statistics Screen"
+    },
+    "screen_settings": {
+      "title": "$t(common_appName.full)",
+      "view": "Settings Screen"
+    },
     "screen_example": {
       "hello_user": "Hi, my name is {{name}}",
       "title": "Welcome on The $t(common_appName.full)",
