@@ -37,6 +37,15 @@ export const staticFontStyles = {
   capitalize: {
     textTransform: 'capitalize',
   },
+  defaultFontFamilyBold: {
+    fontFamily: 'OpenSans-Bold',
+  },
+  defaultFontFamilyRegular: {
+    fontFamily: 'OpenSans-Regular',
+  },
+  defaultFontFamilySemibold: {
+    fontFamily: 'OpenSans-SemiBold',
+  },
   uppercase: {
     textTransform: 'uppercase',
   },
