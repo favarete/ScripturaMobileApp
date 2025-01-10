@@ -6,21 +6,21 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
 import en from './en-EN.json';
-import fr from './fr-FR.json';
+import pt from './pt-BR.json';
 
-export const defaultNS = 'app' as const;
+export const defaultNS = 'scripturaeditor' as const;
 
 export const resources = {
   'en-EN': en,
-  'fr-FR': fr,
+  'pt-BR': pt,
 } as const satisfies Record<Language, unknown>;
 
 i18n
   .use(initReactI18next)
   .init({
     defaultNS,
-    fallbackLng: 'fr-FR',
-    lng: 'fr-FR',
+    fallbackLng: 'pt-BR',
+    lng: 'pt-BR',
     resources,
   })
   .then(() => {
