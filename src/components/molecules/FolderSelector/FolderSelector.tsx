@@ -1,66 +1,97 @@
+import type { TFunction } from 'i18next';
+
 import React, { useEffect, useState } from 'react';
-import { Alert, Text, TouchableOpacity, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { Text, TouchableOpacity, View } from 'react-native';
 import { pickDirectory } from 'react-native-document-picker';
+import Toast from 'react-native-toast-message';
 
 import { useTheme } from '@/theme';
 
-type Props = {
-  placeholder: string;
-};
+import { print } from '@/utils/logger';
 
 const pickFolder =
-  (setFolderPath: React.Dispatch<React.SetStateAction<string>>) =>
+  (
+    setFolderPath: React.Dispatch<React.SetStateAction<string>>,
+    t: TFunction<'scripturaeditor', undefined>,
+  ) =>
   async (): Promise<void> => {
     try {
       const result = await pickDirectory();
       if (result && result.uri) {
         const { uri } = result;
         setFolderPath(uri);
+        Toast.show({
+          text1: t(
+            'components.folder_selector.director_selected_success.text1',
+          ),
+          text2: t(
+            'components.folder_selector.director_selected_success.text2',
+          ),
+          type: 'success',
+        });
       } else {
-        Alert.alert('Directory not selected. Projects will not be loaded');
+        Toast.show({
+          text1: t(
+            'components.folder_selector.director_selected_failure.text1',
+          ),
+          text2: t(
+            'components.folder_selector.director_selected_failure.text2',
+          ),
+          type: 'error',
+        });
       }
     } catch (error) {
-      if (error instanceof Error) {
-        Alert.alert(error.message);
-      } else {
-        Alert.alert('An unknown error occurred.');
-      }
+      print(error, {
+        text1: t('unknown_error.text1'),
+        text2: t('unknown_error.text2'),
+        type: 'error',
+      });
     }
   };
 
-const extractFriendlyPath = (androidPath: string): null | string => {
+const extractFriendlyPath = (
+  androidPath: string,
+  t: TFunction<'scripturaeditor', undefined>,
+): null | string => {
   try {
     const match = androidPath.match(/primary%3A(.+)/);
     if (match && match[1]) {
       return decodeURIComponent(match[1]).replaceAll('/', '/');
     }
-    Alert.alert('Invalid path');
+    Toast.show({
+      text1: t('components.folder_selector.invalid_path.text1'),
+      text2: t('components.folder_selector.invalid_path.text2'),
+      type: 'error',
+    });
     return null;
   } catch (error) {
-    if (error instanceof Error) {
-      Alert.alert(error.message);
-    } else {
-      Alert.alert('Error extracting path:');
-    }
+    print(error, {
+      text1: t('unknown_error.text1'),
+      text2: t('unknown_error.text2'),
+      type: 'error',
+    });
     return null;
   }
 };
 
-function FolderSelector({ placeholder }: Props) {
+function FolderSelector() {
   const { borders, fonts, gutters } = useTheme();
+  const { t } = useTranslation();
 
   const [folderPath, setFolderPath] = useState<string>('');
-  const [friendlyFolderName, setFriendlyFolderName] =
-    useState<string>(placeholder);
+  const [friendlyFolderName, setFriendlyFolderName] = useState<string>(
+    t('screen_projects.placeholder'),
+  );
 
   useEffect(() => {
     if (folderPath.trim().length > 0) {
-      const getFriendlyFolderName = extractFriendlyPath(folderPath);
-      if(getFriendlyFolderName){
+      const getFriendlyFolderName = extractFriendlyPath(folderPath, t);
+      if (getFriendlyFolderName) {
         setFriendlyFolderName(getFriendlyFolderName);
       }
     }
-  }, [folderPath]);
+  }, [folderPath, t]);
 
   return (
     <View
@@ -71,7 +102,7 @@ function FolderSelector({ placeholder }: Props) {
         borders.w_1,
       ]}
     >
-      <TouchableOpacity onPress={pickFolder(setFolderPath)}>
+      <TouchableOpacity onPress={pickFolder(setFolderPath, t)}>
         <Text style={[fonts.defaultFontFamilyRegular, fonts.gray400]}>
           {friendlyFolderName}
         </Text>

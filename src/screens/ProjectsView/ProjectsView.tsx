@@ -34,7 +34,7 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
             </Text>
           </View>
 
-          <FolderSelector placeholder={t('screen_projects.placeholder')} />
+          <FolderSelector />
 
           <View
             style={[
