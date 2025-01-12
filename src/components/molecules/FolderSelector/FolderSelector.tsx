@@ -15,40 +15,40 @@ const pickFolder =
     setFolderPath: React.Dispatch<React.SetStateAction<string>>,
     t: TFunction<'scripturaeditor', undefined>,
   ) =>
-  async (): Promise<void> => {
-    try {
-      const result = await pickDirectory();
-      if (result && result.uri) {
-        const { uri } = result;
-        setFolderPath(uri);
-        Toast.show({
-          text1: t(
-            'components.folder_selector.director_selected_success.text1',
-          ),
-          text2: t(
-            'components.folder_selector.director_selected_success.text2',
-          ),
-          type: 'success',
-        });
-      } else {
-        Toast.show({
-          text1: t(
-            'components.folder_selector.director_selected_failure.text1',
-          ),
-          text2: t(
-            'components.folder_selector.director_selected_failure.text2',
-          ),
+    async (): Promise<void> => {
+      try {
+        const result = await pickDirectory();
+        if (result && result.uri) {
+          const { uri } = result;
+          setFolderPath(uri);
+          Toast.show({
+            text1: t(
+              'components.folder_selector.director_selected_success.text1',
+            ),
+            text2: t(
+              'components.folder_selector.director_selected_success.text2',
+            ),
+            type: 'success',
+          });
+        } else {
+          Toast.show({
+            text1: t(
+              'components.folder_selector.director_selected_failure.text1',
+            ),
+            text2: t(
+              'components.folder_selector.director_selected_failure.text2',
+            ),
+            type: 'error',
+          });
+        }
+      } catch (error) {
+        print(error, {
+          text1: t('unknown_error.text1'),
+          text2: t('unknown_error.text2'),
           type: 'error',
         });
       }
-    } catch (error) {
-      print(error, {
-        text1: t('unknown_error.text1'),
-        text2: t('unknown_error.text2'),
-        type: 'error',
-      });
-    }
-  };
+    };
 
 const extractFriendlyPath = (
   androidPath: string,
@@ -77,13 +77,22 @@ const extractFriendlyPath = (
 
 function FolderSelector() {
   const { borders, fonts, gutters } = useTheme();
-  const { t } = useTranslation();
+  const { i18n, t } = useTranslation();
 
   const [folderPath, setFolderPath] = useState<string>('');
   const [friendlyFolderName, setFriendlyFolderName] = useState<string>(
     t('screen_projects.placeholder'),
   );
 
+  // Atualiza o friendlyFolderName ao alterar o idioma
+  useEffect(() => {
+    if (!folderPath.trim()) {
+      // Atualiza o placeholder quando o idioma muda
+      setFriendlyFolderName(t('screen_projects.placeholder'));
+    }
+  }, [i18n.language, t, folderPath]);
+
+  // Atualiza o friendlyFolderName com base no folderPath
   useEffect(() => {
     if (folderPath.trim().length > 0) {
       const getFriendlyFolderName = extractFriendlyPath(folderPath, t);

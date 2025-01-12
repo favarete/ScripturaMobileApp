@@ -14,9 +14,13 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
   const { t } = useTranslation();
 
   const { colors, components, fonts, gutters, layout } = useTheme();
+  //const { changeLanguage, changeTheme, language, theme } = useSettings();
 
   const onNavigate = () => {
     navigation.navigate(Paths.ChaptersView);
+    // changeLanguage(i18next.language === SupportedLanguages.EN_EN
+    //   ? SupportedLanguages.PT_BR
+    //   : SupportedLanguages.EN_EN,);
   };
 
   return (

@@ -36,6 +36,7 @@
     "react-native-screens": "4.0.0",
     "react-native-svg": "^15.7.1",
     "react-native-toast-message": "^2.2.1",
+    "recoil": "^0.7.7",
     "zod": "^3.23.8"
   },
   "devDependencies": {

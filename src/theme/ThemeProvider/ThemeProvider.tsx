@@ -1,76 +1,35 @@
-import type { PropsWithChildren } from 'react';
-import type { MMKV } from 'react-native-mmkv';
-import type {
-  FulfilledThemeConfiguration,
-  Variant,
-} from '@/theme/types/config';
-import type { ComponentTheme, Theme } from '@/theme/types/theme';
+import type { ReactNode } from 'react';
+import type { FulfilledThemeConfiguration, Variant } from '@/theme/types/config';
+import type { ComponentTheme } from '@/theme/types/theme';
 
-import {
-  createContext,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
-
-import {
-  generateBackgrounds,
-  staticBackgroundStyles,
-} from '@/theme/backgrounds';
-import {
-  generateBorderColors,
-  generateBorderRadius,
-  generateBorderWidths,
-  staticBorderStyles,
-} from '@/theme/borders';
+import { createContext, useMemo } from 'react';
+import { generateBackgrounds, staticBackgroundStyles } from '@/theme/backgrounds';
+import { generateBorderColors, generateBorderRadius, generateBorderWidths, staticBorderStyles } from '@/theme/borders';
 import componentsGenerator from '@/theme/components';
-import {
-  generateFontColors,
-  generateFontSizes,
-  staticFontStyles,
-} from '@/theme/fonts';
+import { generateFontColors, generateFontSizes, staticFontStyles } from '@/theme/fonts';
 import { generateGutters, staticGutterStyles } from '@/theme/gutters';
 import layout from '@/theme/layout';
 import generateConfig from '@/theme/ThemeProvider/generateConfig';
+import { useSettings } from '@/state/SettingsProvider/SettingsProvider';
 
 type Context = {
-  changeTheme: (variant: Variant) => void;
-} & Theme;
+  components: ReturnType<typeof componentsGenerator>;
+  navigationTheme: {
+    colors: Record<string, string>;
+    dark: boolean;
+  };
+} & ComponentTheme;
 
 export const ThemeContext = createContext<Context | undefined>(undefined);
 
-type Props = PropsWithChildren<{
-  storage: MMKV;
-}>;
+const ThemeProvider = ({ children }: { children: ReactNode }) => {
+  const { theme: rawVariant } = useSettings();
 
-function ThemeProvider({ children = false, storage }: Props) {
-  // Current theme variant
-  const [variant, setVariant] = useState(
-    (storage.getString('theme') as Variant) || 'default',
-  );
+  const variant: Variant = ['dark', 'default'].includes(rawVariant)
+    ? (rawVariant as Variant)
+    : 'default';
 
-  // Initialize theme at default if not defined
-  useEffect(() => {
-    const appHasThemeDefined = storage.contains('theme');
-    if (!appHasThemeDefined) {
-      storage.set('theme', 'default');
-      setVariant('default');
-    }
-  }, [storage]);
-
-  const changeTheme = useCallback(
-    (nextVariant: Variant) => {
-      setVariant(nextVariant);
-      storage.set('theme', nextVariant);
-    },
-    [storage],
-  );
-
-  // Flatten config with current variant
-  const fullConfig = useMemo(() => {
-    return generateConfig(variant) satisfies FulfilledThemeConfiguration;
-  }, [variant]);
+  const fullConfig = useMemo(() => generateConfig(variant), [variant]) satisfies FulfilledThemeConfiguration;
 
   const fonts = useMemo(() => {
     return {
@@ -122,17 +81,13 @@ function ThemeProvider({ children = false, storage }: Props) {
     } satisfies ComponentTheme;
   }, [variant, fonts, backgrounds, borders, fullConfig.colors, gutters]);
 
-  const components = useMemo(() => {
-    return componentsGenerator(theme);
-  }, [theme]);
+  const components = useMemo(() => componentsGenerator(theme), [theme]);
 
   const value = useMemo(() => {
-    return { ...theme, changeTheme, components, navigationTheme };
-  }, [theme, components, navigationTheme, changeTheme]);
+    return { ...theme, components, navigationTheme } satisfies Context;
+  }, [theme, components, navigationTheme]);
 
-  return (
-    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
-  );
-}
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+};
 
 export default ThemeProvider;

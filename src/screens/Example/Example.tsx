@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 import { useTheme } from '@/theme';
-import { useI18n, useUser } from '@/hooks';
+import { useUser } from '@/hooks';
 
 import { AssetByVariant, IconByVariant, Skeleton } from '@/components/atoms';
 import { SafeScreen } from '@/components/templates';
@@ -11,17 +11,14 @@ import { SafeScreen } from '@/components/templates';
 function Example() {
   const { t } = useTranslation();
   const { useFetchOneQuery } = useUser();
-  const { toggleLanguage } = useI18n();
 
   const {
     backgrounds,
-    changeTheme,
     colors,
     components,
     fonts,
     gutters,
     layout,
-    variant,
   } = useTheme();
 
   const [currentId, setCurrentId] = useState(-1);
@@ -36,9 +33,6 @@ function Example() {
     }
   }, [fetchOneUserQuery.isSuccess, fetchOneUserQuery.data, t]);
 
-  const onChangeTheme = () => {
-    changeTheme(variant === 'default' ? 'dark' : 'default');
-  };
 
   return (
     <SafeScreen
@@ -102,7 +96,6 @@ function Example() {
             </Skeleton>
 
             <TouchableOpacity
-              onPress={onChangeTheme}
               style={[components.buttonCircle, gutters.marginBottom_16]}
               testID="change-theme-button"
             >
@@ -110,7 +103,6 @@ function Example() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              onPress={toggleLanguage}
               style={[components.buttonCircle, gutters.marginBottom_16]}
               testID="change-language-button"
             >

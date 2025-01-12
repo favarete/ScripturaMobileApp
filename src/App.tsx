@@ -4,7 +4,6 @@ import type { BaseToastProps } from 'react-native-toast-message';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { MMKV } from 'react-native-mmkv';
 import Toast, { BaseToast, ErrorToast } from 'react-native-toast-message';
 
 import { ThemeProvider } from '@/theme';
@@ -13,6 +12,13 @@ import ApplicationNavigator from '@/navigation/Application';
 import '@/translations';
 
 import type { JSX } from 'react';
+
+import { useMemo } from 'react';
+import { MMKV } from 'react-native-mmkv';
+import { RecoilRoot } from 'recoil';
+
+import { DEVICE_ONLY_STORAGE } from '@/state/constants';
+import { SettingsProvider } from '@/state/SettingsProvider/SettingsProvider';
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -25,16 +31,22 @@ export const queryClient = new QueryClient({
   },
 });
 
-export const storage = new MMKV();
-
 function App() {
+  useMemo(() => {
+    return new MMKV({ id: DEVICE_ONLY_STORAGE });
+  }, []);
+
   return (
     <GestureHandlerRootView>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider storage={storage}>
-          <ApplicationNavigator />
-        </ThemeProvider>
-      </QueryClientProvider>
+      <RecoilRoot>
+        <QueryClientProvider client={queryClient}>
+          <SettingsProvider>
+            <ThemeProvider>
+              <ApplicationNavigator />
+            </ThemeProvider>
+          </SettingsProvider>
+        </QueryClientProvider>
+      </RecoilRoot>
       <Toast config={toastConfig} />
     </GestureHandlerRootView>
   );
@@ -46,7 +58,7 @@ const toastConfig = {
   error: (props: BaseToastProps & JSX.IntrinsicAttributes) => (
     <ErrorToast
       {...props}
-      style={{ borderLeftColor: '#C13333'}}
+      style={{ borderLeftColor: '#C13333' }}
       text1Style={{
         fontFamily: 'OpenSans-Bold',
         fontSize: 16,
