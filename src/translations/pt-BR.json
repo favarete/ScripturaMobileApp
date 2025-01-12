@@ -4,6 +4,26 @@
       "full": "Scriptura",
       "initials": "SCR"
     },
+    "components": {
+      "folder_selector": {
+        "director_selected_success": {
+          "text1": "Diretório selecionado!",
+          "text2": "Os projectos devem ter carregado."
+        },
+        "director_selected_failure": {
+          "text1": "Diretório não selecionado!",
+          "text2": "Os projectos não serão carregados"
+        },
+        "invalid_path": {
+          "text1": "Caminho inválido!",
+          "text2": "Por favor, tente novamente."
+        }
+      }
+    },
+    "unknown_error": {
+      "text1": "Eita! =/",
+      "text2": "Algo deu errado."
+    },
     "common_error": "Algo deu errado.",
     "screen_projects": {
       "title": "$t(common_appName.full)",

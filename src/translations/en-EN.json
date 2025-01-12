@@ -4,7 +4,27 @@
       "full": "Scriptura",
       "initials": "SCR"
     },
-    "common_error": "Oops! Something went wrong.",
+    "components": {
+      "folder_selector": {
+        "director_selected_success": {
+          "text1": "Directory selected!",
+          "text2": "Projects should now be loaded"
+        },
+        "director_selected_failure": {
+          "text1": "Directory not selected!",
+          "text2": "Projects will not be loaded!"
+        },
+        "invalid_path": {
+          "text1": "Invalid path!",
+          "text2": "Please, try again."
+        }
+      }
+    },
+    "unknown_error": {
+      "text1": "Oops! =/",
+      "text2": "Something went wrong."
+    },
+    "common_error": "Something went wrong.",
     "screen_projects": {
       "title": "$t(common_appName.full)",
       "view": "Projects Screen",
