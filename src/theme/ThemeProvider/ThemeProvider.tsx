@@ -1,15 +1,32 @@
 import type { ReactNode } from 'react';
-import type { FulfilledThemeConfiguration, Variant } from '@/theme/types/config';
+import type {
+  FulfilledThemeConfiguration,
+  Variant,
+} from '@/theme/types/config';
 import type { ComponentTheme } from '@/theme/types/theme';
 
 import { createContext, useMemo } from 'react';
-import { generateBackgrounds, staticBackgroundStyles } from '@/theme/backgrounds';
-import { generateBorderColors, generateBorderRadius, generateBorderWidths, staticBorderStyles } from '@/theme/borders';
+
+import {
+  generateBackgrounds,
+  staticBackgroundStyles,
+} from '@/theme/backgrounds';
+import {
+  generateBorderColors,
+  generateBorderRadius,
+  generateBorderWidths,
+  staticBorderStyles,
+} from '@/theme/borders';
 import componentsGenerator from '@/theme/components';
-import { generateFontColors, generateFontSizes, staticFontStyles } from '@/theme/fonts';
+import {
+  generateFontColors,
+  generateFontSizes,
+  staticFontStyles,
+} from '@/theme/fonts';
 import { generateGutters, staticGutterStyles } from '@/theme/gutters';
 import layout from '@/theme/layout';
 import generateConfig from '@/theme/ThemeProvider/generateConfig';
+
 import { useSettings } from '@/state/SettingsProvider/SettingsProvider';
 
 type Context = {
@@ -29,7 +46,10 @@ const ThemeProvider = ({ children }: { children: ReactNode }) => {
     ? (rawVariant as Variant)
     : 'default';
 
-  const fullConfig = useMemo(() => generateConfig(variant), [variant]) satisfies FulfilledThemeConfiguration;
+  const fullConfig = useMemo(
+    () => generateConfig(variant),
+    [variant],
+  ) satisfies FulfilledThemeConfiguration;
 
   const fonts = useMemo(() => {
     return {
@@ -87,7 +107,9 @@ const ThemeProvider = ({ children }: { children: ReactNode }) => {
     return { ...theme, components, navigationTheme } satisfies Context;
   }, [theme, components, navigationTheme]);
 
-  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+  return (
+    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
+  );
 };
 
 export default ThemeProvider;

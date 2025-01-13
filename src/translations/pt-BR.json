@@ -6,17 +6,21 @@
     },
     "components": {
       "folder_selector": {
-        "director_selected_success": {
+        "directory_selected_success": {
           "text1": "Diretório selecionado!",
           "text2": "Os projectos devem ter carregado."
         },
-        "director_selected_failure": {
+        "directory_selected_failure": {
           "text1": "Diretório não selecionado!",
           "text2": "Os projectos não serão carregados"
         },
         "invalid_path": {
           "text1": "Caminho inválido!",
           "text2": "Por favor, tente novamente."
+        },
+        "permission_error": {
+          "text1": "Sem permissão para acessar!",
+          "text2": "Sem permissão é impossível listar seus projetos."
         }
       }
     },
@@ -28,7 +32,13 @@
     "screen_projects": {
       "title": "$t(common_appName.full)",
       "view": "Tela de Projetos",
-      "placeholder": "Pasta Principal"
+      "placeholder": "Pasta Principal",
+      "fetch_projects_data": {
+        "error": {
+          "text1": "Algo deu Errado!",
+          "text2": "Falha ao obter os projectos disponíveis."
+        }
+      }
     },
     "screen_chapters": {
       "title": "$t(common_appName.full)",

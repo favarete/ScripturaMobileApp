@@ -1,3 +1,4 @@
+import type { SupportedLanguages } from '@/hooks/language/schema';
 import type { Variant } from '@/theme/types/config';
 
 import i18next from 'i18next';
@@ -10,15 +11,18 @@ import React, {
 } from 'react';
 import { useMMKV } from 'react-native-mmkv';
 
-import { SupportedLanguages } from '@/hooks/language/schema';
-
-import { DEVICE_ONLY_STORAGE } from '@/state/constants';
+import {
+  DEFAULT_HOME_FOLDER,
+  DEFAULT_LANGUAGE,
+  DEFAULT_THEME,
+  DEVICE_ONLY_STORAGE
+} from '@/state/constants';
 
 type SettingsContextType = {
   changeLanguage: (lang: SupportedLanguages) => void;
-  changeTheme: (variant: string) => void;
+  changeTheme: (variant: Variant) => void;
   language: SupportedLanguages;
-  theme: string;
+  theme: Variant;
 };
 
 const SettingsContext = createContext<SettingsContextType | undefined>(
@@ -30,40 +34,37 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const deviceOnlyStorage = useMMKV({ id: DEVICE_ONLY_STORAGE });
 
-  // State for theme and language
-  const [theme, setTheme] = useState(
-    (deviceOnlyStorage.getString('theme') as Variant) || 'default',
+  // Get Initial Values
+  const [theme, setTheme] = useState<Variant>(
+    (deviceOnlyStorage.getString('theme') as Variant) || DEFAULT_THEME,
   );
   const [language, setLanguage] = useState<SupportedLanguages>(
     (deviceOnlyStorage.getString('language') as SupportedLanguages) ||
-      SupportedLanguages.EN_EN,
+      DEFAULT_LANGUAGE,
   );
+  void i18next.changeLanguage(language);
 
-  // Initialize theme and language on mount
+  // Initialize Values on mount
   useEffect(() => {
     const appHasThemeDefined = deviceOnlyStorage.contains('theme');
     if (!appHasThemeDefined) {
-      deviceOnlyStorage.set('theme', 'default');
-      setTheme('default');
+      deviceOnlyStorage.set('theme', DEFAULT_THEME);
     }
 
     const appHasLanguageDefined = deviceOnlyStorage.contains('language');
     if (!appHasLanguageDefined) {
-      deviceOnlyStorage.set('language', SupportedLanguages.EN_EN);
-      setLanguage(SupportedLanguages.EN_EN);
-      void i18next.changeLanguage(SupportedLanguages.EN_EN);
-    } else {
-      const storedLanguage = deviceOnlyStorage.getString(
-        'language',
-      ) as SupportedLanguages;
-      setLanguage(storedLanguage);
-      void i18next.changeLanguage(storedLanguage);
+      deviceOnlyStorage.set('language', DEFAULT_LANGUAGE);
+    }
+
+    const appHasHomeFolderDefined = deviceOnlyStorage.contains('home');
+    if (!appHasHomeFolderDefined) {
+      deviceOnlyStorage.set('home', DEFAULT_HOME_FOLDER);
     }
   }, [deviceOnlyStorage]);
 
   const changeTheme = useCallback(
-    (variant: string) => {
-      setTheme(variant as Variant);
+    (variant: Variant) => {
+      setTheme(variant);
       deviceOnlyStorage.set('theme', variant);
     },
     [deviceOnlyStorage],
@@ -78,9 +79,20 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({
     [deviceOnlyStorage],
   );
 
+
   const value = useMemo(
-    () => ({ changeLanguage, changeTheme, language, theme }),
-    [theme, language, changeTheme, changeLanguage],
+    () => ({
+      changeLanguage,
+      changeTheme,
+      language,
+      theme,
+    }),
+    [
+      theme,
+      language,
+      changeTheme,
+      changeLanguage,
+    ],
   );
 
   return (

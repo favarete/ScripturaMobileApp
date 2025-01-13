@@ -6,13 +6,17 @@
     },
     "components": {
       "folder_selector": {
-        "director_selected_success": {
+        "directory_selected_success": {
           "text1": "Directory selected!",
           "text2": "Projects should now be loaded"
         },
-        "director_selected_failure": {
+        "directory_selected_failure": {
           "text1": "Directory not selected!",
           "text2": "Projects will not be loaded!"
+        },
+        "permission_error": {
+          "text1": "No permission to access!",
+          "text2": "Without permission it's impossible to list your projects."
         },
         "invalid_path": {
           "text1": "Invalid path!",
@@ -28,7 +32,13 @@
     "screen_projects": {
       "title": "$t(common_appName.full)",
       "view": "Projects Screen",
-      "placeholder": "Home Folder"
+      "placeholder": "Home Folder",
+      "fetch_projects_data": {
+        "error": {
+          "text1": "Something went wrong!",
+          "text2": "Failed to fetch available projects."
+        }
+      }
     },
     "screen_chapters": {
       "title": "$t(common_appName.full)",

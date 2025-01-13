@@ -13,11 +13,8 @@ import '@/translations';
 
 import type { JSX } from 'react';
 
-import { useMemo } from 'react';
-import { MMKV } from 'react-native-mmkv';
 import { RecoilRoot } from 'recoil';
 
-import { DEVICE_ONLY_STORAGE } from '@/state/constants';
 import { SettingsProvider } from '@/state/SettingsProvider/SettingsProvider';
 
 export const queryClient = new QueryClient({
@@ -32,10 +29,6 @@ export const queryClient = new QueryClient({
 });
 
 function App() {
-  useMemo(() => {
-    return new MMKV({ id: DEVICE_ONLY_STORAGE });
-  }, []);
-
   return (
     <GestureHandlerRootView>
       <RecoilRoot>

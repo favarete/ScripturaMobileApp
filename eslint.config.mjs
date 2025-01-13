@@ -38,6 +38,7 @@ export default [
       'import/no-named-as-default-member': 0,
       'import/no-unresolved': 0,
       'import/order': 0,
+      'max-len': ['error', { code: 180, ignoreUrls: true, tabWidth: 2 }],
       'no-console': 2,
       'no-const-assign': 2,
       'no-constant-binary-expression': 2,
