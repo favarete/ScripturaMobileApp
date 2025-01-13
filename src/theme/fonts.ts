@@ -46,6 +46,9 @@ export const staticFontStyles = {
   defaultFontFamilySemibold: {
     fontFamily: 'OpenSans-SemiBold',
   },
+  lineGap: {
+    lineHeight: 24,
+  },
   uppercase: {
     textTransform: 'uppercase',
   },

@@ -32,7 +32,14 @@ import { useSettings } from '@/state/SettingsProvider/SettingsProvider';
 type Context = {
   components: ReturnType<typeof componentsGenerator>;
   navigationTheme: {
-    colors: Record<string, string>;
+    colors: {
+      primary: string;
+      background: string;
+      card: string;
+      text: string;
+      border: string;
+      notification: string;
+    };
     dark: boolean;
   };
 } & ComponentTheme;

@@ -105,6 +105,7 @@ function FolderSelector() {
     <View
       style={[
         gutters.padding_16,
+        gutters.marginBottom_24,
         borders.rounded_4,
         borders.gray400,
         borders.w_1,

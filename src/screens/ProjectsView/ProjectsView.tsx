@@ -76,9 +76,9 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
   return (
     <SafeScreen>
       <ScrollView>
-        <View style={[gutters.paddingHorizontal_32, gutters.marginTop_40]}>
+        <View style={[gutters.paddingHorizontal_32]}>
           <View style={[gutters.marginTop_40]}>
-            <Text style={[fonts.size_40, fonts.gray800, fonts.bold]}>
+            <Text style={[fonts.size_24, fonts.gray800, fonts.bold]}>
               {t('screen_projects.title')}
             </Text>
             <Text
@@ -93,7 +93,7 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
               <Text>Loading...</Text>
             ) : allProjectsFound.length > 0 ? (
               allProjectsFound.map((project: DocumentFileDetail) => {
-                return <Text id={project.name}>{project.name}</Text>;
+                return <Text key={project.name}>{project.name}</Text>;
               })
             ) : (
               <Text>No projects available</Text>
@@ -102,7 +102,7 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
           <View>
             <ProjectCard
               description={
-                'Curabitur ac ligula non libero vehicula interdum sit amet eget velit. Phasellus viverra.'
+                'Curabitur ac ligula non libero vehicula interdum sit amet eget velit. Phasellus viverra. Curabitur ac ligula non libero vehicula interdum sit amet eget velit.'
               }
               id={'1'}
               image={null}

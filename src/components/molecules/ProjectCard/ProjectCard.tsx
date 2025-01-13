@@ -1,13 +1,8 @@
 import React from 'react';
-import {
-  Alert,
-  Image,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Alert, Image, StyleSheet, Text, View } from 'react-native';
 import ContextMenuView from 'react-native-context-menu-view';
 
+import { useTheme } from '@/theme';
 import PlaceholderImage from '@/theme/assets/images/placeholder_book_cover.png';
 
 type ProjectProps = {
@@ -17,7 +12,7 @@ type ProjectProps = {
   title: string;
 };
 
-const handleContextMenuPress  = (action: string, title: string) => {
+const handleContextMenuPress = (action: string, title: string) => {
   switch (action) {
     case 'delete':
       Alert.alert('Delete Project', `Deleting: ${title}`);
@@ -36,6 +31,8 @@ const handleContextMenuPress  = (action: string, title: string) => {
 // };
 
 function ProjectCard({ description, id, image, title }: ProjectProps) {
+  const { fonts, gutters, layout } = useTheme();
+
   const imageToLoad = image ? { uri: image } : PlaceholderImage;
 
   return (
@@ -47,14 +44,36 @@ function ProjectCard({ description, id, image, title }: ProjectProps) {
       onPress={({ nativeEvent }) =>
         handleContextMenuPress(nativeEvent.name.toLowerCase(), title)
       }
-      style={styles.card}
+      style={[gutters.marginBottom_12]}
       title={title}
     >
-      <View style={styles.cardContent}>
-        <Image resizeMode="cover" source={imageToLoad} style={styles.image} />
-        <View style={styles.textContainer}>
-          <Text style={styles.title}>{title}</Text>
-          <Text numberOfLines={5} style={styles.description}>
+      <View style={[layout.row]}>
+        <Image resizeMode='cover' source={imageToLoad} style={styles.image} />
+        <View
+          style={[
+            layout.flex_1,
+            layout.itemsStretch,
+            gutters.paddingHorizontal_16,
+          ]}
+        >
+          <Text
+            style={[
+              fonts.defaultFontFamilyBold,
+              fonts.size_16,
+              gutters.marginBottom_12,
+            ]}
+          >
+            {title}
+          </Text>
+          <Text
+            numberOfLines={5}
+            style={[
+              fonts.defaultFontFamilyRegular,
+              fonts.gray400,
+              fonts.size_12,
+              fonts.lineGap,
+            ]}
+          >
             {description}
           </Text>
         </View>
@@ -64,36 +83,10 @@ function ProjectCard({ description, id, image, title }: ProjectProps) {
 }
 
 const styles = StyleSheet.create({
-  card: {
-    marginBottom: 16,
-  },
-  cardContent: {
-    alignItems: 'center',
-    flexDirection: 'row',
-  },
-  container: {
-    backgroundColor: '#fff',
-    flex: 1,
-    padding: 16,
-  },
-  description: {
-    color: '#666',
-    fontSize: 14,
-    marginTop: 4,
-  },
   image: {
     borderRadius: 8,
     height: 160,
     width: 120,
-  },
-  textContainer: {
-    flex: 1,
-    padding: 8,
-  },
-  title: {
-    color: '#333',
-    fontSize: 16,
-    fontWeight: 'bold',
   },
 });
 
