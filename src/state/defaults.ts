@@ -63,7 +63,11 @@ export const enum ChapterStatusType {
 }
 
 type Chapter = {
-  filePath: string;
+  androidFilePath: string;
+  iphoneFilePath: string;
+  windowsFilePath: string;
+  osxFilePath: string;
+  linuxFilePath: string;
   id: ElementUUID;
   isLastViewed: boolean;
   revisionPosition: number;
@@ -77,7 +81,11 @@ type Project = {
   chapters: Chapter[];
   chapterSort: ElementUUID[];
   coverPath: string;
-  folderPath: string;
+  androidFolderPath: string;
+  iphoneFolderPath: string;
+  windowsFolderPath: string;
+  osxFolderPath: string;
+  linuxFolderPath: string;
   id: ElementUUID;
   lastUpdate: Date;
   title: string;
