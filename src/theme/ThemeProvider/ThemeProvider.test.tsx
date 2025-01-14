@@ -2,13 +2,14 @@ import { fireEvent, render } from '@testing-library/react-native';
 import { Button, Text, View } from 'react-native';
 import { MMKV } from 'react-native-mmkv';
 
-import { ThemeProvider, useTheme } from '@/theme';
+import { ThemeProvider } from '@/theme';
+import { useSettings } from '@/state/SettingsProvider/SettingsProvider';
 
 function TestChildComponent() {
-  const { changeTheme, variant } = useTheme();
+  const { changeTheme, theme } = useSettings();
   return (
     <View>
-      <Text testID="theme-variant">{variant}</Text>
+      <Text testID="theme-variant">{theme}</Text>
       <Button
         onPress={() => changeTheme('dark')}
         testID="change-btn"

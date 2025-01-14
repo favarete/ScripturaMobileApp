@@ -1,59 +1,89 @@
+import { atomWithStorage, createJSONStorage } from 'jotai/utils';
 import { MMKV } from 'react-native-mmkv';
-import { atom, DefaultValue } from 'recoil';
 
-import { DEVICE_ONLY_STORAGE } from '@/state/constants';
-import { print } from '@/utils/logger';
-import type { DocumentFileDetail } from 'react-native-saf-x';
+import {
+  COMMON_STORAGE, DailyGoalMode, DEFAULT_DAILY_GOAL_MODE,
+  DEFAULT_HOME_FOLDER,
+  DEFAULT_LANGUAGE,
+  DEFAULT_THEME,
+  DEFAULT_TYPEWRITER_MODE,
+  DEVICE_ONLY_STORAGE
+} from '@/state/defaults';
 
-export const persistAtomForDeviceOnlyStorage =
-  <T>(key: string) =>
-  ({
-    onSet,
-    setSelf,
-  }: {
-    onSet: (
-      callback: (
-        newValue: T,
-        oldValue: DefaultValue | T,
-        isReset: boolean,
-      ) => void,
-    ) => void;
-    setSelf: (callback: () => DefaultValue | T) => void;
-  }) => {
-    const deviceOnlyStorage = new MMKV({ id: DEVICE_ONLY_STORAGE });
-    setSelf(() => {
-      const data = deviceOnlyStorage.getString(key);
-      if (data != null) {
-        try {
-          return JSON.parse(data) as T;
-        } catch (error) {
-          print(error);
-          return new DefaultValue();
-        }
-      } else {
-        return new DefaultValue();
-      }
-    });
-    onSet((newValue, _, isReset) => {
-      if (isReset) {
-        deviceOnlyStorage.delete(key);
-      } else {
-        try {
-          deviceOnlyStorage.set(key, JSON.stringify(newValue));
-        } catch (error) {
-          print(error);
-        }
-      }
-    });
-  };
+const atomWithMMKV = <T>(key: string, initialValue: T, storage: MMKV) =>
+  atomWithStorage<T>(
+    key,
+    initialValue,
+    createJSONStorage<T>(() => ({
+      clearAll(): void {
+        storage.clearAll();
+      },
+      getItem(key: string): null | string {
+        const value = storage.getString(key);
+        return value ? value : null;
+      },
+      removeItem(key: string): void {
+        storage.delete(key);
+      },
+      setItem(key: string, value: string): void {
+        storage.set(key, value);
+      },
+    })),
+    {
+      getOnInit: true,
+    },
+  );
 
-export const HomeFolderStateAtom = atom<string>({
-  default: '',
-  effects: [persistAtomForDeviceOnlyStorage('home')],
-  key: 'homeFolderStateAtom',
-});
+// DEVICE ONLY STORAGE
 
-export const AllProjectsStateAtom = atom<DocumentFileDetail[]>({
-  default: [],
-  key: 'allProjectsStateAtom',
-});
+const DeviceOnlyStorage = new MMKV({ id: DEVICE_ONLY_STORAGE });
+export const HomeFolderStateAtom = atomWithMMKV<string>(
+  'home',
+  DEFAULT_HOME_FOLDER,
+  DeviceOnlyStorage,
+);
+
+export const ThemeStateAtom = atomWithMMKV<string>(
+  'theme',
+  DEFAULT_THEME,
+  DeviceOnlyStorage,
+);
+
+export const LanguageStateAtom = atomWithMMKV<string>(
+  'language',
+  DEFAULT_LANGUAGE,
+  DeviceOnlyStorage,
+);
+
+export const TypewriterModeStateAtom = atomWithMMKV<boolean>(
+  'typewriter_mode',
+  DEFAULT_TYPEWRITER_MODE,
+  DeviceOnlyStorage,
+);
+
+// COMMON STORAGE
+// export const CommonStorageStateAtom = atom((get) => {
+//   const homeFolder = get(HomeFolderStateAtom);
+//   if (homeFolder.length === 0) {
+//     return `PASSO 1: ${homeFolder}`;
+//   }
+//   return `PASSO 2: ${homeFolder}`
+// });
+
+
+const CommonStorage = new MMKV({ id: COMMON_STORAGE });
+export const DailyGoalModeStateAtom = atomWithMMKV<DailyGoalMode>(
+  'daily_goal_mode',
+  DEFAULT_DAILY_GOAL_MODE,
+  CommonStorage,
+);
+
+// export const DailyGoalModeStateAtom = atom(
+//   (get) => {
+//     return get(HomeFolderStateAtom);
+//   },
+//   (get, set, dailyGoalData: DailyGoalMode) => {
+//     const homeFolder = get(HomeFolderStateAtom);
+//     set(HomeFolderStateAtom, homeFolder);
+//   },
+// );

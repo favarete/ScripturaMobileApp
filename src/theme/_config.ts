@@ -15,7 +15,7 @@ const colorsLight = {
   gray800: '#303030',
   purple100: '#E1E1EF',
   purple50: '#1B1A23',
-  purple500: '#44427D',
+  purple500: '#7e1dfb',
   red500: '#C13333',
   skeleton: '#A1A1A1',
 } as const;

@@ -1,3 +1,4 @@
+import type { FC, ReactNode } from 'react';
 import type { SupportedLanguages } from '@/hooks/language/schema';
 import type { Variant } from '@/theme/types/config';
 
@@ -15,8 +16,8 @@ import {
   DEFAULT_HOME_FOLDER,
   DEFAULT_LANGUAGE,
   DEFAULT_THEME,
-  DEVICE_ONLY_STORAGE
-} from '@/state/constants';
+  DEVICE_ONLY_STORAGE,
+} from '@/state/defaults';
 
 type SettingsContextType = {
   changeLanguage: (lang: SupportedLanguages) => void;
@@ -29,9 +30,7 @@ const SettingsContext = createContext<SettingsContextType | undefined>(
   undefined,
 );
 
-export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+export const SettingsProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const deviceOnlyStorage = useMMKV({ id: DEVICE_ONLY_STORAGE });
 
   // Get Initial Values
@@ -79,7 +78,6 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({
     [deviceOnlyStorage],
   );
 
-
   const value = useMemo(
     () => ({
       changeLanguage,
@@ -87,12 +85,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({
       language,
       theme,
     }),
-    [
-      theme,
-      language,
-      changeTheme,
-      changeLanguage,
-    ],
+    [theme, language, changeTheme, changeLanguage],
   );
 
   return (

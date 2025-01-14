@@ -13,8 +13,6 @@ import '@/translations';
 
 import type { JSX } from 'react';
 
-import { RecoilRoot } from 'recoil';
-
 import { SettingsProvider } from '@/state/SettingsProvider/SettingsProvider';
 
 export const queryClient = new QueryClient({
@@ -31,7 +29,6 @@ export const queryClient = new QueryClient({
 function App() {
   return (
     <GestureHandlerRootView>
-      <RecoilRoot>
         <QueryClientProvider client={queryClient}>
           <SettingsProvider>
             <ThemeProvider>
@@ -39,7 +36,6 @@ function App() {
             </ThemeProvider>
           </SettingsProvider>
         </QueryClientProvider>
-      </RecoilRoot>
       <Toast config={toastConfig} />
     </GestureHandlerRootView>
   );

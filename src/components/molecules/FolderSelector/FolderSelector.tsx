@@ -1,11 +1,11 @@
-import type { TFunction } from 'i18next';
+import type { Translations } from '@/translations/types';
 
+import { useAtom } from 'jotai';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Text, TouchableOpacity, View } from 'react-native';
-import { mkdir, openDocumentTree } from 'react-native-saf-x';
+import { exists, mkdir, openDocumentTree } from 'react-native-saf-x';
 import Toast from 'react-native-toast-message';
-import { useRecoilState } from 'recoil';
 
 import { useTheme } from '@/theme';
 
@@ -13,18 +13,22 @@ import { HomeFolderStateAtom } from '@/state/atoms/settings';
 import { print } from '@/utils/logger';
 
 const pickFolder =
-  (
-    setFolderPath: (folderPath: string) => void,
-    t: TFunction<'scripturaeditor', undefined>,
-  ) =>
+  (setHomeFolder: (folderPath: string) => void, t: Translations) =>
   async (): Promise<void> => {
     try {
       const result = await openDocumentTree(true);
-
       if (result && result.uri) {
         const { uri } = result;
-        await mkdir(uri + '/.scriptura');
-        setFolderPath(uri);
+
+        const folderExists = await exists(uri);
+        if (!folderExists) {
+          await mkdir(uri + '/.scriptura');
+        }
+
+        // Create Default Persistent Values
+
+        setHomeFolder(uri);
+
         Toast.show({
           text1: t(
             'components.folder_selector.directory_selected_success.text1',
@@ -56,10 +60,10 @@ const pickFolder =
 
 const extractFriendlyPath = (
   androidPath: string,
-  t: TFunction<'scripturaeditor', undefined>,
+  t: Translations,
 ): null | string => {
   try {
-    const lastElement = androidPath.split(":").pop();
+    const lastElement = androidPath.split(':').pop();
     if (lastElement && lastElement.length > 0) {
       return lastElement;
     }
@@ -81,7 +85,7 @@ const extractFriendlyPath = (
 
 function FolderSelector() {
   const { borders, fonts, gutters } = useTheme();
-  const [homeFolder, setHomeFolder] = useRecoilState(HomeFolderStateAtom);
+  const [homeFolder, setHomeFolder] = useAtom(HomeFolderStateAtom);
 
   const { t } = useTranslation();
 
@@ -92,8 +96,7 @@ function FolderSelector() {
   useEffect(() => {
     if (homeFolder.length === 0) {
       setFriendlyFolderName(t('screen_projects.placeholder'));
-    }
-    else {
+    } else {
       const getFriendlyFolderName = extractFriendlyPath(homeFolder, t);
       if (getFriendlyFolderName) {
         setFriendlyFolderName(getFriendlyFolderName);

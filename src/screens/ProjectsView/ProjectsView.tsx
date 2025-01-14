@@ -1,12 +1,12 @@
 import type { DocumentFileDetail } from 'react-native-saf-x';
 import type { RootScreenProps } from '@/navigation/types';
 
+import { useAtom, useAtomValue } from 'jotai';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { hasPermission, listFiles } from 'react-native-saf-x';
 import Toast from 'react-native-toast-message';
-import { useRecoilState, useRecoilValue } from 'recoil';
 
 import { useTheme } from '@/theme';
 import { Paths } from '@/navigation/paths';
@@ -16,9 +16,9 @@ import { FolderSelector } from '@/components/molecules';
 import ProjectCard from '@/components/molecules/ProjectCard/ProjectCard';
 import { SafeScreen } from '@/components/templates';
 
+import { AllProjectsStateAtom } from '@/state/atoms/content';
 import {
-  AllProjectsStateAtom,
-  HomeFolderStateAtom,
+  HomeFolderStateAtom
 } from '@/state/atoms/settings';
 import { print } from '@/utils/logger';
 
@@ -27,29 +27,28 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
 
   const { colors, components, fonts, gutters, layout } = useTheme();
 
-  const homeFolder = useRecoilValue(HomeFolderStateAtom);
+  const homeFolder = useAtomValue(HomeFolderStateAtom);
   const [loadingProjects, setLoadingProjects] = useState<boolean>(true);
-  const [allProjectsFound, setAllProjectsFound] =
-    useRecoilState(AllProjectsStateAtom);
+  const [allProjectsFound, setAllProjectsFound] = useAtom(AllProjectsStateAtom);
 
   useEffect(() => {
     const fetchAllProjects = async () => {
       try {
-        const permissionToHomeFolder = await hasPermission(homeFolder);
-
-        if (!permissionToHomeFolder) {
-          Toast.show({
-            text1: t('components.folder_selector.permission_error.text1'),
-            text2: t('components.folder_selector.permission_error.text2'),
-            type: 'error',
-          });
-        } else {
-          const allFiles = await listFiles(homeFolder);
-          const allFolders = allFiles.filter(
-            (item) => item.type === 'directory' && !item.name.startsWith('.'),
-          );
-
-          setAllProjectsFound(allFolders);
+        if (homeFolder.length > 0) {
+          const permissionToHomeFolder = await hasPermission(homeFolder);
+          if (!permissionToHomeFolder) {
+            Toast.show({
+              text1: t('components.folder_selector.permission_error.text1'),
+              text2: t('components.folder_selector.permission_error.text2'),
+              type: 'error',
+            });
+          } else {
+            const allFiles = await listFiles(homeFolder);
+            const allFolders = allFiles.filter(
+              (item) => item.type === 'directory' && !item.name.startsWith('.'),
+            );
+            setAllProjectsFound(allFolders);
+          }
         }
       } catch (error) {
         Toast.show({

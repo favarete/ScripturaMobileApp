@@ -1,5 +1,5 @@
-import React from 'react';
-import { Alert, Image, StyleSheet, Text, View } from 'react-native';
+import React, { useState } from 'react';
+import { Alert, Image, StyleSheet, Text, TextInput, View } from 'react-native';
 import ContextMenuView from 'react-native-context-menu-view';
 
 import { useTheme } from '@/theme';
@@ -31,9 +31,11 @@ const handleContextMenuPress = (action: string, title: string) => {
 // };
 
 function ProjectCard({ description, id, image, title }: ProjectProps) {
-  const { fonts, gutters, layout } = useTheme();
+  const { borders, fonts, gutters, layout } = useTheme();
 
   const imageToLoad = image ? { uri: image } : PlaceholderImage;
+  const [editedTitle, setEditedTitle] = useState(title);
+  const [editedDescription, setEditedDescription] = useState(description);
 
   return (
     <ContextMenuView
@@ -48,7 +50,7 @@ function ProjectCard({ description, id, image, title }: ProjectProps) {
       title={title}
     >
       <View style={[layout.row]}>
-        <Image resizeMode='cover' source={imageToLoad} style={styles.image} />
+        <Image resizeMode="cover" source={imageToLoad} style={styles.image} />
         <View
           style={[
             layout.flex_1,
@@ -78,6 +80,41 @@ function ProjectCard({ description, id, image, title }: ProjectProps) {
           </Text>
         </View>
       </View>
+
+      <View style={[layout.row]}>
+        <Image resizeMode="cover" source={imageToLoad} style={styles.image} />
+        <View
+          style={[
+            layout.flex_1,
+            layout.itemsStretch,
+            gutters.paddingHorizontal_16,
+          ]}
+        >
+          <TextInput
+            onChangeText={setEditedTitle}
+            style={[
+              fonts.defaultFontFamilyBold,
+              fonts.size_16,
+              gutters.marginBottom_12,
+              styles.inputTitle,
+              borders.purple500
+            ]}
+            value={editedTitle}
+          />
+          <TextInput
+            multiline
+            onChangeText={setEditedDescription}
+            style={[
+              fonts.defaultFontFamilyRegular,
+              fonts.gray400,
+              fonts.size_12,
+              fonts.lineGap,
+              styles.inputDescription,
+            ]}
+            value={editedDescription}
+          />
+        </View>
+      </View>
     </ContextMenuView>
   );
 }
@@ -87,6 +124,30 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     height: 160,
     width: 120,
+  },
+  inputDescription: {
+    backgroundColor: 'transparent',
+    borderBottomWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 4,
+    height: 120,
+    includeFontPadding: false,
+    lineHeight: 24,
+    margin: 0,
+    padding: 0,
+    textAlignVertical: 'center',
+  },
+  inputTitle: {
+    backgroundColor: 'transparent',
+    borderBottomWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 4,
+    height: 24,
+    includeFontPadding: false,
+    lineHeight: 24,
+    margin: 0,
+    padding: 0,
+    textAlignVertical: 'center',
   },
 });
 
