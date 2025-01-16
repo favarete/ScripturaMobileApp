@@ -5,13 +5,13 @@ import type { Language } from '@/hooks/language/schema';
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
-import en from './en-EN.json';
+import en from './en-US.json';
 import pt from './pt-BR.json';
 
 export const defaultNS = 'scripturaeditor' as const;
 
 export const resources = {
-  'en-EN': en,
+  'en-US': en,
   'pt-BR': pt,
 } as const satisfies Record<Language, unknown>;
 

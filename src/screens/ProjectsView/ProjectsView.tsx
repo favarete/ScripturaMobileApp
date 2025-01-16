@@ -1,5 +1,5 @@
-import type { DocumentFileDetail } from 'react-native-saf-x';
 import type { RootScreenProps } from '@/navigation/types';
+import type { Project } from '@/state/defaults';
 
 import { useAtom, useAtomValue } from 'jotai';
 import React, { useEffect, useState } from 'react';
@@ -16,11 +16,18 @@ import { FolderSelector } from '@/components/molecules';
 import ProjectCard from '@/components/molecules/ProjectCard/ProjectCard';
 import { SafeScreen } from '@/components/templates';
 
-import { AllProjectsStateAtom } from '@/state/atoms/content';
 import {
-  HomeFolderStateAtom
-} from '@/state/atoms/settings';
+  HomeFolderStateAtom,
+  LanguageStateAtom,
+  ProjectsDataStateAtom,
+} from '@/state/atoms/persistentContent';
+import { initialProjectContent } from '@/state/defaults';
+import { createNewUUID, formatTimestamp } from '@/utils/common';
 import { print } from '@/utils/logger';
+import {
+  findProjectByTitle,
+  findProjectByTitleAndPath,
+} from '@/utils/projectHelpers';
 
 function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
   const { t } = useTranslation();
@@ -28,8 +35,9 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
   const { colors, components, fonts, gutters, layout } = useTheme();
 
   const homeFolder = useAtomValue(HomeFolderStateAtom);
+  const language = useAtomValue(LanguageStateAtom);
   const [loadingProjects, setLoadingProjects] = useState<boolean>(true);
-  const [allProjectsFound, setAllProjectsFound] = useAtom(AllProjectsStateAtom);
+  const [allProjects, setAllProjects] = useAtom(ProjectsDataStateAtom);
 
   useEffect(() => {
     const fetchAllProjects = async () => {
@@ -43,11 +51,86 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
               type: 'error',
             });
           } else {
-            const allFiles = await listFiles(homeFolder);
-            const allFolders = allFiles.filter(
-              (item) => item.type === 'directory' && !item.name.startsWith('.'),
-            );
-            setAllProjectsFound(allFolders);
+            // List all files in "homeFolder" (selected by user)
+            const __allExternalStorageFolders = await listFiles(homeFolder);
+            // Remove everything that's not a directory and also hidden directories
+            const allExternalStorageFolders =
+              __allExternalStorageFolders.filter(
+                (item) =>
+                  item.type === 'directory' && !item.name.startsWith('.'),
+              );
+
+            // Check if these directories were already mapped before
+            for (const project of allExternalStorageFolders) {
+              // Check if it was mapped before on an Android device
+              const persistedAndroidProjectContent = findProjectByTitleAndPath(
+                allProjects,
+                project.name,
+                project.uri,
+              );
+              if (persistedAndroidProjectContent) {
+                // It was mapped before on an Android device
+              } else {
+                // It wasn't mapped before on an Android device
+                // Check if it was mapped before on any other device
+                const persistedExternalProjectContent = findProjectByTitle(
+                  allProjects,
+                  project.name,
+                );
+                if (persistedExternalProjectContent) {
+                  // It was mapped before on other device
+                } else {
+                  // It wasn't mapped before on any other device
+                  // Map the project for the first time
+                  const __defineNewProject: Project = {
+                    ...initialProjectContent,
+                    androidFolderPath: project.uri,
+                    id: createNewUUID(),
+                    lastUpdate: formatTimestamp(project.lastModified, language),
+                    title: project.name,
+                  };
+                  setAllProjects((prevState) => [
+                    ...prevState,
+                    __defineNewProject,
+                  ]);
+
+                  // Get all markdown files directly inside the project's directory
+                  // TODO: Probably it's better if this function search recursively for any markdown in any nested directory
+                  // const __allExternalStorageProjectFiles = await listFiles(
+                  //   project.uri,
+                  // );
+
+                  // Remove everything that's not a markdown
+                  // const allExternalStorageProjectFiles =
+                  //   __allExternalStorageProjectFiles.filter(
+                  //     (item) => item.mime === 'text/markdown',
+                  //   );
+                  // for (const chapter of allExternalStorageProjectFiles) {
+                  //   console.log(chapter)
+                  //   const chapterFileContent: string = await readFile(chapter.uri)
+                  //   const chapterFileContentTile: string = getTitleFromChapterFile(chapterFileContent) ?? "No title. See help for instructions"
+                  //   console.log(chapterFileContentTile)
+                  //
+                  //   const renderedMarkDown = markdownToHtml(chapterFileContent);
+                  //   const markdownWordCount = countWordsFromHTML(renderedMarkDown)
+                  //
+                  //   const __defineNewChapter: Chapter = {
+                  //     androidFilePath: chapter.uri,
+                  //     id: createNewUUID(),
+                  //     iphoneFilePath: '',
+                  //     isLastViewed: false,
+                  //     linuxFilePath: '',
+                  //     osxFilePath: '',
+                  //     revisionPosition: -1,
+                  //     status: ChapterStatusType.Undefined,
+                  //     title: chapterFileContentTile,
+                  //     windowsFilePath: '',
+                  //     wordCount: -1,
+                  //   }
+                  // }
+                }
+              }
+            }
           }
         }
       } catch (error) {
@@ -63,7 +146,7 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
     };
 
     void fetchAllProjects();
-  }, [homeFolder, setAllProjectsFound, t]);
+  }, [allProjects, homeFolder, language, setAllProjects, t]);
 
   const onNavigate = () => {
     navigation.navigate(Paths.ChaptersView);
@@ -90,23 +173,21 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
           <View key={homeFolder}>
             {loadingProjects ? (
               <Text>Loading...</Text>
-            ) : allProjectsFound.length > 0 ? (
-              allProjectsFound.map((project: DocumentFileDetail) => {
-                return <Text key={project.name}>{project.name}</Text>;
+            ) : allProjects.length > 0 ? (
+              allProjects.map((project: Project) => {
+                return (
+                  <ProjectCard
+                    description={project.blurb}
+                    id={project.id}
+                    image={project.coverPath}
+                    key={project.title}
+                    title={project.title}
+                  />
+                );
               })
             ) : (
               <Text>No projects available</Text>
             )}
-          </View>
-          <View>
-            <ProjectCard
-              description={
-                'Curabitur ac ligula non libero vehicula interdum sit amet eget velit. Phasellus viverra. Curabitur ac ligula non libero vehicula interdum sit amet eget velit.'
-              }
-              id={'1'}
-              image={null}
-              title={'Another Project'}
-            />
           </View>
           <View
             style={[

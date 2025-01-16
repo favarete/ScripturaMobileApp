@@ -2,26 +2,31 @@ import type { Variant } from '@/theme/types/config';
 
 import { SupportedLanguages } from '@/hooks/language/schema';
 
-export const DEVICE_ONLY_STORAGE: string = 'device-only-settings';
-export const COMMON_STORAGE: string = 'common-information';
+const DEVICE_ONLY_STORAGE: string = 'device-only-settings';
+const COMMON_STORAGE: string = 'common-information';
 
-export const DEFAULT_THEME: Variant = 'default';
-export const DEFAULT_HOME_FOLDER: string = '';
-export const DEFAULT_LANGUAGE: SupportedLanguages = SupportedLanguages.EN_EN;
-export const DEFAULT_TYPEWRITER_MODE: boolean = true;
+export const DEFAULT_STORAGE_VALUES = {
+  commonStorage: COMMON_STORAGE,
+  deviceOnlyStorage: DEVICE_ONLY_STORAGE,
+}
+
+const DEFAULT_THEME: Variant = 'default';
+const DEFAULT_HOME_FOLDER: string = '';
+const DEFAULT_LANGUAGE: SupportedLanguages = SupportedLanguages.EN_US;
+const DEFAULT_TYPEWRITER_MODE: boolean = true;
 
 export type DailyGoalMode = { enabled: boolean; target: number };
-export const DEFAULT_DAILY_GOAL_MODE: DailyGoalMode = {
+const DEFAULT_DAILY_GOAL_MODE: DailyGoalMode = {
   enabled: true,
   target: 500,
 };
 
-export const DEFAULT_MAX_STREAK: number = 0;
-export const DEFAULT_CURRENT_STREAK: number = 0;
-export const DEFAULT_WORDS_WRITTEN_TODAY: number = 0;
+const DEFAULT_MAX_STREAK: number = 0;
+const DEFAULT_CURRENT_STREAK: number = 0;
+const DEFAULT_WORDS_WRITTEN_TODAY: number = 0;
 
-type ElementUUID = string;
-export const DEFAULT_FAVORITE_PROJECTS: ElementUUID[] = [];
+export type ElementUUID = string;
+const DEFAULT_FAVORITE_PROJECTS: ElementUUID[] = [];
 
 type DailyStats = {
   date: Date;
@@ -38,7 +43,7 @@ export type WritingStats = {
   wednesday: DailyStats[];
 };
 
-export const DEFAULT_WRITING_STATS: WritingStats = {
+const DEFAULT_WRITING_STATS: WritingStats = {
   friday: [],
   monday: [],
   saturday: [],
@@ -60,36 +65,67 @@ export const enum ChapterStatusType {
   SecondRevisionDone = 7,
   ThirdRevisionDone = 9,
   ToDo = 0,
+  Undefined = -1,
 }
 
-type Chapter = {
+export type Chapter = {
   androidFilePath: string;
-  iphoneFilePath: string;
-  windowsFilePath: string;
-  osxFilePath: string;
-  linuxFilePath: string;
   id: ElementUUID;
+  iphoneFilePath: string;
   isLastViewed: boolean;
+  linuxFilePath: string;
+  osxFilePath: string;
   revisionPosition: number;
   status: ChapterStatusType;
   title: string;
+  windowsFilePath: string;
   wordCount: number;
 };
 
-type Project = {
+export type Project = {
+  androidFolderPath: string;
   blurb: string;
   chapters: Chapter[];
   chapterSort: ElementUUID[];
   coverPath: string;
-  androidFolderPath: string;
-  iphoneFolderPath: string;
-  windowsFolderPath: string;
-  osxFolderPath: string;
-  linuxFolderPath: string;
   id: ElementUUID;
-  lastUpdate: Date;
+  iphoneFolderPath: string;
+  lastUpdate: string;
+  linuxFolderPath: string;
+  osxFolderPath: string;
   title: string;
+  windowsFolderPath: string;
   wordCount: number;
 };
 
-export const DEFAULT_PROJECTS_DATA: Project[] = [];
+export const initialProjectContent: Project = {
+  androidFolderPath: '',
+  blurb: '',
+  chapters: [],
+  chapterSort: [],
+  coverPath: '',
+  id: '',
+  iphoneFolderPath: '',
+  lastUpdate: '',
+  linuxFolderPath: '',
+  osxFolderPath: '',
+  title: '',
+  windowsFolderPath: '',
+  wordCount: -1,
+}
+
+const DEFAULT_PROJECTS_DATA: Project[] = [];
+
+export const DEFAULT_DATA = {
+  currentStreak: DEFAULT_CURRENT_STREAK,
+  dailyGoalMode: DEFAULT_DAILY_GOAL_MODE,
+  favoriteProjects: DEFAULT_FAVORITE_PROJECTS,
+  homeFolder: DEFAULT_HOME_FOLDER,
+  language: DEFAULT_LANGUAGE,
+  maxStreak: DEFAULT_MAX_STREAK,
+  projectsData: DEFAULT_PROJECTS_DATA,
+  theme: DEFAULT_THEME,
+  typewriterMode: DEFAULT_TYPEWRITER_MODE,
+  wordWrittenToday: DEFAULT_WORDS_WRITTEN_TODAY,
+  writingStats: DEFAULT_WRITING_STATS
+}

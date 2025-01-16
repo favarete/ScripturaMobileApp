@@ -1,14 +1,15 @@
+import type {
+  DailyGoalMode,
+  ElementUUID,
+  Project,
+  WritingStats,
+} from '@/state/defaults';
+
 import { atomWithStorage, createJSONStorage } from 'jotai/utils';
 import { MMKV } from 'react-native-mmkv';
 
-import {
-  COMMON_STORAGE, DailyGoalMode, DEFAULT_DAILY_GOAL_MODE,
-  DEFAULT_HOME_FOLDER,
-  DEFAULT_LANGUAGE,
-  DEFAULT_THEME,
-  DEFAULT_TYPEWRITER_MODE,
-  DEVICE_ONLY_STORAGE
-} from '@/state/defaults';
+import { DEFAULT_DATA, DEFAULT_STORAGE_VALUES } from '@/state/defaults';
+import type { Variant } from '@/theme/types/config';
 
 const atomWithMMKV = <T>(key: string, initialValue: T, storage: MMKV) =>
   atomWithStorage<T>(
@@ -36,32 +37,78 @@ const atomWithMMKV = <T>(key: string, initialValue: T, storage: MMKV) =>
 
 // DEVICE ONLY STORAGE
 
-const DeviceOnlyStorage = new MMKV({ id: DEVICE_ONLY_STORAGE });
+const DeviceOnlyStorage = new MMKV({
+  id: DEFAULT_STORAGE_VALUES.deviceOnlyStorage,
+});
+
 export const HomeFolderStateAtom = atomWithMMKV<string>(
   'home',
-  DEFAULT_HOME_FOLDER,
+  DEFAULT_DATA.homeFolder,
   DeviceOnlyStorage,
 );
 
-export const ThemeStateAtom = atomWithMMKV<string>(
+export const ThemeStateAtom = atomWithMMKV<Variant>(
   'theme',
-  DEFAULT_THEME,
+  DEFAULT_DATA.theme,
   DeviceOnlyStorage,
 );
 
 export const LanguageStateAtom = atomWithMMKV<string>(
   'language',
-  DEFAULT_LANGUAGE,
+  DEFAULT_DATA.language,
   DeviceOnlyStorage,
 );
 
 export const TypewriterModeStateAtom = atomWithMMKV<boolean>(
   'typewriter_mode',
-  DEFAULT_TYPEWRITER_MODE,
+  DEFAULT_DATA.typewriterMode,
   DeviceOnlyStorage,
 );
 
 // COMMON STORAGE
+const CommonStorage = new MMKV({ id: DEFAULT_STORAGE_VALUES.commonStorage });
+export const DailyGoalModeStateAtom = atomWithMMKV<DailyGoalMode>(
+  'daily_goal_mode',
+  DEFAULT_DATA.dailyGoalMode,
+  CommonStorage,
+);
+
+export const MaxStreakStateAtom = atomWithMMKV<number>(
+  'max_streak',
+  DEFAULT_DATA.maxStreak,
+  CommonStorage,
+);
+
+export const CurrentStreakStateAtom = atomWithMMKV<number>(
+  'current_streak',
+  DEFAULT_DATA.currentStreak,
+  CommonStorage,
+);
+
+export const WordsWrittenTodayStateAtom = atomWithMMKV<number>(
+  'words_written_today',
+  DEFAULT_DATA.wordWrittenToday,
+  CommonStorage,
+);
+
+export const FavoriteProjectsStateAtom = atomWithMMKV<ElementUUID[]>(
+  'favorite_projects',
+  DEFAULT_DATA.favoriteProjects,
+  CommonStorage,
+);
+
+export const WritingStatsStateAtom = atomWithMMKV<WritingStats>(
+  'writing_stats',
+  DEFAULT_DATA.writingStats,
+  CommonStorage,
+);
+
+export const ProjectsDataStateAtom = atomWithMMKV<Project[]>(
+  'projects_data',
+  DEFAULT_DATA.projectsData,
+  CommonStorage,
+);
+
 // export const CommonStorageStateAtom = atom((get) => {
 //   const homeFolder = get(HomeFolderStateAtom);
 //   if (homeFolder.length === 0) {
@@ -69,14 +116,6 @@ export const TypewriterModeStateAtom = atomWithMMKV<boolean>(
 //   }
 //   return `PASSO 2: ${homeFolder}`
 // });
-
-
-const CommonStorage = new MMKV({ id: COMMON_STORAGE });
-export const DailyGoalModeStateAtom = atomWithMMKV<DailyGoalMode>(
-  'daily_goal_mode',
-  DEFAULT_DAILY_GOAL_MODE,
-  CommonStorage,
-);
 
 // export const DailyGoalModeStateAtom = atom(
 //   (get) => {

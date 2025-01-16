@@ -3,9 +3,13 @@ import type {
   FulfilledThemeConfiguration,
   Variant,
 } from '@/theme/types/config';
-import type { ComponentTheme } from '@/theme/types/theme';
+import type { ComponentTheme, Theme } from '@/theme/types/theme';
 
-import { createContext, useMemo } from 'react';
+import {
+  createContext,
+  useCallback,
+  useMemo,
+} from 'react';
 
 import {
   generateBackgrounds,
@@ -26,37 +30,29 @@ import {
 import { generateGutters, staticGutterStyles } from '@/theme/gutters';
 import layout from '@/theme/layout';
 import generateConfig from '@/theme/ThemeProvider/generateConfig';
-
-import { useSettings } from '@/state/SettingsProvider/SettingsProvider';
+import { useAtom } from 'jotai';
+import { ThemeStateAtom } from '@/state/atoms/persistentContent';
 
 type Context = {
-  components: ReturnType<typeof componentsGenerator>;
-  navigationTheme: {
-    colors: {
-      primary: string;
-      background: string;
-      card: string;
-      text: string;
-      border: string;
-      notification: string;
-    };
-    dark: boolean;
-  };
-} & ComponentTheme;
+  changeTheme: (variant: Variant) => void;
+} & Theme;
 
 export const ThemeContext = createContext<Context | undefined>(undefined);
 
-const ThemeProvider = ({ children }: { children: ReactNode }) => {
-  const { theme: rawVariant } = useSettings();
+function ThemeProvider({ children }: { children: ReactNode }) {
+  // Current theme variant
+  const [variant, setVariant] = useAtom(ThemeStateAtom);
+  const changeTheme = useCallback(
+    (nextVariant: Variant) => {
+      setVariant(nextVariant);
+    },
+    [setVariant],
+  );
 
-  const variant: Variant = ['dark', 'default'].includes(rawVariant)
-    ? (rawVariant as Variant)
-    : 'default';
-
-  const fullConfig = useMemo(
-    () => generateConfig(variant),
-    [variant],
-  ) satisfies FulfilledThemeConfiguration;
+  // Flatten config with current variant
+  const fullConfig = useMemo(() => {
+    return generateConfig(variant) satisfies FulfilledThemeConfiguration;
+  }, [variant]);
 
   const fonts = useMemo(() => {
     return {
@@ -108,15 +104,17 @@ const ThemeProvider = ({ children }: { children: ReactNode }) => {
     } satisfies ComponentTheme;
   }, [variant, fonts, backgrounds, borders, fullConfig.colors, gutters]);
 
-  const components = useMemo(() => componentsGenerator(theme), [theme]);
+  const components = useMemo(() => {
+    return componentsGenerator(theme);
+  }, [theme]);
 
   const value = useMemo(() => {
-    return { ...theme, components, navigationTheme } satisfies Context;
-  }, [theme, components, navigationTheme]);
+    return { ...theme, changeTheme, components, navigationTheme };
+  }, [theme, components, navigationTheme, changeTheme]);
 
   return (
     <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
   );
-};
+}
 
 export default ThemeProvider;

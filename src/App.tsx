@@ -13,8 +13,6 @@ import '@/translations';
 
 import type { JSX } from 'react';
 
-import { SettingsProvider } from '@/state/SettingsProvider/SettingsProvider';
-
 export const queryClient = new QueryClient({
   defaultOptions: {
     mutations: {
@@ -29,13 +27,11 @@ export const queryClient = new QueryClient({
 function App() {
   return (
     <GestureHandlerRootView>
-        <QueryClientProvider client={queryClient}>
-          <SettingsProvider>
-            <ThemeProvider>
-              <ApplicationNavigator />
-            </ThemeProvider>
-          </SettingsProvider>
-        </QueryClientProvider>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <ApplicationNavigator />
+        </ThemeProvider>
+      </QueryClientProvider>
       <Toast config={toastConfig} />
     </GestureHandlerRootView>
   );

@@ -7,7 +7,7 @@ export const enum Variant {
 }
 
 const colorsLight = {
-  fullWhite: '#FFFFFF',
+  full: '#FFFFFF',
   gray100: '#DFDFDF',
   gray200: '#A1A1A1',
   gray400: '#4D4D4D',
@@ -21,7 +21,7 @@ const colorsLight = {
 } as const;
 
 const colorsDark = {
-  fulBlack: '#000000',
+  full: '#000000',
   gray100: '#191919',
   gray200: '#BABABA',
   gray400: '#969696',
@@ -51,7 +51,7 @@ export const config = {
   gutters: sizes,
   navigationColors: {
     ...DefaultTheme.colors,
-    background: colorsLight.fullWhite,
+    background: colorsLight.full,
     card: colorsLight.gray50,
   },
   variants: {

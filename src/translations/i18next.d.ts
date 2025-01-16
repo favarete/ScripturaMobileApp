@@ -13,7 +13,7 @@ type RecursiveKeys<T> = T extends object
     }[keyof T]
   : never;
 
-type defaultTranslations = (typeof resources)[SupportedLanguages.EN_EN];
+type defaultTranslations = (typeof resources)[SupportedLanguages.EN_US];
 
 export type TranslationKeys = RecursiveKeys<
   defaultTranslations[typeof defaultNS]

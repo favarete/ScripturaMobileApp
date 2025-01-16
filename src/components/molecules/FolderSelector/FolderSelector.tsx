@@ -9,7 +9,7 @@ import Toast from 'react-native-toast-message';
 
 import { useTheme } from '@/theme';
 
-import { HomeFolderStateAtom } from '@/state/atoms/settings';
+import { HomeFolderStateAtom } from '@/state/atoms/persistentContent';
 import { print } from '@/utils/logger';
 
 const pickFolder =
