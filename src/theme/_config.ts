@@ -13,6 +13,7 @@ const colorsLight = {
   gray400: '#4D4D4D',
   gray50: '#EFEFEF',
   gray800: '#303030',
+  green500: '#5BA65C',
   purple100: '#E1E1EF',
   purple50: '#1B1A23',
   purple500: '#7e1dfb',
@@ -27,6 +28,7 @@ const colorsDark = {
   gray400: '#969696',
   gray50: '#EFEFEF',
   gray800: '#E0E0E0',
+  green500: '#5BA65C',
   purple100: '#252732',
   purple50: '#1B1A23',
   purple500: '#A6A4F0',
@@ -34,7 +36,7 @@ const colorsDark = {
   skeleton: '#303030',
 } as const;
 
-const sizes = [12, 16, 24, 32, 40, 80] as const;
+const sizes = [8, 12, 16, 24, 32, 40, 80] as const;
 
 export const config = {
   backgrounds: colorsLight,

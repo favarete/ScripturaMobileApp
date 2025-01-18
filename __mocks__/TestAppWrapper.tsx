@@ -6,13 +6,13 @@ import { ThemeProvider } from '@/theme';
 
 import '@/translations';
 
-import { queryClient, storage } from '@/App';
+import { queryClient } from '@/App';
 
 function TestAppWrapper({ children }: PropsWithChildren) {
   return (
     <GestureHandlerRootView>
       <QueryClientProvider client={queryClient}>
-        <ThemeProvider storage={storage}>{children}</ThemeProvider>
+        <ThemeProvider>{children}</ThemeProvider>
       </QueryClientProvider>
     </GestureHandlerRootView>
   );

@@ -37,6 +37,7 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
   const homeFolder = useAtomValue(HomeFolderStateAtom);
   const language = useAtomValue(LanguageStateAtom);
   const [loadingProjects, setLoadingProjects] = useState<boolean>(true);
+  const [editingId, setEditingId] = useState<string>('');
   const [allProjects, setAllProjects] = useAtom(ProjectsDataStateAtom);
 
   useEffect(() => {
@@ -148,12 +149,13 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
     void fetchAllProjects();
   }, [allProjects, homeFolder, language, setAllProjects, t]);
 
-  const onNavigate = () => {
-    navigation.navigate(Paths.ChaptersView);
-    // changeLanguage(i18next.language === SupportedLanguages.EN_EN
-    //   ? SupportedLanguages.PT_BR
-    //   : SupportedLanguages.EN_EN,);
+  const onNavigate = (id: string) => {
+    navigation.navigate(Paths.ChaptersView, {id});
   };
+
+  // changeLanguage(i18next.language === SupportedLanguages.EN_EN
+  //   ? SupportedLanguages.PT_BR
+  //   : SupportedLanguages.EN_EN,);
 
   return (
     <SafeScreen>
@@ -178,9 +180,11 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
                 return (
                   <ProjectCard
                     description={project.blurb}
+                    editingId={editingId}
                     id={project.id}
                     image={project.coverPath}
                     key={project.title}
+                    setEditingId={setEditingId}
                     title={project.title}
                   />
                 );
@@ -210,5 +214,4 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
     </SafeScreen>
   );
 }
-
 export default ProjectsView;

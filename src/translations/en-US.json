@@ -33,7 +33,7 @@
       "title": "$t(common_appName.full)",
       "view": "Projects Screen",
       "placeholder": "Home Folder",
-      "project_description_placeholder": "Enter a description for the book (maximum 160 characters)",
+      "project_description_placeholder": "Enter a description for the book (maximum 130 characters)",
       "fetch_projects_data": {
         "error": {
           "text1": "Something went wrong!",

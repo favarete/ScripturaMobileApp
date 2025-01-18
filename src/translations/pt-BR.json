@@ -33,7 +33,7 @@
       "title": "$t(common_appName.full)",
       "view": "Tela de Projetos",
       "placeholder": "Pasta Principal",
-      "project_description_placeholder": "Insira uma descrição para o livro (máximo de 160 caracteres)",
+      "project_description_placeholder": "Insira uma descrição para o livro (máximo de 130 caracteres)",
       "fetch_projects_data": {
         "error": {
           "text1": "Algo deu Errado!",
