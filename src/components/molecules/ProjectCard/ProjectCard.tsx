@@ -23,6 +23,7 @@ type ProjectProps = {
   editingId: string;
   id: string;
   image: null | string;
+  onNavigate: (id: string) => void;
   setEditingId: React.Dispatch<React.SetStateAction<string>>;
   title: string;
 };
@@ -33,6 +34,7 @@ function ProjectCard({
   id,
   image,
   setEditingId,
+  onNavigate,
   title,
 }: ProjectProps) {
   const { colors, fonts, gutters, layout } = useTheme();
@@ -183,7 +185,7 @@ function ProjectCard({
       <TouchableOpacity
         activeOpacity={1.0}
         onLongPress={() => {}}
-        onPress={handleNavigate}
+        onPress={() => onNavigate(id)}
       >
         <View style={[layout.row]}>
           <Image resizeMode="cover" source={imageToLoad} style={styles.image} />

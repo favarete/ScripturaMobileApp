@@ -184,6 +184,7 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
                     id={project.id}
                     image={project.coverPath}
                     key={project.title}
+                    onNavigate={onNavigate}
                     setEditingId={setEditingId}
                     title={project.title}
                   />
