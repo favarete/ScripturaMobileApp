@@ -3,7 +3,7 @@ import type { Paths } from '@/navigation/paths';
 
 export type RootStackParamList = {
   [Paths.ChaptersView]: {id: string};
-  [Paths.ContentView]: undefined;
+  [Paths.ContentView]: {id: string};
   [Paths.Example]: undefined;
   [Paths.Home]: undefined;
   [Paths.ProjectsView]: undefined;

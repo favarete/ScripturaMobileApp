@@ -8,6 +8,7 @@ export const enum Variant {
 
 const colorsLight = {
   full: '#FFFFFF',
+  fullOpposite: '#000000',
   gray100: '#DFDFDF',
   gray200: '#A1A1A1',
   gray400: '#4D4D4D',
@@ -23,6 +24,7 @@ const colorsLight = {
 
 const colorsDark = {
   full: '#000000',
+  fullOpposite: '#FFFFFF',
   gray100: '#191919',
   gray200: '#BABABA',
   gray400: '#969696',
@@ -36,7 +38,7 @@ const colorsDark = {
   skeleton: '#303030',
 } as const;
 
-const sizes = [8, 12, 16, 20, 24, 32, 40, 80] as const;
+const sizes = [4, 8, 12, 16, 20, 24, 32, 40, 80] as const;
 
 export const config = {
   backgrounds: colorsLight,

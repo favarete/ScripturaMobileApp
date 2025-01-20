@@ -43,7 +43,22 @@
     },
     "screen_chapters": {
       "title": "$t(common_appName.full)",
-      "view": "Tela de Capítulos"
+      "view": "Tela de Capítulos",
+      "word_count": "Palavras",
+      "status": {
+        "draft_ready":  "Rascunho Pronto",
+        "first_revision_done":  "Primeira Revisão Feita",
+        "in_first_revision":  "Primeira Revisão",
+        "in_progress":  "Em Andamento",
+        "in_second_revision":  "Segunda Revisão",
+        "in_third_revision":  "Terceira Revisão",
+        "manuscript_done":  "Manuscrito Feito",
+        "planning":  "Em Planejamento",
+        "second_revision_done":  "Segunda Revisão Feita",
+        "third_revision_done":  "Terceira Revisão Feita",
+        "to_do":  "Pendente",
+        "indeterminate": "Indeterminado"
+      }
     },
     "screen_content": {
       "title": "$t(common_appName.full)",

@@ -43,7 +43,22 @@
     },
     "screen_chapters": {
       "title": "$t(common_appName.full)",
-      "view": "Chapters Screen"
+      "view": "Chapters Screen",
+      "word_count": "Words",
+      "status": {
+        "draft_ready":  "Draft Ready",
+        "first_revision_done":  "First Revision Done",
+        "in_first_revision":  "First Revision",
+        "in_progress":  "In Progress",
+        "in_second_revision":  "Second Revision",
+        "in_third_revision":  "Third Revision",
+        "manuscript_done":  "Manuscript Done",
+        "planning":  "In Planning",
+        "second_revision_done":  "Second Revision Done",
+        "third_revision_done":  "Third Revision Done",
+        "to_do":  "To Do",
+        "indeterminate": "Indeterminate"
+      }
     },
     "screen_content": {
       "title": "$t(common_appName.full)",

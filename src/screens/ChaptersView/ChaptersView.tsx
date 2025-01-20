@@ -13,6 +13,8 @@ import PlaceholderImage from '@/theme/assets/images/placeholder_book_cover.png';
 import { Paths } from '@/navigation/paths';
 
 import ParallaxImage from '@/components/atoms/ParallaxImage/ParallaxImage';
+import ChapterCard from '@/components/molecules/ChapterCard/ChapterCard';
+import ProjectCard from '@/components/molecules/ProjectCard/ProjectCard';
 
 import {
   LanguageStateAtom,
@@ -39,10 +41,15 @@ function ChaptersView({
   const [allProjects, setAllProjects] = useAtom(ProjectsDataStateAtom);
   const [loadingChapters, setLoadingChapters] = useState<boolean>(true);
   const [selectedBook, setSelectedBook] = useState<Project>();
+  const [editingId, setEditingId] = useState<string>('');
   const [allChapters, setAllChapters] = useState<Chapter[]>([]);
 
-  const onNavigate = () => {
-    navigation.navigate(Paths.ContentView);
+  const onNavigateBack = () => {
+    navigation.navigate(Paths.ProjectsView);
+  };
+
+  const onNavigate = (id: string) => {
+    navigation.navigate(Paths.ContentView, { id });
   };
 
   const { id } = route.params;
@@ -83,7 +90,6 @@ function ChaptersView({
               androidFilePath: chapter.uri,
               id: createNewUUID(),
               iphoneFilePath: '',
-              isLastViewed: false,
               lastUpdate: formatTimestamp(chapter.lastModified, language),
               linuxFilePath: '',
               osxFilePath: '',
@@ -115,24 +121,39 @@ function ChaptersView({
 
   return (
     <View>
-      <ParallaxImage
-        parallaxImage={PlaceholderImage}
-        parallaxSubtitle={`Last Updated at ${selectedBook?.lastUpdate}`}
-        parallaxTitle={`${selectedBook?.title}`}
-      >
-        <View style={{ backgroundColor: '#fff', height: 2000 }}>
-          <Text
-            style={{
-              fontSize: 20,
-              fontWeight: 'bold',
-              textAlign: 'center',
-              marginTop: 20,
-            }}
-          >
-            Parallax Scroll
-          </Text>
-        </View>
-      </ParallaxImage>
+      {selectedBook && (
+        <ParallaxImage
+          onNavigateBack={onNavigateBack}
+          parallaxImage={PlaceholderImage}
+          parallaxSubtitle={`Last Updated at ${selectedBook.lastUpdate}`}
+          parallaxTitle={`${selectedBook.title}`}
+        >
+          <View>
+            {loadingChapters ? (
+              <Text>Loading...</Text>
+            ) : allChapters.length > 0 ? (
+              allChapters.map((chapter: Chapter) => {
+                return (
+                  <ChapterCard
+                    editingId={editingId}
+                    id={chapter.id}
+                    key={chapter.id}
+                    lastUpdate={chapter.lastUpdate}
+                    lastViewedId={selectedBook.chapterLastViewed}
+                    onNavigate={onNavigate}
+                    setEditingId={setEditingId}
+                    status={chapter.status}
+                    title={chapter.title}
+                    wordCount={chapter.wordCount}
+                  />
+                );
+              })
+            ) : (
+              <Text>No chapters available</Text>
+            )}
+          </View>
+        </ParallaxImage>
+      )}
     </View>
   );
 }

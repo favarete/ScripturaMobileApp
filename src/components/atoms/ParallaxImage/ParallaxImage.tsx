@@ -1,9 +1,9 @@
 import type { PropsWithChildren } from 'react';
 import type { ImageSourcePropType } from 'react-native';
-import Icon from '@react-native-vector-icons/material-icons';
 
+import Icon from '@react-native-vector-icons/material-icons';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Animated, {
   interpolate,
   useAnimatedRef,
@@ -14,6 +14,7 @@ import Animated, {
 import { useTheme } from '@/theme';
 
 type ParallaxImageProps = PropsWithChildren<{
+  onNavigateBack: () => void;
   parallaxImage: ImageSourcePropType;
   parallaxSubtitle: string;
   parallaxTitle: string;
@@ -23,6 +24,7 @@ const IMG_HEIGHT = 180;
 
 function ParallaxImage({
   children = false,
+  onNavigateBack,
   parallaxImage,
   parallaxSubtitle,
   parallaxTitle,
@@ -79,28 +81,43 @@ function ParallaxImage({
 
   return (
     <Animated.ScrollView ref={scrollRef} scrollEventThrottle={16}>
-      <View style={styles.imageContainer}>
+      <View style={[styles.imageContainer, gutters.marginBottom_16]}>
         <Animated.Image
           source={parallaxImage}
           style={[styles.image, imageAnimatedStyle]}
         />
-        <View style={[styles.overlay, gutters.paddingHorizontal_16, gutters.paddingVertical_12]}>
+        <View
+          style={[
+            styles.overlay,
+            gutters.paddingHorizontal_16,
+            gutters.paddingVertical_12,
+          ]}
+        >
           <View>
-            <Text>
-              <Icon color={colors.full} name='arrow-back' size={30} />
-            </Text>
+            <TouchableOpacity onPress={onNavigateBack}>
+              <Text>
+                <Icon color={colors.full} name="arrow-back" size={30} />
+              </Text>
+            </TouchableOpacity>
           </View>
           <View style={[gutters.paddingLeft_24, gutters.paddingBottom_24]}>
             <Text
               style={[
                 fonts.defaultFontFamilyBold,
                 fonts.size_20,
+                gutters.marginBottom_8,
                 styles.overlayText,
               ]}
             >
               {parallaxTitle}
             </Text>
-            <Text style={[fonts.defaultFontFamilySemibold, fonts.size_12, styles.overlayText]}>
+            <Text
+              style={[
+                fonts.defaultFontFamilySemibold,
+                fonts.size_12,
+                styles.overlayText,
+              ]}
+            >
               {parallaxSubtitle}
             </Text>
           </View>

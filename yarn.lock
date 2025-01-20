@@ -1641,10 +1641,24 @@
     picocolors "^1.1.1"
     plist "^3.1.0"
 
+"@react-native-vector-icons/feather@^4.29.2":
+  version "4.29.2"
+  resolved "https://registry.npmjs.org/@react-native-vector-icons/feather/-/feather-4.29.2.tgz"
+  integrity sha512-axzYJusnsM5XbnGNr22fF+YOQqROrEJaXhK9d4fTiLusAaGQ2NA6IcHDqOMAY69kWNzfpUFr5JoFKy9W+dyMrA==
+  dependencies:
+    "@react-native-vector-icons/common" "^11.0.0"
+
 "@react-native-vector-icons/material-icons@^0.0.1":
   version "0.0.1"
   resolved "https://registry.npmjs.org/@react-native-vector-icons/material-icons/-/material-icons-0.0.1.tgz"
   integrity sha512-rYxCm+mJofDXyrVsWZW0p7VcXCKc357MqZpMYN20xFAM36ClHXorawEKnM8Z/lxKF1YHmbUApov6glcUQPNWPw==
+  dependencies:
+    "@react-native-vector-icons/common" "^11.0.0"
+
+"@react-native-vector-icons/simple-line-icons@^2.5.5":
+  version "2.5.5"
+  resolved "https://registry.npmjs.org/@react-native-vector-icons/simple-line-icons/-/simple-line-icons-2.5.5.tgz"
+  integrity sha512-VkoYoW4aj9KDJYLPNgJx4i3Fam7+Rnqg/a8G27XeW6FExZcsyJ+rIM8oOP2el+sUodRtwzycjlUll7vxc5VaKg==
   dependencies:
     "@react-native-vector-icons/common" "^11.0.0"
 

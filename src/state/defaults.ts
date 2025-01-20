@@ -54,25 +54,25 @@ const DEFAULT_WRITING_STATS: WritingStats = {
 };
 
 export const enum ChapterStatusType {
-  DraftReady = 3,
-  FirstRevisionDone = 5,
-  InFirstRevision = 4,
-  InProgress = 2,
-  InSecondRevision = 6,
-  InThirdRevision = 8,
-  ManuscriptDone = 10,
-  Planning = 1,
-  SecondRevisionDone = 7,
-  ThirdRevisionDone = 9,
-  ToDo = 0,
-  Undefined = -1,
+  DraftReady = 'draft_ready',
+  FirstRevisionDone = 'first_revision_done',
+  InFirstRevision = 'in_first_revision',
+  InProgress = 'in_progress',
+  InSecondRevision = 'in_second_revision',
+  InThirdRevision = 'in_third_revision',
+  ManuscriptDone = 'manuscript_done',
+  Planning = 'planning',
+  SecondRevisionDone = 'second_revision_done',
+  ThirdRevisionDone = 'third_revision_done',
+  ToDo = 'to_do',
+  Undefined = 'indeterminate',
 }
+
 
 export type Chapter = {
   androidFilePath: string;
   id: ElementUUID;
   iphoneFilePath: string;
-  isLastViewed: boolean;
   lastUpdate: string;
   linuxFilePath: string;
   osxFilePath: string;
@@ -86,6 +86,7 @@ export type Chapter = {
 export type Project = {
   androidFolderPath: string;
   blurb: string;
+  chapterLastViewed: string;
   chapters: Chapter[];
   chapterSort: ElementUUID[];
   coverPath: string;
@@ -102,6 +103,7 @@ export type Project = {
 export const initialProjectContent: Project = {
   androidFolderPath: '',
   blurb: '',
+  chapterLastViewed: '',
   chapters: [],
   chapterSort: [],
   coverPath: '',

@@ -136,7 +136,7 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
             </Text>
           </View>
           <FolderSelector />
-          <View key={homeFolder}>
+          <View>
             {loadingProjects ? (
               <Text>Loading...</Text>
             ) : allProjects.length > 0 ? (
