@@ -27,7 +27,7 @@ function ParallaxImage({
   parallaxSubtitle,
   parallaxTitle,
 }: ParallaxImageProps) {
-  const { colors, gutters } = useTheme();
+  const { colors, fonts, gutters } = useTheme();
 
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const scrollOffset = useScrollViewOffset(scrollRef);
