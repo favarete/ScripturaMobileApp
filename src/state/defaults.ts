@@ -73,6 +73,7 @@ export type Chapter = {
   id: ElementUUID;
   iphoneFilePath: string;
   isLastViewed: boolean;
+  lastUpdate: string;
   linuxFilePath: string;
   osxFilePath: string;
   revisionPosition: number;

@@ -58,7 +58,12 @@ function ConfirmationDialog({
     >
       <TouchableOpacity
         onPress={() => handleDialogClick(dialogType, 'save')}
-        style={[styles.customButton, styles.positionForeground, styles.saveButton, gutters.marginRight_12]}
+        style={[
+          styles.customButton,
+          styles.positionForeground,
+          styles.saveButton,
+          gutters.marginRight_12,
+        ]}
       >
         <Text>
           <Icon color={colors.purple500} name="done" size={30} />
@@ -70,7 +75,7 @@ function ConfirmationDialog({
           styles.customButton,
           styles.cancelButton,
           gutters.marginRight_12,
-          styles.positionForeground
+          styles.positionForeground,
         ]}
       >
         <Text>

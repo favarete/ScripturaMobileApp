@@ -1,14 +1,16 @@
+import type { Project } from '@/state/defaults';
+
 import markdownit from 'markdown-it';
 
 export const getTitleFromChapterFile = (markdown: string) => {
   const match = markdown.match(/^# (.+)/m);
   return match ? match[1].trim() : null;
-}
+};
 
 export const markdownToHtml = (markdown: string): string => {
-  const md = markdownit()
+  const md = markdownit();
   return md.render(markdown);
-}
+};
 
 export const countWordsFromHTML = (markdownHTML: string): number => {
   const plainText = markdownHTML.replaceAll(/<[^>]*>/g, '');
@@ -17,4 +19,8 @@ export const countWordsFromHTML = (markdownHTML: string): number => {
   }
   const words = plainText.trim().split(/\s+/);
   return words.length;
-}
+};
+
+export const getBookById = (id: string, books: Project[]) => {
+  return books.find((book) => book.id === id);
+};

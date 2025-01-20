@@ -4,14 +4,13 @@ import type { Project } from '@/state/defaults';
 import { useAtom, useAtomValue } from 'jotai';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 import { hasPermission, listFiles } from 'react-native-saf-x';
 import Toast from 'react-native-toast-message';
 
 import { useTheme } from '@/theme';
 import { Paths } from '@/navigation/paths';
 
-import { IconByVariant } from '@/components/atoms';
 import { FolderSelector } from '@/components/molecules';
 import ProjectCard from '@/components/molecules/ProjectCard/ProjectCard';
 import { SafeScreen } from '@/components/templates';
@@ -32,7 +31,7 @@ import {
 function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
   const { t } = useTranslation();
 
-  const { colors, components, fonts, gutters, layout } = useTheme();
+  const { fonts, gutters } = useTheme();
 
   const homeFolder = useAtomValue(HomeFolderStateAtom);
   const language = useAtomValue(LanguageStateAtom);
@@ -94,41 +93,6 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
                     ...prevState,
                     __defineNewProject,
                   ]);
-
-                  // Get all markdown files directly inside the project's directory
-                  // TODO: Probably it's better if this function search recursively for any markdown in any nested directory
-                  // const __allExternalStorageProjectFiles = await listFiles(
-                  //   project.uri,
-                  // );
-
-                  // Remove everything that's not a markdown
-                  // const allExternalStorageProjectFiles =
-                  //   __allExternalStorageProjectFiles.filter(
-                  //     (item) => item.mime === 'text/markdown',
-                  //   );
-                  // for (const chapter of allExternalStorageProjectFiles) {
-                  //   console.log(chapter)
-                  //   const chapterFileContent: string = await readFile(chapter.uri)
-                  //   const chapterFileContentTile: string = getTitleFromChapterFile(chapterFileContent) ?? "No title. See help for instructions"
-                  //   console.log(chapterFileContentTile)
-                  //
-                  //   const renderedMarkDown = markdownToHtml(chapterFileContent);
-                  //   const markdownWordCount = countWordsFromHTML(renderedMarkDown)
-                  //
-                  //   const __defineNewChapter: Chapter = {
-                  //     androidFilePath: chapter.uri,
-                  //     id: createNewUUID(),
-                  //     iphoneFilePath: '',
-                  //     isLastViewed: false,
-                  //     linuxFilePath: '',
-                  //     osxFilePath: '',
-                  //     revisionPosition: -1,
-                  //     status: ChapterStatusType.Undefined,
-                  //     title: chapterFileContentTile,
-                  //     windowsFilePath: '',
-                  //     wordCount: -1,
-                  //   }
-                  // }
                 }
               }
             }
@@ -150,7 +114,7 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
   }, [allProjects, homeFolder, language, setAllProjects, t]);
 
   const onNavigate = (id: string) => {
-    navigation.navigate(Paths.ChaptersView, {id});
+    navigation.navigate(Paths.ChaptersView, { id });
   };
 
   // changeLanguage(i18next.language === SupportedLanguages.EN_EN
@@ -194,25 +158,10 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
               <Text>No projects available</Text>
             )}
           </View>
-          <View
-            style={[
-              layout.row,
-              layout.justifyBetween,
-              layout.fullWidth,
-              gutters.marginTop_16,
-            ]}
-          >
-            <TouchableOpacity
-              onPress={onNavigate}
-              style={[components.buttonCircle, gutters.marginBottom_16]}
-              testID="change-theme-button"
-            >
-              <IconByVariant path={'send'} stroke={colors.purple500} />
-            </TouchableOpacity>
-          </View>
         </View>
       </ScrollView>
     </SafeScreen>
   );
 }
+
 export default ProjectsView;

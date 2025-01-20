@@ -1,4 +1,3 @@
-import { useNavigation } from '@react-navigation/native';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -10,12 +9,8 @@ import {
   View,
 } from 'react-native';
 import ContextMenuView from 'react-native-context-menu-view';
-import { red } from 'react-native-reanimated/lib/typescript/Colors';
-
 import { useTheme } from '@/theme';
 import PlaceholderImage from '@/theme/assets/images/placeholder_book_cover.png';
-import { Paths } from '@/navigation/paths';
-
 import ConfirmationDialog from '@/components/atoms/ConfirmationDialog/ConfirmationDialog';
 
 type ProjectProps = {
@@ -33,8 +28,8 @@ function ProjectCard({
   editingId,
   id,
   image,
-  setEditingId,
   onNavigate,
+  setEditingId,
   title,
 }: ProjectProps) {
   const { colors, fonts, gutters, layout } = useTheme();
@@ -61,13 +56,11 @@ function ProjectCard({
       case EDIT_DESCRIPTION_TYPE: {
         setIsEditing(EDIT_DESCRIPTION_TYPE);
         setEditingId(id);
-        console.log('Edit Description.', `Project: ${title}`);
         break;
       }
       case EDIT_TITLE_TYPE: {
         setIsEditing(EDIT_TITLE_TYPE);
         setEditingId(id);
-        console.log('Edit Title', `Project: ${title}`);
         break;
       }
       default: {
@@ -200,6 +193,7 @@ function ProjectCard({
               <View style={styles.inputTitleContainer}>
                 <TextInput
                   autoFocus
+                  cursorColor={colors.purple500}
                   maxLength={25}
                   onChangeText={setEditedTitle}
                   style={[
@@ -241,6 +235,7 @@ function ProjectCard({
               <View style={styles.inputDescriptionContainer}>
                 <TextInput
                   autoFocus
+                  cursorColor={colors.purple500}
                   maxLength={130}
                   multiline
                   onChangeText={setEditedDescription}
