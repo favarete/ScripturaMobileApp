@@ -74,7 +74,6 @@ function ChapterCard({
 
   const handleContextMenuPress = (status: number, id: string) => {
     //const localizedStatuses = t('screen_chapters.status')
-    const actionId = status.toLowerCase().replaceAll(/\s+/g, '-');
     console.log(`Chapter '${id}' to Change Status to '${status}'`);
   };
 
