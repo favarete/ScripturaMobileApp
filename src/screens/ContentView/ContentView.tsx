@@ -1,20 +1,25 @@
+import type { Paths } from '@/navigation/paths';
 import type { RootScreenProps } from '@/navigation/types';
+import type { Chapter } from '@/state/defaults';
 
+import { useAtom } from 'jotai/index';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
+import { readFile } from 'react-native-saf-x';
 
 import { useTheme } from '@/theme';
-import { Paths } from '@/navigation/paths';
 
-import { IconByVariant } from '@/components/atoms';
 import { TitleBar } from '@/components/atoms';
-import React, { useEffect, useState } from 'react';
-import { getProjectById, getChapterById } from '@/utils/chapterHelpers';
-import type { Chapter, Project } from '@/state/defaults';
-import { useAtom } from 'jotai/index';
-import { ProjectsDataStateAtom } from '@/state/atoms/persistentContent';
+import MarkdownRenderer from '@/components/molecules/MarkdownRenderer/MarkdownRenderer';
 
-function ContentView({ navigation, route }: RootScreenProps<Paths.ContentView>) {
+import { ProjectsDataStateAtom } from '@/state/atoms/persistentContent';
+import { getChapterById } from '@/utils/chapterHelpers';
+
+function ContentView({
+  navigation,
+  route,
+}: RootScreenProps<Paths.ContentView>) {
   const { t } = useTranslation();
 
   const { colors, components, fonts, gutters, layout } = useTheme();
@@ -23,53 +28,32 @@ function ContentView({ navigation, route }: RootScreenProps<Paths.ContentView>) 
   const [allProjects, setAllProjects] = useAtom(ProjectsDataStateAtom);
   const [chapterTitle, setChapterTitle] = useState<string>();
   const [selectedChapter, setSelectedChapter] = useState<Chapter>();
+  const [markdownText, setMarkdownText] = useState<string>('');
 
   useEffect(() => {
-    const chapter = getChapterById(id, chapterId, allProjects)
-    if(chapter){
+    const chapter = getChapterById(id, chapterId, allProjects);
+    if (chapter) {
       setSelectedChapter(chapter);
     }
   }, [allProjects, chapterId, id]);
 
   useEffect(() => {
-    if(selectedChapter){
+    if (selectedChapter) {
       setChapterTitle(selectedChapter.title);
+
+      const fetchFileContent = async () => {
+        const markdownTextContent: string = await readFile(selectedChapter.androidFilePath);
+        setMarkdownText(markdownTextContent)
+      };
+      void fetchFileContent();
     }
   }, [selectedChapter]);
 
-
-  const onNavigate = () => {
-    navigation.navigate(Paths.StatisticsView);
-  };
   return (
     <ScrollView>
       <TitleBar title={chapterTitle ?? t('screen_content.view')} />
-      <View style={[gutters.paddingHorizontal_32]}>
-        <View>
-          <Text style={[fonts.size_40, fonts.gray800, fonts.bold]}>
-            {t('screen_content.title')}
-          </Text>
-          <Text style={[fonts.size_16, fonts.gray200, gutters.marginBottom_40]}>
-            {t('screen_content.view')}
-          </Text>
-        </View>
-
-        <View
-          style={[
-            layout.row,
-            layout.justifyBetween,
-            layout.fullWidth,
-            gutters.marginTop_16,
-          ]}
-        >
-          <TouchableOpacity
-            onPress={onNavigate}
-            style={[components.buttonCircle, gutters.marginBottom_16]}
-            testID="change-theme-button"
-          >
-            <IconByVariant path={'send'} stroke={colors.purple500} />
-          </TouchableOpacity>
-        </View>
+      <View style={[gutters.paddingVertical_12]}>
+        <MarkdownRenderer markdown={markdownText} />
       </View>
     </ScrollView>
   );
