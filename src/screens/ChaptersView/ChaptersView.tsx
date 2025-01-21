@@ -8,7 +8,6 @@ import { Text, View } from 'react-native';
 import { listFiles, readFile } from 'react-native-saf-x';
 import Toast from 'react-native-toast-message';
 
-import { useTheme } from '@/theme';
 import PlaceholderImage from '@/theme/assets/images/placeholder_book_cover.png';
 import { Paths } from '@/navigation/paths';
 
@@ -22,7 +21,7 @@ import {
 import { ChapterStatusType } from '@/state/defaults';
 import {
   countWordsFromHTML,
-  getBookById,
+  getProjectById,
   getTitleFromChapterFile,
   markdownToHtml,
 } from '@/utils/chapterHelpers';
@@ -34,8 +33,8 @@ function ChaptersView({
   route,
 }: RootScreenProps<Paths.ChaptersView>) {
   const { t } = useTranslation();
+  const { id } = route.params;
 
-  const { colors, components, fonts, gutters, layout } = useTheme();
   const language = useAtomValue(LanguageStateAtom);
   const [allProjects, setAllProjects] = useAtom(ProjectsDataStateAtom);
   const [loadingChapters, setLoadingChapters] = useState<boolean>(true);
@@ -47,14 +46,21 @@ function ChaptersView({
     navigation.navigate(Paths.ProjectsView);
   };
 
-  const onNavigate = (id: string) => {
-    navigation.navigate(Paths.ContentView, { id });
+  const updateChaptersById = (id: string, newChapters: Chapter[]) => {
+    setAllProjects((prevProjects) =>
+      prevProjects.map((project) =>
+        project.id === id ? { ...project, chapters: newChapters } : project,
+      ),
+    );
   };
 
-  const { id } = route.params;
+  const onNavigate = (id: string, chapterId: string) => {
+    updateChaptersById(id, allChapters);
+    navigation.navigate(Paths.ContentView, { chapterId, id });
+  };
 
   useEffect(() => {
-    const book = getBookById(id, allProjects);
+    const book = getProjectById(id, allProjects);
     setSelectedBook(book);
   }, [allProjects, id]);
 
@@ -102,7 +108,7 @@ function ChaptersView({
             allChaptersData.push(__defineNewChapter);
           }
           setAllChapters(allChaptersData);
-          console.log(allChaptersData);
+          console.log('-> CHAPTER SCREEN Render');
         } catch (error) {
           Toast.show({
             text1: t('unknown_error.text1'),
@@ -116,7 +122,7 @@ function ChaptersView({
       };
       void fetchAllChapters();
     }
-  }, [language, selectedBook, t]);
+  }, [id, language, selectedBook, setAllProjects, t]);
 
   return (
     <View>
@@ -139,7 +145,7 @@ function ChaptersView({
                     key={chapter.id}
                     lastUpdate={chapter.lastUpdate}
                     lastViewedId={selectedBook.chapterLastViewed}
-                    onNavigate={onNavigate}
+                    onNavigate={() => onNavigate(id, chapter.id)}
                     setEditingId={setEditingId}
                     status={chapter.status}
                     title={chapter.title}

@@ -27,6 +27,7 @@ import {
   findProjectByTitle,
   findProjectByTitleAndPath,
 } from '@/utils/projectHelpers';
+import { TitleBar } from '@/components/atoms';
 
 function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
   const { t } = useTranslation();
@@ -129,14 +130,12 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
             <Text style={[fonts.size_24, fonts.gray800, fonts.bold]}>
               {t('screen_projects.title')}
             </Text>
-            <Text
-              style={[fonts.size_16, fonts.gray200, gutters.marginBottom_40]}
-            >
-              {t('screen_projects.view')}
-            </Text>
           </View>
           <FolderSelector />
-          <View>
+        </View>
+        <View>
+          <TitleBar title={t('screen_projects.view')} />
+          <View style={[gutters.paddingHorizontal_32]}>
             {loadingProjects ? (
               <Text>Loading...</Text>
             ) : allProjects.length > 0 ? (

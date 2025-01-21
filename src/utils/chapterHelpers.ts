@@ -1,4 +1,4 @@
-import type { Project } from '@/state/defaults';
+import type { Chapter, Project } from '@/state/defaults';
 
 import markdownit from 'markdown-it';
 
@@ -21,6 +21,21 @@ export const countWordsFromHTML = (markdownHTML: string): number => {
   return words.length;
 };
 
-export const getBookById = (id: string, books: Project[]) => {
-  return books.find((book) => book.id === id);
+export const getProjectById = (id: string, projects: Project[]) => {
+  return projects.find((project) => project.id === id);
+};
+
+export const getChapterById = (
+  id: string,
+  chapterId: string,
+  projects: Project[],
+): Chapter | null => {
+  const project = getProjectById(id, projects);
+  if (project) {
+    const chapter = project.chapters.find((ch) => ch.id === chapterId);
+    if (chapter) {
+      return chapter;
+    }
+  }
+  return null;
 };

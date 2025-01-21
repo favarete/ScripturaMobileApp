@@ -1,9 +1,10 @@
 import type { Translations } from '@/translations/types';
 
+import MaterialIcons from '@react-native-vector-icons/material-icons';
 import { useAtom } from 'jotai';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { exists, mkdir, openDocumentTree } from 'react-native-saf-x';
 import Toast from 'react-native-toast-message';
 
@@ -84,7 +85,7 @@ const extractFriendlyPath = (
 };
 
 function FolderSelector() {
-  const { borders, fonts, gutters } = useTheme();
+  const { borders, colors, fonts, gutters } = useTheme();
   const [homeFolder, setHomeFolder] = useAtom(HomeFolderStateAtom);
 
   const { t } = useTranslation();
@@ -108,19 +109,32 @@ function FolderSelector() {
     <View
       style={[
         gutters.padding_16,
-        gutters.marginBottom_24,
+        gutters.marginVertical_24,
         borders.rounded_4,
         borders.gray400,
         borders.w_1,
       ]}
     >
       <TouchableOpacity onPress={pickFolder(setHomeFolder, t)}>
-        <Text style={[fonts.defaultFontFamilyRegular, fonts.gray400]}>
-          {friendlyFolderName}
-        </Text>
+        <View>
+          <Text style={[fonts.defaultFontFamilyRegular, fonts.gray400]}>
+            {friendlyFolderName}
+          </Text>
+          <Text style={styles.icon}>
+            <MaterialIcons color={colors.gray200} name="search" size={25} />
+          </Text>
+        </View>
       </TouchableOpacity>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  icon: {
+    position: 'absolute',
+    right: 0,
+    top: -3,
+  },
+});
 
 export default FolderSelector;

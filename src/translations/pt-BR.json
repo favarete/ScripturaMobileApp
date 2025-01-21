@@ -31,7 +31,7 @@
     "common_error": "Algo deu errado.",
     "screen_projects": {
       "title": "$t(common_appName.full)",
-      "view": "Tela de Projetos",
+      "view": "Projetos",
       "placeholder": "Pasta Principal",
       "project_description_placeholder": "Insira uma descrição para o livro (máximo de 130 caracteres)",
       "fetch_projects_data": {
@@ -68,7 +68,7 @@
     },
     "screen_content": {
       "title": "$t(common_appName.full)",
-      "view": "Tela de Conteúdo"
+      "view": "Título não Encontrado"
     },
     "screen_statistics": {
       "title": "$t(common_appName.full)",

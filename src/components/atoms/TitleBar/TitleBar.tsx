@@ -11,15 +11,16 @@ function TitleBar({ title }: Props) {
   return (
     <View
       style={[
-        backgrounds.gray100,
+        backgrounds.gray50,
         layout.flex_1,
         layout.justifyCenter,
         layout.itemsCenter,
         gutters.gap_16,
         gutters.padding_12,
+        gutters.marginVertical_24
       ]}
     >
-      <Text style={[fonts.defaultFontFamilyBold, fonts.gray800, fonts.size_16]}>
+      <Text style={[fonts.defaultFontFamilyBold, fonts.fullOpposite, fonts.size_16]}>
         {title}
       </Text>
     </View>

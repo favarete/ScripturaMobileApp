@@ -31,7 +31,7 @@
     "common_error": "Something went wrong.",
     "screen_projects": {
       "title": "$t(common_appName.full)",
-      "view": "Projects Screen",
+      "view": "Projects",
       "placeholder": "Home Folder",
       "project_description_placeholder": "Enter a description for the book (maximum 130 characters)",
       "fetch_projects_data": {
@@ -68,7 +68,7 @@
     },
     "screen_content": {
       "title": "$t(common_appName.full)",
-      "view": "Contents Screen"
+      "view": "Title not Found"
     },
     "screen_statistics": {
       "title": "$t(common_appName.full)",
