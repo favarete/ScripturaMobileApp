@@ -39,12 +39,18 @@
           "text1": "Algo deu Errado!",
           "text2": "Falha ao obter os projectos disponíveis."
         }
+      },
+      "cards": {
+        "change_image": "Mudar Imagem",
+        "edit_description": "Editar Descrição",
+        "edit_title": "Editar Título"
       }
     },
     "screen_chapters": {
       "title": "$t(common_appName.full)",
       "view": "Tela de Capítulos",
       "word_count": "Palavras",
+      "status_header": "Status para",
       "status": {
         "draft_ready":  "Rascunho Pronto",
         "first_revision_done":  "Primeira Revisão Feita",

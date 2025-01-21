@@ -39,12 +39,18 @@
           "text1": "Something went wrong!",
           "text2": "Failed to fetch available projects."
         }
+      },
+      "cards": {
+        "change_image": "Change Image",
+        "edit_description": "Edit Description",
+        "edit_title": "Edit Title"
       }
     },
     "screen_chapters": {
       "title": "$t(common_appName.full)",
       "view": "Chapters Screen",
       "word_count": "Words",
+      "status_header": "Status for",
       "status": {
         "draft_ready":  "Draft Ready",
         "first_revision_done":  "First Revision Done",

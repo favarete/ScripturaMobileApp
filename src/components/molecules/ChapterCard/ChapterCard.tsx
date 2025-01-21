@@ -1,21 +1,15 @@
+import type { ContextMenuItem } from '@/components/atoms/CustomContextMenu/CustomContextMenu';
 import type { ChapterStatusType } from '@/state/defaults';
-
-
 
 import MaterialIcons from '@react-native-vector-icons/material-icons';
 import SimpleLineIcons from '@react-native-vector-icons/simple-line-icons';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import ContextMenuView from 'react-native-context-menu-view';
-
-
 
 import { useTheme } from '@/theme';
 
-
-
-
+import CustomContextMenu from '@/components/atoms/CustomContextMenu/CustomContextMenu';
 
 type ChapterProps = {
   editingId: string;
@@ -72,10 +66,169 @@ function ChapterCard({
     editingStyle = undefined;
   }
 
-  const handleContextMenuPress = (status: number, id: string) => {
+  const handleContextMenuPress = (status: string, id: string) => {
     //const localizedStatuses = t('screen_chapters.status')
     console.log(`Chapter '${id}' to Change Status to '${status}'`);
   };
+
+  const ICON_SIZE = 20;
+  const menuItems: ContextMenuItem[] = [
+    {
+      color: colors.gray800,
+      disabled: true,
+      icon: (
+        <MaterialIcons
+          color={colors.purple500}
+          name="label-important-outline"
+          size={ICON_SIZE}
+        />
+      ),
+      label: t('screen_chapters.status.indeterminate'),
+      onPress: () => {
+        handleContextMenuPress('indeterminate', id);
+      },
+    },
+    {
+      color: colors.gray800,
+      icon: (
+        <MaterialIcons
+          color={colors.purple500}
+          name="label-important-outline"
+          size={ICON_SIZE}
+        />
+      ),
+      label: t('screen_chapters.status.to_do'),
+      onPress: () => {
+        handleContextMenuPress('to_do', id);
+      },
+    },
+    {
+      color: colors.gray800,
+      icon: (
+        <MaterialIcons
+          color={colors.purple500}
+          name="label-important-outline"
+          size={ICON_SIZE}
+        />
+      ),
+      label: t('screen_chapters.status.in_progress'),
+      onPress: () => {
+        handleContextMenuPress('in_progress', id);
+      },
+    },
+    {
+      color: colors.gray800,
+      icon: (
+        <MaterialIcons
+          color={colors.purple500}
+          name="label-important-outline"
+          size={ICON_SIZE}
+        />
+      ),
+      label: t('screen_chapters.status.draft_ready'),
+      onPress: () => {
+        handleContextMenuPress('draft_ready', id);
+      },
+    },
+    {
+      color: colors.gray800,
+      icon: (
+        <MaterialIcons
+          color={colors.purple500}
+          name="label-important-outline"
+          size={ICON_SIZE}
+        />
+      ),
+      label: t('screen_chapters.status.in_first_revision'),
+      onPress: () => {
+        handleContextMenuPress('in_first_revision', id);
+      },
+    },
+    {
+      color: colors.gray800,
+      icon: (
+        <MaterialIcons
+          color={colors.purple500}
+          name="label-important-outline"
+          size={ICON_SIZE}
+        />
+      ),
+      label: t('screen_chapters.status.first_revision_done'),
+      onPress: () => {
+        handleContextMenuPress('first_revision_done', id);
+      },
+    },
+    {
+      color: colors.gray800,
+      icon: (
+        <MaterialIcons
+          color={colors.purple500}
+          name="label-important-outline"
+          size={ICON_SIZE}
+        />
+      ),
+      label: t('screen_chapters.status.in_second_revision'),
+      onPress: () => {
+        handleContextMenuPress('in_second_revision', id);
+      },
+    },
+    {
+      color: colors.gray800,
+      icon: (
+        <MaterialIcons
+          color={colors.purple500}
+          name="label-important-outline"
+          size={ICON_SIZE}
+        />
+      ),
+      label: t('screen_chapters.status.second_revision_done'),
+      onPress: () => {
+        handleContextMenuPress('second_revision_done', id);
+      },
+    },
+    {
+      color: colors.gray800,
+      icon: (
+        <MaterialIcons
+          color={colors.purple500}
+          name="label-important-outline"
+          size={ICON_SIZE}
+        />
+      ),
+      label: t('screen_chapters.status.in_third_revision'),
+      onPress: () => {
+        handleContextMenuPress('in_third_revision', id);
+      },
+    },
+    {
+      color: colors.gray800,
+      icon: (
+        <MaterialIcons
+          color={colors.purple500}
+          name="label-important-outline"
+          size={ICON_SIZE}
+        />
+      ),
+      label: t('screen_chapters.status.third_revision_done'),
+      onPress: () => {
+        handleContextMenuPress('third_revision_done', id);
+      },
+    },
+    {
+      color: colors.gray800,
+      icon: (
+        <MaterialIcons
+          color={colors.purple500}
+          name="label-important-outline"
+          size={ICON_SIZE}
+        />
+      ),
+      label: t('screen_chapters.status.manuscript_done'),
+      onPress: () => {
+        handleContextMenuPress('manuscript_done', id);
+      },
+    },
+  ];
 
   return (
     <View
@@ -85,6 +238,7 @@ function ChapterCard({
         gutters.marginHorizontal_32,
         gutters.marginVertical_12,
         styles.cardContent,
+        editingStyle,
       ]}
     >
       <View style={[layout.row, styles.cardContent]}>
@@ -100,71 +254,52 @@ function ChapterCard({
           </TouchableOpacity>
         </View>
         <View>
-          <ContextMenuView
-            actions={[
-              { title: t('screen_chapters.status.indeterminate')},
-              { title: t('screen_chapters.status.to_do') },
-              { title: t('screen_chapters.status.in_progress') },
-              { title: t('screen_chapters.status.draft_ready') },
-              { title: t('screen_chapters.status.in_first_revision') },
-              { title: t('screen_chapters.status.first_revision_done') },
-              { title: t('screen_chapters.status.in_second_revision') },
-              { title: t('screen_chapters.status.second_revision_done') },
-              { title: t('screen_chapters.status.in_third_revision') },
-              { title: t('screen_chapters.status.third_revision_done') },
-              { title: t('screen_chapters.status.manuscript_done') },
-            ]}
-            disabled={Boolean(editingStyle)}
-            onPress={({ nativeEvent }) =>
-              handleContextMenuPress(nativeEvent.index, id)
-            }
-            style={[editingStyle]}
+          <CustomContextMenu
+            backgroundColor={colors.full}
+            menuItems={menuItems}
+            menuTitle={`${t('screen_chapters.status_header')} '${title}'`}
+            menuTitleBackgroundColor={colors.purple100}
+            onPress={() => onNavigate(id)}
           >
-            <TouchableOpacity
-              activeOpacity={1.0}
-              onLongPress={() => {}}
-              onPress={() => onNavigate(id)}
+            <View
+              style={[
+                layout.flex_1,
+                layout.itemsStretch,
+                layout.col,
+                gutters.paddingHorizontal_16,
+              ]}
             >
-              <View
+              <Text
                 style={[
-                  layout.flex_1,
-                  layout.itemsStretch,
-                  layout.col,
-                  gutters.paddingHorizontal_16,
+                  fonts.defaultFontFamilyBold,
+                  fonts.fullOpposite,
+                  fonts.size_16,
+                  gutters.marginBottom_4,
                 ]}
               >
-                <Text
-                  style={[
-                    fonts.defaultFontFamilyBold,
-                    fonts.fullOpposite,
-                    fonts.size_16,
-                    gutters.marginBottom_4,
-                  ]}
-                >
-                  {title}
+                {title}
+              </Text>
+              <Text
+                style={[
+                  fonts.defaultFontFamilyRegular,
+                  fonts.gray800,
+                  fonts.size_12,
+                  styles.cardContent,
+                ]}
+              >
+                <Text style={[fonts.defaultFontFamilyBold, fonts.purple500]}>
+                  {t(`screen_chapters.status.${status}`)}
                 </Text>
-                <Text
-                  style={[
-                    fonts.defaultFontFamilyRegular,
-                    fonts.gray800,
-                    fonts.size_12,
-                    styles.cardContent,
-                  ]}
-                >
-                  <Text style={[fonts.defaultFontFamilyBold, fonts.purple500]}>
-                    {t(`screen_chapters.status.${status}`) }
-                  </Text>
-                  <Text>{` | ${t('screen_chapters.word_count')}: ${wordCount}`}</Text>
-                </Text>
-              </View>
-            </TouchableOpacity>
-          </ContextMenuView>
+                <Text>{` | ${t('screen_chapters.word_count')}: ${wordCount}`}</Text>
+              </Text>
+            </View>
+          </CustomContextMenu>
         </View>
       </View>
       <View>
         <TouchableOpacity onPress={handleSort}>
           <Text>
-            <MaterialIcons color={colors.gray800} name='sort' size={30} />
+            <MaterialIcons color={colors.gray800} name="sort" size={30} />
           </Text>
         </TouchableOpacity>
       </View>

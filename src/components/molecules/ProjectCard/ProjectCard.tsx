@@ -1,17 +1,18 @@
+import type { ContextMenuItem } from '@/components/atoms/CustomContextMenu/CustomContextMenu';
+
+import FeatherIcons from '@react-native-vector-icons/feather';
+import SimpleLineIcons from '@react-native-vector-icons/simple-line-icons';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  Image,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-import ContextMenuView from 'react-native-context-menu-view';
+import { Image, StyleSheet, Text, TextInput, View } from 'react-native';
+
 import { useTheme } from '@/theme';
 import PlaceholderImage from '@/theme/assets/images/placeholder_book_cover.png';
+
 import ConfirmationDialog from '@/components/atoms/ConfirmationDialog/ConfirmationDialog';
+import CustomContextMenu from '@/components/atoms/CustomContextMenu/CustomContextMenu';
+
+import { print } from '@/utils/logger';
 
 type ProjectProps = {
   description: string;
@@ -44,32 +45,37 @@ function ProjectCard({
   const EDIT_TITLE_TYPE = 'edit-title';
   const EDIT_DESCRIPTION_TYPE = 'edit-description';
   const CHANGE_IMAGE_TYPE = 'change-image';
+  const ICON_SIZE = 20;
 
-  const handleContextMenuPress = (action: string, title: string) => {
-    const actionId = action.toLowerCase().replaceAll(/\s+/g, '-');
-    switch (actionId) {
-      case CHANGE_IMAGE_TYPE: {
-        setIsEditing(CHANGE_IMAGE_TYPE);
-        console.log('Change Image.', `Project: ${title}`);
-        break;
-      }
-      case EDIT_DESCRIPTION_TYPE: {
-        setIsEditing(EDIT_DESCRIPTION_TYPE);
-        setEditingId(id);
-        break;
-      }
-      case EDIT_TITLE_TYPE: {
+  const menuItems: ContextMenuItem[] = [
+    {
+      color: colors.gray800,
+      icon: <FeatherIcons color={colors.gray800} name="edit-3" size={ICON_SIZE} />,
+      label: t('screen_projects.cards.edit_title'),
+      onPress: () => {
         setIsEditing(EDIT_TITLE_TYPE);
         setEditingId(id);
-        break;
       }
-      default: {
-        setEditingId('');
-        setIsEditing('');
-        break;
-      }
-    }
-  };
+    },
+    {
+      color: colors.gray800,
+      icon: <FeatherIcons color={colors.gray800} name="edit" size={ICON_SIZE} />,
+      label: t('screen_projects.cards.edit_description'),
+      onPress: () => {
+        setIsEditing(EDIT_DESCRIPTION_TYPE);
+        setEditingId(id);
+      },
+    },
+    {
+      color: colors.gray800,
+      icon: <SimpleLineIcons color={colors.gray800} name="picture" size={ICON_SIZE} />,
+      label: t('screen_projects.cards.change_image'),
+      onPress: () => {
+        setIsEditing(CHANGE_IMAGE_TYPE);
+        setEditingId(id);
+      },
+    },
+  ];
 
   const handleDialogClick = (dialogType: string, action: string): void => {
     switch (action) {
@@ -79,7 +85,9 @@ function ProjectCard({
         break;
       }
       default: {
-        console.log(`Message from child: ${action} ${dialogType}`);
+        print(
+          `Something Odd Happened: action: ${action}, dialogType: ${dialogType}`,
+        );
         break;
       }
     }
@@ -162,25 +170,15 @@ function ProjectCard({
   }
 
   return (
-    <ContextMenuView
-      actions={[
-        { title: 'Edit Title' },
-        { title: 'Edit Description' },
-        { title: 'Change Image' },
-      ]}
-      disabled={Boolean(editingStyle)}
-      onPress={({ nativeEvent }) =>
-        handleContextMenuPress(nativeEvent.name, title)
-      }
-      style={[gutters.marginBottom_12, editingStyle]}
-      title={title}
-    >
-      <TouchableOpacity
-        activeOpacity={1.0}
-        onLongPress={() => {}}
+    <View style={[gutters.marginBottom_12, editingStyle]}>
+      <CustomContextMenu
+        backgroundColor={colors.full}
+        menuItems={menuItems}
+        menuTitle={title}
+        menuTitleBackgroundColor={colors.purple100}
         onPress={() => onNavigate(id)}
       >
-        <View style={[layout.row]}>
+        <View style={layout.row}>
           <Image resizeMode="cover" source={imageToLoad} style={styles.image} />
           <View
             style={[
@@ -284,8 +282,8 @@ function ProjectCard({
             )}
           </View>
         </View>
-      </TouchableOpacity>
-    </ContextMenuView>
+      </CustomContextMenu>
+    </View>
   );
 }
 

@@ -14,7 +14,6 @@ import { Paths } from '@/navigation/paths';
 
 import ParallaxImage from '@/components/atoms/ParallaxImage/ParallaxImage';
 import ChapterCard from '@/components/molecules/ChapterCard/ChapterCard';
-import ProjectCard from '@/components/molecules/ProjectCard/ProjectCard';
 
 import {
   LanguageStateAtom,
