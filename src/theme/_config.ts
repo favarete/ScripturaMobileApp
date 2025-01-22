@@ -38,7 +38,7 @@ const colorsDark = {
   skeleton: '#303030',
 } as const;
 
-const sizes = [4, 8, 12, 16, 20, 24, 32, 40, 80] as const;
+const sizes = [4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 80] as const;
 
 export const config = {
   backgrounds: colorsLight,

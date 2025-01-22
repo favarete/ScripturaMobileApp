@@ -3,8 +3,18 @@ import type { Chapter, Project } from '@/state/defaults';
 import markdownit from 'markdown-it';
 
 export const getTitleFromChapterFile = (markdown: string) => {
-  const match = markdown.match(/^# (.+)/m);
-  return match ? match[1].trim() : null;
+  const md = markdownit();
+  const tokens = md.parse(markdown, {});
+  for (const token of tokens) {
+    if (token.type === 'heading_open' && token.tag === 'h1') {
+      const index = tokens.indexOf(token);
+      const contentToken = tokens[index + 1];
+      if (contentToken && contentToken.type === 'inline') {
+        return contentToken.content.trim();
+      }
+    }
+  }
+  return null;
 };
 
 export const markdownToHtml = (markdown: string): string => {
