@@ -68,7 +68,11 @@
     },
     "screen_content": {
       "title": "$t(common_appName.full)",
-      "view": "Title not Found"
+      "view": "Title not Found",
+      "words": "Words",
+      "pages": "Pages",
+      "word_goal": "Daily Goal",
+      "word_target": "Goal"
     },
     "screen_statistics": {
       "title": "$t(common_appName.full)",

@@ -23,7 +23,8 @@ export const markdownToHtml = (markdown: string): string => {
 };
 
 export const countWordsFromHTML = (markdownHTML: string): number => {
-  const plainText = markdownHTML.replaceAll(/<[^>]*>/g, '');
+  const renderedMarkDown = markdownToHtml(markdownHTML);
+  const plainText = renderedMarkDown.replaceAll(/<[^>]*>/g, '');
   if (!plainText.trim()) {
     return 0;
   }
@@ -49,3 +50,25 @@ export const getChapterById = (
   }
   return null;
 };
+
+export const formatNumber = (value: number, locales: string): string => {
+  return new Intl.NumberFormat(locales).format(value);
+};
+
+export const calculatePages = (
+  wordCount: number,
+  wordsPerPage: number = 450,
+): number => {
+  if (wordCount <= 0) {
+    return 0;
+  }
+  return Math.ceil(wordCount / wordsPerPage);
+};
+
+export const calculatePercentage = (current: number, target: number): string => {
+  if (target === 0) {
+    return '-';
+  }
+  const percentage = (current / target) * 100;
+  return `${Math.ceil(percentage)}%`;
+}

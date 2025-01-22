@@ -11,6 +11,7 @@ import Toast from 'react-native-toast-message';
 import { useTheme } from '@/theme';
 import { Paths } from '@/navigation/paths';
 
+import { TitleBar } from '@/components/atoms';
 import { FolderSelector } from '@/components/molecules';
 import ProjectCard from '@/components/molecules/ProjectCard/ProjectCard';
 import { SafeScreen } from '@/components/templates';
@@ -27,7 +28,6 @@ import {
   findProjectByTitle,
   findProjectByTitleAndPath,
 } from '@/utils/projectHelpers';
-import { TitleBar } from '@/components/atoms';
 
 function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
   const { t } = useTranslation();
@@ -134,7 +134,9 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
           <FolderSelector />
         </View>
         <View>
-          <TitleBar title={t('screen_projects.view')} />
+          <View style={[gutters.marginVertical_24]}>
+            <TitleBar title={t('screen_projects.view')} />
+          </View>
           <View style={[gutters.paddingHorizontal_32]}>
             {loadingProjects ? (
               <Text>Loading...</Text>

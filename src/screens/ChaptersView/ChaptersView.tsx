@@ -23,7 +23,6 @@ import {
   countWordsFromHTML,
   getProjectById,
   getTitleFromChapterFile,
-  markdownToHtml,
 } from '@/utils/chapterHelpers';
 import { createNewUUID, formatTimestamp } from '@/utils/common';
 import { print } from '@/utils/logger';
@@ -88,8 +87,7 @@ function ChaptersView({
               getTitleFromChapterFile(chapterFileContent) ??
               'No title. See help for instructions';
 
-            const renderedMarkDown = markdownToHtml(chapterFileContent);
-            const markdownWordCount = countWordsFromHTML(renderedMarkDown);
+            const markdownWordCount = countWordsFromHTML(chapterFileContent);
 
             const __defineNewChapter: Chapter = {
               androidFilePath: chapter.uri,

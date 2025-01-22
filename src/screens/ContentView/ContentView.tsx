@@ -1,16 +1,17 @@
-import type { Paths } from '@/navigation/paths';
 import type { RootScreenProps } from '@/navigation/types';
 import type { Chapter } from '@/state/defaults';
 
 import { useAtom } from 'jotai/index';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 import { readFile } from 'react-native-saf-x';
 
 import { useTheme } from '@/theme';
+import { Paths } from '@/navigation/paths';
 
 import { TitleBar } from '@/components/atoms';
+import StatisticsBar from '@/components/atoms/StatisticsBar/StatisticsBar';
 import MarkdownRenderer from '@/components/molecules/MarkdownRenderer/MarkdownRenderer';
 
 import { ProjectsDataStateAtom } from '@/state/atoms/persistentContent';
@@ -29,6 +30,24 @@ function ContentView({
   const [chapterTitle, setChapterTitle] = useState<string>();
   const [selectedChapter, setSelectedChapter] = useState<Chapter>();
   const [markdownText, setMarkdownText] = useState<string>('');
+
+  const onNavigateBack = () => {
+    navigation.navigate(Paths.ChaptersView, { id });
+  };
+
+  const onNavigateToStatistics = () => {
+    Alert.alert('onNavigateToStatistics');
+  };
+
+  const onEditMarkdown = () => {
+    Alert.alert('onEditMarkdown');
+  };
+
+  const styles = StyleSheet.create({
+    markdownContent: {
+      backgroundColor: colors.gray50 + '5F',
+    },
+  });
 
   useEffect(() => {
     const chapter = getChapterById(id, chapterId, allProjects);
@@ -52,19 +71,37 @@ function ContentView({
   }, [selectedChapter]);
 
   return (
-    <ScrollView>
-      <TitleBar title={chapterTitle ?? t('screen_content.view')} />
-      <View
-        style={[
-          gutters.paddingHorizontal_8,
-          gutters.marginHorizontal_8,
-          gutters.marginVertical_4,
-          gutters.paddingVertical_4,
-        ]}
-      >
-        <MarkdownRenderer markdown={markdownText} />
-      </View>
-    </ScrollView>
+    <View>
+      {selectedChapter && (
+        <View>
+          <TitleBar
+            onEditMarkdown={onEditMarkdown}
+            onNavigateBack={onNavigateBack}
+            title={chapterTitle ?? t('screen_content.view')}
+          />
+          <ScrollView style={styles.markdownContent}>
+            <View
+              style={[
+                gutters.paddingHorizontal_8,
+                gutters.marginHorizontal_8,
+                gutters.marginVertical_4,
+                gutters.paddingVertical_4,
+              ]}
+            >
+              <MarkdownRenderer markdown={markdownText} />
+            </View>
+          </ScrollView>
+          <View>
+            <StatisticsBar
+              onNavigateToStatistics={onNavigateToStatistics}
+              wordCount={selectedChapter.wordCount}
+              wordGoal={1000}
+              wordsWrittenToday={357}
+            />
+          </View>
+        </View>
+      )}
+    </View>
   );
 }
 

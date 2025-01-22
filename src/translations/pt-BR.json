@@ -68,7 +68,11 @@
     },
     "screen_content": {
       "title": "$t(common_appName.full)",
-      "view": "Título não Encontrado"
+      "view": "Título não Encontrado",
+      "words": "Palavras",
+      "pages": "Páginas",
+      "word_goal": "Meta do Dia",
+      "word_target": "Meta"
     },
     "screen_statistics": {
       "title": "$t(common_appName.full)",
