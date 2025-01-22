@@ -42,8 +42,10 @@ function ContentView({
       setChapterTitle(selectedChapter.title);
 
       const fetchFileContent = async () => {
-        const markdownTextContent: string = await readFile(selectedChapter.androidFilePath);
-        setMarkdownText(markdownTextContent)
+        const markdownTextContent: string = await readFile(
+          selectedChapter.androidFilePath,
+        );
+        setMarkdownText(markdownTextContent);
       };
       void fetchFileContent();
     }
@@ -52,7 +54,14 @@ function ContentView({
   return (
     <ScrollView>
       <TitleBar title={chapterTitle ?? t('screen_content.view')} />
-      <View style={[gutters.paddingVertical_12]}>
+      <View
+        style={[
+          gutters.paddingHorizontal_8,
+          gutters.marginHorizontal_8,
+          gutters.marginVertical_4,
+          gutters.paddingVertical_4,
+        ]}
+      >
         <MarkdownRenderer markdown={markdownText} />
       </View>
     </ScrollView>
