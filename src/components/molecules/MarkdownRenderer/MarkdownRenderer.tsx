@@ -118,21 +118,18 @@ function MarkdownRenderer({ markdown }: MarkdownRendererProps) {
     // @pseudo class, does not have a unique render rule
     bullet_list_icon: {
       ...gutters.marginHorizontal_8,
-      ...fonts.defaultFontFamilyRegular,
-      ...fonts.size_32,
-      lineHeight: 32,
-      top: 5,
+      ...fonts.defaultFontFamilyExtraBold,
     },
     // @pseudo class, does not have a unique render rule
     bullet_list_content: {
       ...layout.flex_1,
-      lineHeight: 32,
       ...fonts.size_16,
       ...layout.justifyCenter,
     },
     // @pseudo class, does not have a unique render rule
     ordered_list_icon: {
       ...gutters.marginHorizontal_8,
+      ...fonts.defaultSemiCondensedBold,
     },
     // @pseudo class, does not have a unique render rule
     ordered_list_content: {
