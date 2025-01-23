@@ -17,6 +17,7 @@ function MarkdownRenderer({ markdown }: MarkdownRendererProps) {
       ...fonts.size_16,
       lineHeight: 24,
       ...fonts.defaultFontFamilyRegular,
+      ...gutters.marginBottom_12
     },
 
     // Headings

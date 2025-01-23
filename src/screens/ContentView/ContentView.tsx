@@ -4,7 +4,13 @@ import type { Chapter } from '@/state/defaults';
 import { useAtom } from 'jotai/index';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, ScrollView, StyleSheet, View } from 'react-native';
+import {
+  Alert,
+  ScrollView,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 import { readFile } from 'react-native-saf-x';
 
 import { useTheme } from '@/theme';
@@ -46,6 +52,7 @@ function ContentView({
   const styles = StyleSheet.create({
     markdownContent: {
       backgroundColor: colors.gray50 + '5F',
+      marginBottom: 64,
     },
   });
 
@@ -71,34 +78,33 @@ function ContentView({
   }, [selectedChapter]);
 
   return (
-    <View>
+    <View style={layout.flex_1}>
       {selectedChapter && (
-        <View>
+        <View style={layout.flex_1}>
           <TitleBar
             onEditMarkdown={onEditMarkdown}
             onNavigateBack={onNavigateBack}
             title={chapterTitle ?? t('screen_content.view')}
           />
-          <ScrollView style={styles.markdownContent}>
+          <ScrollView style={[styles.markdownContent]}>
             <View
               style={[
                 gutters.paddingHorizontal_8,
                 gutters.marginHorizontal_8,
-                gutters.marginVertical_4,
+                gutters.marginTop_4,
+                gutters.marginBottom_12,
                 gutters.paddingVertical_4,
               ]}
             >
               <MarkdownRenderer markdown={markdownText} />
             </View>
           </ScrollView>
-          <View>
-            <StatisticsBar
-              onNavigateToStatistics={onNavigateToStatistics}
-              wordCount={selectedChapter.wordCount}
-              wordGoal={1000}
-              wordsWrittenToday={357}
-            />
-          </View>
+          <StatisticsBar
+            onNavigateToStatistics={onNavigateToStatistics}
+            wordCount={selectedChapter.wordCount}
+            wordGoal={1000}
+            wordsWrittenToday={357}
+          />
         </View>
       )}
     </View>
