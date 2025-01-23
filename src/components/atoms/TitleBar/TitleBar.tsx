@@ -6,19 +6,21 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '@/theme';
 
 type Props = {
-  onEditMarkdown?: (() => void) | false;
   onNavigateBack?: (() => void) | false;
+  onToggleView?: (() => void) | false;
   title: string;
+  viewMode?: boolean;
 };
 
 function TitleBar({
-  onEditMarkdown = false,
   onNavigateBack = false,
+  onToggleView = false,
   title,
+  viewMode = false,
 }: Props) {
   const { backgrounds, colors, fonts, gutters, layout } = useTheme();
 
-  const extraElements = onEditMarkdown && onNavigateBack;
+  const extraElements = onToggleView && onNavigateBack;
   const ICON_SIZE = 25;
   const styles = StyleSheet.create({
     container: {
@@ -57,11 +59,11 @@ function TitleBar({
       </Text>
       {extraElements && (
         <View>
-          <TouchableOpacity onPress={onEditMarkdown}>
+          <TouchableOpacity onPress={onToggleView}>
             <Text>
               <FeatherIcons
                 color={colors.fullOpposite}
-                name="edit"
+                name={viewMode ? 'edit' : 'eye'}
                 size={ICON_SIZE}
               />
             </Text>

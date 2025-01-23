@@ -20,6 +20,7 @@ import {
 
 type Props = {
   onNavigateToStatistics: () => void;
+  viewMode?: boolean;
   wordCount: number;
   wordGoal: number;
   wordsWrittenToday: number;
@@ -27,6 +28,7 @@ type Props = {
 
 function StatisticsBar({
   onNavigateToStatistics,
+  viewMode = false,
   wordCount,
   wordGoal,
   wordsWrittenToday,
@@ -41,11 +43,11 @@ function StatisticsBar({
       ...layout.row,
       ...layout.justifyBetween,
       ...gutters.paddingHorizontal_20,
-      ...gutters.paddingVertical_12,
+      paddingVertical: viewMode ? 12 : 4,
     },
     statisticsBarContainer: {
-      bottom: 0,
-      height: 64,
+      bottom: -1,
+      height: viewMode ? 64 : 32,
       left: 0,
       position: 'absolute',
       right: 0,
@@ -88,16 +90,18 @@ function StatisticsBar({
             >
               {`${formatedWordCount} ${wordCountLabel}`}
             </Text>
-            <Text
-              style={[
-                fonts.defaultFontFamilySemibold,
-                fonts.fullOpposite,
-                fonts.size_12,
-                fonts.full,
-              ]}
-            >
-              {`${formatNumber(pageCount, language)} ${pageCountLabel}`}
-            </Text>
+            {viewMode && (
+              <Text
+                style={[
+                  fonts.defaultFontFamilySemibold,
+                  fonts.fullOpposite,
+                  fonts.size_12,
+                  fonts.full,
+                ]}
+              >
+                {`${formatNumber(pageCount, language)} ${pageCountLabel}`}
+              </Text>
+            )}
           </View>
           <View style={[layout.col, layout.itemsEnd]}>
             <Text
@@ -110,16 +114,18 @@ function StatisticsBar({
             >
               {`${formatedWordGoalPercentage} ${t('screen_content.word_goal')}`}
             </Text>
-            <Text
-              style={[
-                fonts.defaultFontFamilySemibold,
-                fonts.fullOpposite,
-                fonts.size_12,
-                fonts.full,
-              ]}
-            >
-              {`${formatedWordsWrittenToday}/${formatedWordGoal} ${wordCountLabel}`}
-            </Text>
+            {viewMode && (
+              <Text
+                style={[
+                  fonts.defaultFontFamilySemibold,
+                  fonts.fullOpposite,
+                  fonts.size_12,
+                  fonts.full,
+                ]}
+              >
+                {`${formatedWordsWrittenToday}/${formatedWordGoal} ${wordCountLabel}`}
+              </Text>
+            )}
           </View>
         </View>
       </TouchableOpacity>

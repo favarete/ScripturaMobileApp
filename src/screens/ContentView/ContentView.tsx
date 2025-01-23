@@ -8,6 +8,7 @@ import {
   Alert,
   ScrollView,
   StyleSheet,
+  Text,
   useWindowDimensions,
   View,
 } from 'react-native';
@@ -33,6 +34,8 @@ function ContentView({
   const { chapterId, id } = route.params;
 
   const [allProjects, setAllProjects] = useAtom(ProjectsDataStateAtom);
+
+  const [viewMode, setViewMode] = useState<boolean>(true);
   const [chapterTitle, setChapterTitle] = useState<string>();
   const [selectedChapter, setSelectedChapter] = useState<Chapter>();
   const [markdownText, setMarkdownText] = useState<string>('');
@@ -45,14 +48,18 @@ function ContentView({
     Alert.alert('onNavigateToStatistics');
   };
 
-  const onEditMarkdown = () => {
-    Alert.alert('onEditMarkdown');
+  const onToggleView = () => {
+    setViewMode(!viewMode);
   };
 
   const styles = StyleSheet.create({
     markdownContent: {
       backgroundColor: colors.gray50 + '5F',
       marginBottom: 64,
+    },
+    markdownContentEdit: {
+      backgroundColor: colors.full,
+      marginBottom: 32,
     },
   });
 
@@ -82,11 +89,12 @@ function ContentView({
       {selectedChapter && (
         <View style={layout.flex_1}>
           <TitleBar
-            onEditMarkdown={onEditMarkdown}
             onNavigateBack={onNavigateBack}
+            onToggleView={onToggleView}
             title={chapterTitle ?? t('screen_content.view')}
+            viewMode={viewMode}
           />
-          <ScrollView style={[styles.markdownContent]}>
+          <ScrollView style={viewMode ? styles.markdownContent : styles.markdownContentEdit}>
             <View
               style={[
                 gutters.paddingHorizontal_8,
@@ -96,11 +104,16 @@ function ContentView({
                 gutters.paddingVertical_4,
               ]}
             >
-              <MarkdownRenderer markdown={markdownText} />
+              {viewMode ? (
+                <MarkdownRenderer markdown={markdownText} />
+              ) : (
+                <Text>{markdownText}</Text>
+              )}
             </View>
           </ScrollView>
           <StatisticsBar
             onNavigateToStatistics={onNavigateToStatistics}
+            viewMode={viewMode}
             wordCount={selectedChapter.wordCount}
             wordGoal={1000}
             wordsWrittenToday={357}
