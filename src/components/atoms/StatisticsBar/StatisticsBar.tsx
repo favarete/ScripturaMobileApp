@@ -118,7 +118,7 @@ function StatisticsBar({
                 fonts.full,
               ]}
             >
-              {`${formatedWordsWrittenToday}/${formatedWordGoal} ${t('screen_content.word_target')}`}
+              {`${formatedWordsWrittenToday}/${formatedWordGoal} ${wordCountLabel}`}
             </Text>
           </View>
         </View>
