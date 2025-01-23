@@ -1,14 +1,18 @@
 import Markdown from '@ronradtke/react-native-markdown-display';
+import type { Dispatch, SetStateAction } from 'react';
 import React from 'react';
 import { Platform, StyleSheet } from 'react-native';
 
 import { useTheme } from '@/theme';
+import { MarkdownTextInput, parseExpensiMark } from '@expensify/react-native-live-markdown';
 
 type MarkdownRendererProps = {
   markdown: string;
+  setMarkdownText: Dispatch<SetStateAction<string>>;
+  viewMode: boolean;
 };
 
-function MarkdownRenderer({ markdown }: MarkdownRendererProps) {
+function MarkdownRenderer({ markdown, setMarkdownText, viewMode }: MarkdownRendererProps) {
   const { colors, fonts, gutters, layout } = useTheme();
 
   const markdownStyles = StyleSheet.create({
@@ -17,7 +21,7 @@ function MarkdownRenderer({ markdown }: MarkdownRendererProps) {
       ...fonts.size_16,
       lineHeight: 24,
       ...fonts.defaultFontFamilyRegular,
-      ...gutters.marginBottom_12
+      ...gutters.marginBottom_12,
     },
 
     // Headings
@@ -251,7 +255,20 @@ function MarkdownRenderer({ markdown }: MarkdownRendererProps) {
     span: {},
   });
 
-  return <Markdown style={markdownStyles}>{markdown}</Markdown>;
+  const MarkdownContainer = () => {
+    return viewMode ? (
+      <Markdown style={markdownStyles}>{markdown}</Markdown>
+    ) : (
+      <MarkdownTextInput
+        multiline
+        onChangeText={setMarkdownText}
+        parser={parseExpensiMark}
+        value={markdown}
+      />
+    );
+  };
+
+  return <MarkdownContainer />;
 }
 
 export default MarkdownRenderer;

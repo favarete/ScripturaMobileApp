@@ -4,14 +4,7 @@ import type { Chapter } from '@/state/defaults';
 import { useAtom } from 'jotai/index';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  Alert,
-  ScrollView,
-  StyleSheet,
-  Text,
-  useWindowDimensions,
-  View,
-} from 'react-native';
+import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 import { readFile } from 'react-native-saf-x';
 
 import { useTheme } from '@/theme';
@@ -94,7 +87,11 @@ function ContentView({
             title={chapterTitle ?? t('screen_content.view')}
             viewMode={viewMode}
           />
-          <ScrollView style={viewMode ? styles.markdownContent : styles.markdownContentEdit}>
+          <ScrollView
+            style={
+              viewMode ? styles.markdownContent : styles.markdownContentEdit
+            }
+          >
             <View
               style={[
                 gutters.paddingHorizontal_8,
@@ -104,11 +101,11 @@ function ContentView({
                 gutters.paddingVertical_4,
               ]}
             >
-              {viewMode ? (
-                <MarkdownRenderer markdown={markdownText} />
-              ) : (
-                <Text>{markdownText}</Text>
-              )}
+              <MarkdownRenderer
+                markdown={markdownText}
+                setMarkdownText={setMarkdownText}
+                viewMode={viewMode}
+              />
             </View>
           </ScrollView>
           <StatisticsBar
