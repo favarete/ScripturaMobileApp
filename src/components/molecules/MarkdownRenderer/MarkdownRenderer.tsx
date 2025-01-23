@@ -1,5 +1,6 @@
 import Markdown from '@ronradtke/react-native-markdown-display';
 import type { Dispatch, SetStateAction } from 'react';
+import type {MarkdownStyle} from '@expensify/react-native-live-markdown';
 import React from 'react';
 import { Platform, StyleSheet } from 'react-native';
 
@@ -104,10 +105,10 @@ function MarkdownRenderer({ markdown, setMarkdownText, viewMode }: MarkdownRende
     // Blockquotes
     blockquote: {
       ...fonts.defaultSemiCondensedItalic,
-      backgroundColor: colors.purple100 + '50',
-      borderColor: colors.purple500 + 'A0',
+      backgroundColor: colors.gray50,
+      borderColor: colors.purple500,
       borderLeftWidth: 4,
-      color: colors.gray400,
+      color: colors.gray800,
       letterSpacing: 1,
       ...gutters.marginLeft_4,
       ...gutters.paddingHorizontal_8,
@@ -255,12 +256,70 @@ function MarkdownRenderer({ markdown, setMarkdownText, viewMode }: MarkdownRende
     span: {},
   });
 
+  const markdownStylesEdit: MarkdownStyle = {
+    syntax: {
+      color: 'gray',
+    },
+    link: {
+      color: 'blue',
+    },
+    h1: {
+      fontSize: 25,
+    },
+    emoji: {
+      fontSize: 20,
+    },
+    blockquote: {
+      borderColor: 'gray',
+      borderWidth: 6,
+      marginLeft: 6,
+      paddingLeft: 6,
+    },
+    code: {
+      ...Platform.select({
+        ['android']: {
+          fontFamily: 'monospace',
+        },
+        ['ios']: {
+          fontFamily: 'Courier New',
+        },
+      }),
+      fontSize: 20,
+      color: 'black',
+      backgroundColor: 'lightgray',
+    },
+    pre: {
+      ...Platform.select({
+        ['android']: {
+          fontFamily: 'monospace',
+        },
+        ['ios']: {
+          fontFamily: 'Courier New',
+        },
+      }),
+      fontSize: 20,
+      color: 'black',
+      backgroundColor: 'lightgray',
+    },
+    mentionHere: {
+      color: 'green',
+      backgroundColor: 'lime',
+    },
+    mentionUser: {
+      color: 'blue',
+      backgroundColor: 'cyan',
+    },
+  };
+
   const MarkdownContainer = () => {
     return viewMode ? (
       <Markdown style={markdownStyles}>{markdown}</Markdown>
     ) : (
       <MarkdownTextInput
+        maxLength={30000}
         multiline
+        autoCapitalize='none'
+        markdownStyle={markdownStylesEdit}
         onChangeText={setMarkdownText}
         parser={parseExpensiMark}
         value={markdown}
