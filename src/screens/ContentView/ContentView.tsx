@@ -1,11 +1,16 @@
+import type { MarkdownStyle } from '@expensify/react-native-live-markdown';
 import type { RootScreenProps } from '@/navigation/types';
 import type { Chapter } from '@/state/defaults';
 
+import {
+  MarkdownTextInput,
+  parseExpensiMark,
+} from '@expensify/react-native-live-markdown';
 import { useAtom } from 'jotai/index';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, ScrollView, StyleSheet, View } from 'react-native';
-import { readFile } from 'react-native-saf-x';
+import { Alert, Platform, ScrollView, StyleSheet, View } from 'react-native';
+import { readFile, writeFile } from 'react-native-saf-x';
 
 import { useTheme } from '@/theme';
 import { Paths } from '@/navigation/paths';
@@ -15,7 +20,7 @@ import StatisticsBar from '@/components/atoms/StatisticsBar/StatisticsBar';
 import MarkdownRenderer from '@/components/molecules/MarkdownRenderer/MarkdownRenderer';
 
 import { ProjectsDataStateAtom } from '@/state/atoms/persistentContent';
-import { getChapterById } from '@/utils/chapterHelpers';
+import { countWordsFromHTML, getChapterById, getTitleFromChapterFile, updateChapterValue } from '@/utils/chapterHelpers';
 
 function ContentView({
   navigation,
@@ -23,7 +28,7 @@ function ContentView({
 }: RootScreenProps<Paths.ContentView>) {
   const { t } = useTranslation();
 
-  const { colors, components, fonts, gutters, layout } = useTheme();
+  const { colors, fonts, gutters, layout } = useTheme();
   const { chapterId, id } = route.params;
 
   const [allProjects, setAllProjects] = useAtom(ProjectsDataStateAtom);
@@ -39,6 +44,30 @@ function ContentView({
 
   const onNavigateToStatistics = () => {
     Alert.alert('onNavigateToStatistics');
+  };
+
+  const onSave = () => {
+    if (selectedChapter) {
+      const saveFileContent = async () => {
+        try {
+          await writeFile(selectedChapter.androidFilePath, markdownText);
+
+          updateChapterValue(
+            setAllProjects,
+            id,
+            chapterId,
+            {
+              title: getTitleFromChapterFile(markdownText) ??
+                'No title. See help for instructions',
+              wordCount: countWordsFromHTML(markdownText),
+            }
+          )
+        } catch (error) {
+          console.error(error);
+        }
+      };
+      void saveFileContent();
+    }
   };
 
   const onToggleView = () => {
@@ -77,6 +106,60 @@ function ContentView({
     }
   }, [selectedChapter]);
 
+  const markdownEditStyles = {
+    ...fonts.size_16,
+    lineHeight: 24,
+    ...fonts.defaultFontFamilyRegular,
+    ...gutters.marginBottom_12,
+  };
+
+  const markdownStylesEdit: MarkdownStyle = {
+    blockquote: {
+      borderColor: colors.purple500,
+    },
+    code: {
+      backgroundColor: colors.fullOpposite + '1A',
+      ...gutters.padding_12,
+      ...Platform.select({
+        ['android']: {
+          fontFamily: 'monospace',
+        },
+        ['ios']: {
+          fontFamily: 'Courier New',
+        },
+      }),
+    },
+    emoji: {
+      ...fonts.size_24,
+    },
+    h1: {
+      ...fonts.size_24,
+    },
+    link: {
+      color: colors.purple500,
+    },
+    mentionHere: {
+      backgroundColor: colors.gray100,
+      color: colors.purple500,
+    },
+    mentionUser: {
+      backgroundColor: colors.gray100,
+      color: colors.green500,
+    },
+    pre: {
+      backgroundColor: colors.fullOpposite + '1A',
+      ...gutters.padding_12,
+      ...Platform.select({
+        ['android']: {
+          fontFamily: 'monospace',
+        },
+        ['ios']: {
+          fontFamily: 'Courier New',
+        },
+      }),
+    },
+  };
+
   return (
     <View style={layout.flex_1}>
       {selectedChapter && (
@@ -101,15 +184,26 @@ function ContentView({
                 gutters.paddingVertical_4,
               ]}
             >
-              <MarkdownRenderer
-                markdown={markdownText}
-                setMarkdownText={setMarkdownText}
-                viewMode={viewMode}
-              />
+              {viewMode ? (
+                <MarkdownRenderer markdown={markdownText} />
+              ) : (
+                <MarkdownTextInput
+                  autoCapitalize="none"
+                  autoFocus
+                  markdownStyle={markdownStylesEdit}
+                  maxLength={30_000}
+                  multiline
+                  onChangeText={setMarkdownText}
+                  parser={parseExpensiMark}
+                  style={[markdownEditStyles]}
+                  value={markdownText}
+                />
+              )}
             </View>
           </ScrollView>
           <StatisticsBar
             onNavigateToStatistics={onNavigateToStatistics}
+            onSave={onSave}
             viewMode={viewMode}
             wordCount={selectedChapter.wordCount}
             wordGoal={1000}

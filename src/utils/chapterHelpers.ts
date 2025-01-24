@@ -1,6 +1,7 @@
 import type { Chapter, Project } from '@/state/defaults';
 
 import markdownit from 'markdown-it';
+import type React from 'react';
 
 export const getTitleFromChapterFile = (markdown: string) => {
   const md = markdownit();
@@ -72,3 +73,32 @@ export const calculatePercentage = (current: number, target: number): string => 
   const percentage = (current / target) * 100;
   return `${Math.ceil(percentage)}%`;
 }
+
+type UpdateChapterValue = (
+  setState: React.Dispatch<React.SetStateAction<Project[]>>,
+  bookId: string,
+  chapterId: string,
+  newChapterValue: Partial<Chapter>
+) => void;
+
+export const updateChapterValue: UpdateChapterValue = (
+  setState,
+  bookId,
+  chapterId,
+  newChapterValue
+) => {
+  setState((prevState) =>
+    prevState.map((book) =>
+      book.id === bookId
+        ? {
+          ...book,
+          chapters: book.chapters.map((chapter) =>
+            chapter.id === chapterId
+              ? { ...chapter, ...newChapterValue }
+              : chapter
+          ),
+        }
+        : book
+    )
+  );
+};

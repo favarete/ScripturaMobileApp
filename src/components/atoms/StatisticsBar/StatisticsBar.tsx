@@ -1,13 +1,8 @@
+import FeatherIcons from '@react-native-vector-icons/feather';
 import { useAtomValue } from 'jotai/index';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  useWindowDimensions,
-  View,
-} from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { useTheme } from '@/theme';
 
@@ -20,6 +15,7 @@ import {
 
 type Props = {
   onNavigateToStatistics: () => void;
+  onSave: () => void;
   viewMode?: boolean;
   wordCount: number;
   wordGoal: number;
@@ -28,16 +24,22 @@ type Props = {
 
 function StatisticsBar({
   onNavigateToStatistics,
+  onSave,
   viewMode = false,
   wordCount,
   wordGoal,
   wordsWrittenToday,
 }: Props) {
-  const { backgrounds, fonts, gutters, layout } = useTheme();
+  const { backgrounds, colors, fonts, gutters, layout } = useTheme();
   const { t } = useTranslation();
 
   const language = useAtomValue(LanguageStateAtom);
   const styles = StyleSheet.create({
+    saveButton: {
+      bottom: 40,
+      position: 'absolute',
+      right: 12,
+    },
     statisticsBar: {
       ...layout.itemsCenter,
       ...layout.row,
@@ -77,6 +79,13 @@ function StatisticsBar({
 
   return (
     <View style={styles.statisticsBarContainer}>
+      {!viewMode && (
+        <View style={[layout.col, styles.saveButton]}>
+          <TouchableOpacity onPress={onSave}>
+            <FeatherIcons color={colors.gray200} name={'save'} size={30} />
+          </TouchableOpacity>
+        </View>
+      )}
       <TouchableOpacity onPress={onNavigateToStatistics}>
         <View style={[styles.statisticsBar, backgrounds.gray200, layout.row]}>
           <View style={[layout.col, layout.itemsStart]}>

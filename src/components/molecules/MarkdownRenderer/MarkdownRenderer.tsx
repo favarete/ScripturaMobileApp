@@ -1,19 +1,14 @@
 import Markdown from '@ronradtke/react-native-markdown-display';
-import type { Dispatch, SetStateAction } from 'react';
-import type {MarkdownStyle} from '@expensify/react-native-live-markdown';
 import React from 'react';
 import { Platform, StyleSheet } from 'react-native';
 
 import { useTheme } from '@/theme';
-import { MarkdownTextInput, parseExpensiMark } from '@expensify/react-native-live-markdown';
 
 type MarkdownRendererProps = {
   markdown: string;
-  setMarkdownText: Dispatch<SetStateAction<string>>;
-  viewMode: boolean;
 };
 
-function MarkdownRenderer({ markdown, setMarkdownText, viewMode }: MarkdownRendererProps) {
+function MarkdownRenderer({ markdown }: MarkdownRendererProps) {
   const { colors, fonts, gutters, layout } = useTheme();
 
   const markdownStyles = StyleSheet.create({
@@ -256,78 +251,7 @@ function MarkdownRenderer({ markdown, setMarkdownText, viewMode }: MarkdownRende
     span: {},
   });
 
-  const markdownStylesEdit: MarkdownStyle = {
-    syntax: {
-      color: 'gray',
-    },
-    link: {
-      color: 'blue',
-    },
-    h1: {
-      fontSize: 25,
-    },
-    emoji: {
-      fontSize: 20,
-    },
-    blockquote: {
-      borderColor: 'gray',
-      borderWidth: 6,
-      marginLeft: 6,
-      paddingLeft: 6,
-    },
-    code: {
-      ...Platform.select({
-        ['android']: {
-          fontFamily: 'monospace',
-        },
-        ['ios']: {
-          fontFamily: 'Courier New',
-        },
-      }),
-      fontSize: 20,
-      color: 'black',
-      backgroundColor: 'lightgray',
-    },
-    pre: {
-      ...Platform.select({
-        ['android']: {
-          fontFamily: 'monospace',
-        },
-        ['ios']: {
-          fontFamily: 'Courier New',
-        },
-      }),
-      fontSize: 20,
-      color: 'black',
-      backgroundColor: 'lightgray',
-    },
-    mentionHere: {
-      color: 'green',
-      backgroundColor: 'lime',
-    },
-    mentionUser: {
-      color: 'blue',
-      backgroundColor: 'cyan',
-    },
-  };
-
-  const MarkdownContainer = () => {
-    return viewMode ? (
-      <Markdown style={markdownStyles}>{markdown}</Markdown>
-    ) : (
-      <MarkdownTextInput
-        maxLength={30000}
-        multiline
-        autoCapitalize='none'
-        markdownStyle={markdownStylesEdit}
-        onChangeText={setMarkdownText}
-        parser={parseExpensiMark}
-        value={markdown}
-      />
-    );
-  };
-
-  return <MarkdownContainer />;
+  return <Markdown style={markdownStyles}>{markdown}</Markdown>;
 }
 
 export default MarkdownRenderer;

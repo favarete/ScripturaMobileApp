@@ -18,7 +18,9 @@ function ApplicationNavigator() {
   return (
     <SafeAreaProvider>
       <NavigationContainer theme={navigationTheme}>
-        <Stack.Navigator key={variant} screenOptions={{ headerShown: false }}>
+        <Stack.Navigator key={variant} screenOptions={{
+          headerShown: false
+        }}>
           <Stack.Screen component={Startup} name={Paths.Startup} />
           <Stack.Screen component={Home} name={Paths.Home} />
           <Stack.Screen component={ProjectsView} name={Paths.ProjectsView} />

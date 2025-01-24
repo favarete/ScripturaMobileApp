@@ -83,7 +83,7 @@ function ChaptersView({
           const allChaptersData: Chapter[] = [];
           for (const chapter of allExternalStorageProjectFiles) {
             const chapterFileContent: string = await readFile(chapter.uri);
-            const chapterFileContentTile: string =
+            const chapterFileContentTitle: string =
               getTitleFromChapterFile(chapterFileContent) ??
               'No title. See help for instructions';
 
@@ -98,7 +98,7 @@ function ChaptersView({
               osxFilePath: '',
               revisionPosition: -1,
               status: ChapterStatusType.Undefined,
-              title: chapterFileContentTile,
+              title: chapterFileContentTitle,
               windowsFilePath: '',
               wordCount: markdownWordCount,
             };
