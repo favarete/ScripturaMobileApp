@@ -15,7 +15,7 @@ import {
 
 type Props = {
   onNavigateToStatistics: () => void;
-  onSave: () => void;
+  onSave?: (() => void) | false;
   viewMode?: boolean;
   wordCount: number;
   wordGoal: number;
@@ -24,7 +24,7 @@ type Props = {
 
 function StatisticsBar({
   onNavigateToStatistics,
-  onSave,
+  onSave = false,
   viewMode = false,
   wordCount,
   wordGoal,
@@ -79,7 +79,7 @@ function StatisticsBar({
 
   return (
     <View style={styles.statisticsBarContainer}>
-      {!viewMode && (
+      {!viewMode && onSave && (
         <View style={[layout.col, styles.saveButton]}>
           <TouchableOpacity onPress={onSave}>
             <FeatherIcons color={colors.gray200} name={'save'} size={30} />

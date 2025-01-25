@@ -48,6 +48,15 @@ function ContentView({
     Alert.alert('onNavigateToStatistics');
   };
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      console.log('Função executada');
+    }, 1000);
+
+    // Limpa o intervalo ao desmontar o componente
+    return () => clearInterval(interval);
+  }, []);
+
   const onSave = () => {
     if (selectedChapter) {
       const saveFileContent = async () => {
@@ -215,7 +224,6 @@ function ContentView({
           </ScrollView>
           <StatisticsBar
             onNavigateToStatistics={onNavigateToStatistics}
-            onSave={onSave}
             viewMode={viewMode}
             wordCount={selectedChapter.wordCount}
             wordGoal={1000}
