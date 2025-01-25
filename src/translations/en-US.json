@@ -28,6 +28,14 @@
       "text1": "Oops! =/",
       "text2": "Something went wrong."
     },
+    "saving_error": {
+      "text1": "Error trying to save! =/",
+      "text2": "Something happened and your file wasn't saved."
+    },
+    "saving_success": {
+      "text1": "File saved!",
+      "text2": "Your file was saved successfully"
+    },
     "common_error": "Something went wrong.",
     "screen_projects": {
       "title": "$t(common_appName.full)",
@@ -51,6 +59,9 @@
       "view": "Chapters Screen",
       "word_count": "Words",
       "status_header": "Status for",
+      "updated_at": "Last Updated at",
+      "no_title": "No title! Use '# Some title' on your file",
+      "no_chapters": "No chapters available",
       "status": {
         "draft_ready":  "Draft Ready",
         "first_revision_done":  "First Revision Done",

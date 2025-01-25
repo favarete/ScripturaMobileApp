@@ -52,6 +52,20 @@ export const getChapterById = (
   return null;
 };
 
+export const findChapterByTitleAndPath = (
+  chapters: Chapter[],
+  title: string,
+  androidFolderPath: string,
+): Chapter | null => {
+  return (
+    chapters.find(
+      (chapter) =>
+        chapter.title === title &&
+        chapter.androidFilePath === androidFolderPath,
+    ) || null
+  );
+};
+
 export const formatNumber = (value: number, locales: string): string => {
   return new Intl.NumberFormat(locales).format(value);
 };

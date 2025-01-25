@@ -21,6 +21,7 @@ import {
 import { ChapterStatusType } from '@/state/defaults';
 import {
   countWordsFromHTML,
+  findChapterByTitleAndPath,
   getProjectById,
   getTitleFromChapterFile,
 } from '@/utils/chapterHelpers';
@@ -85,28 +86,35 @@ function ChaptersView({
             const chapterFileContent: string = await readFile(chapter.uri);
             const chapterFileContentTitle: string =
               getTitleFromChapterFile(chapterFileContent) ??
-              'No title. See help for instructions';
+              t('screen_chapters.no_title');
 
             const markdownWordCount = countWordsFromHTML(chapterFileContent);
 
-            const __defineNewChapter: Chapter = {
-              androidFilePath: chapter.uri,
-              id: createNewUUID(),
-              iphoneFilePath: '',
-              lastUpdate: formatTimestamp(chapter.lastModified, language),
-              linuxFilePath: '',
-              osxFilePath: '',
-              revisionPosition: -1,
-              status: ChapterStatusType.Undefined,
-              title: chapterFileContentTitle,
-              windowsFilePath: '',
-              wordCount: markdownWordCount,
-            };
+            const savedChapter = findChapterByTitleAndPath(
+              selectedBook.chapters,
+              chapterFileContentTitle,
+              chapter.uri,
+            );
 
+            const __defineNewChapter: Chapter = savedChapter ? {
+              ...savedChapter,
+                wordCount: markdownWordCount,
+              } : {
+                androidFilePath: chapter.uri,
+                id: createNewUUID(),
+                iphoneFilePath: '',
+                lastUpdate: formatTimestamp(chapter.lastModified, language),
+                linuxFilePath: '',
+                osxFilePath: '',
+                revisionPosition: -1,
+                status: ChapterStatusType.Undefined,
+                title: chapterFileContentTitle,
+                windowsFilePath: '',
+                wordCount: markdownWordCount,
+              };
             allChaptersData.push(__defineNewChapter);
           }
           setAllChapters(allChaptersData);
-          console.log('-> CHAPTER SCREEN Render');
         } catch (error) {
           Toast.show({
             text1: t('unknown_error.text1'),
@@ -128,7 +136,7 @@ function ChaptersView({
         <ParallaxImage
           onNavigateBack={onNavigateBack}
           parallaxImage={PlaceholderImage}
-          parallaxSubtitle={`Last Updated at ${selectedBook.lastUpdate}`}
+          parallaxSubtitle={`${t('screen_chapters.updated_at')} ${selectedBook.lastUpdate}`}
           parallaxTitle={`${selectedBook.title}`}
         >
           <View>
@@ -152,7 +160,7 @@ function ChaptersView({
                 );
               })
             ) : (
-              <Text>No chapters available</Text>
+              <Text>{t('screen_chapters.no_chapters')}</Text>
             )}
           </View>
         </ParallaxImage>

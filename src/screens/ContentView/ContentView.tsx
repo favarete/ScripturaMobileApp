@@ -21,6 +21,8 @@ import MarkdownRenderer from '@/components/molecules/MarkdownRenderer/MarkdownRe
 
 import { ProjectsDataStateAtom } from '@/state/atoms/persistentContent';
 import { countWordsFromHTML, getChapterById, getTitleFromChapterFile, updateChapterValue } from '@/utils/chapterHelpers';
+import { print } from '@/utils/logger';
+import Toast from 'react-native-toast-message';
 
 function ContentView({
   navigation,
@@ -58,12 +60,22 @@ function ContentView({
             chapterId,
             {
               title: getTitleFromChapterFile(markdownText) ??
-                'No title. See help for instructions',
+                t('screen_chapters.no_title'),
               wordCount: countWordsFromHTML(markdownText),
             }
           )
+          Toast.show({
+            text1: t('saving_success.text1'),
+            text2: t('saving_success.text2'),
+            type: 'success',
+          });
         } catch (error) {
-          console.error(error);
+          Toast.show({
+            text1: t('saving_error.text1'),
+            text2: t('saving_error.text2'),
+            type: 'error',
+          });
+          print(error);
         }
       };
       void saveFileContent();

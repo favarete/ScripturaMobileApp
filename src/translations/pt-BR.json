@@ -28,6 +28,14 @@
       "text1": "Eita! =/",
       "text2": "Algo deu errado."
     },
+    "saving_error": {
+      "text1": "Erro ao tentar salvar! =/",
+      "text2": "Algo ocorreu e seu arquivo não pôde ser salvo."
+    },
+    "saving_success": {
+      "text1": "Arquivo salvo!",
+      "text2": "Seu arquivo foi salvo com sucesso"
+    },
     "common_error": "Algo deu errado.",
     "screen_projects": {
       "title": "$t(common_appName.full)",
@@ -51,6 +59,9 @@
       "view": "Tela de Capítulos",
       "word_count": "Palavras",
       "status_header": "Status para",
+      "updated_at": "Atualizado por último em",
+      "no_title": "Sem título! Use '# Título' no seu arquivo",
+      "no_chapters": "Nenhum capítulo disponível",
       "status": {
         "draft_ready":  "Rascunho Pronto",
         "first_revision_done":  "Primeira Revisão Feita",
