@@ -6,11 +6,20 @@ import {
   MarkdownTextInput,
   parseExpensiMark,
 } from '@expensify/react-native-live-markdown';
-import { useAtom } from 'jotai/index';
-import React, { useEffect, useState } from 'react';
+import { useAtomValue } from 'jotai/index';
+import { useAtom } from 'jotai/react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Platform, ScrollView, StyleSheet, View } from 'react-native';
+import {
+  Alert,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { readFile, writeFile } from 'react-native-saf-x';
+import Toast from 'react-native-toast-message';
 
 import { useTheme } from '@/theme';
 import { Paths } from '@/navigation/paths';
@@ -19,64 +28,49 @@ import { TitleBar } from '@/components/atoms';
 import StatisticsBar from '@/components/atoms/StatisticsBar/StatisticsBar';
 import MarkdownRenderer from '@/components/molecules/MarkdownRenderer/MarkdownRenderer';
 
-import { ProjectsDataStateAtom } from '@/state/atoms/persistentContent';
-import { countWordsFromHTML, getChapterById, getTitleFromChapterFile, updateChapterValue } from '@/utils/chapterHelpers';
+import {
+  AutosaveModeStateAtom,
+  ProjectsDataStateAtom,
+  SaveAtomEffect,
+} from '@/state/atoms/persistentContent';
+import {
+  countWordsFromHTML,
+  getChapterById,
+  getTitleFromChapterFile,
+  updateChapterValue,
+} from '@/utils/chapterHelpers';
 import { print } from '@/utils/logger';
-import Toast from 'react-native-toast-message';
 
 function ContentView({
   navigation,
   route,
 }: RootScreenProps<Paths.ContentView>) {
+  useAtom(SaveAtomEffect);
   const { t } = useTranslation();
 
   const { colors, fonts, gutters, layout } = useTheme();
   const { chapterId, id } = route.params;
 
   const [allProjects, setAllProjects] = useAtom(ProjectsDataStateAtom);
+  const autosaveMode = useAtomValue(AutosaveModeStateAtom);
 
   const [viewMode, setViewMode] = useState<boolean>(true);
   const [chapterTitle, setChapterTitle] = useState<string>();
   const [selectedChapter, setSelectedChapter] = useState<Chapter>();
   const [markdownText, setMarkdownText] = useState<string>('');
 
-  const onNavigateBack = () => {
-    navigation.navigate(Paths.ChaptersView, { id });
-  };
+  const [contentCount, setContentCount] = useState<number>(0);
 
-  const onNavigateToStatistics = () => {
-    Alert.alert('onNavigateToStatistics');
-  };
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      console.log('Função executada');
-    }, 1000);
-
-    // Limpa o intervalo ao desmontar o componente
-    return () => clearInterval(interval);
-  }, []);
-
-  const onSave = () => {
+  const onSave = useCallback(() => {
     if (selectedChapter) {
       const saveFileContent = async () => {
         try {
           await writeFile(selectedChapter.androidFilePath, markdownText);
-
-          updateChapterValue(
-            setAllProjects,
-            id,
-            chapterId,
-            {
-              title: getTitleFromChapterFile(markdownText) ??
-                t('screen_chapters.no_title'),
-              wordCount: countWordsFromHTML(markdownText),
-            }
-          )
-          Toast.show({
-            text1: t('saving_success.text1'),
-            text2: t('saving_success.text2'),
-            type: 'success',
+          updateChapterValue(setAllProjects, id, chapterId, {
+            title:
+              getTitleFromChapterFile(markdownText) ??
+              t('screen_chapters.no_title'),
+            wordCount: countWordsFromHTML(markdownText),
           });
         } catch (error) {
           Toast.show({
@@ -89,9 +83,46 @@ function ContentView({
       };
       void saveFileContent();
     }
+  }, [
+    selectedChapter,
+    markdownText,
+    setAllProjects,
+    id,
+    chapterId,
+    t,
+  ]);
+
+  const onNavigateBack = () => {
+    onSave();
+    navigation.navigate(Paths.ChaptersView, { id });
   };
 
+  const onNavigateToStatistics = () => {
+    Alert.alert('onNavigateToStatistics');
+  };
+
+  useEffect(() => {
+    if (contentCount > 0 && contentCount % 5 === 0) {
+      onSave();
+    }
+  }, [chapterId, contentCount, id, markdownText, onSave, selectedChapter, setAllProjects, t]);
+
+  useEffect(() => {
+    setContentCount(0);
+  }, [markdownText]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (autosaveMode && !viewMode) {
+        setContentCount((prevState) => prevState + 1);
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [autosaveMode, viewMode]);
+
   const onToggleView = () => {
+    onSave();
+    setContentCount(0);
     setViewMode(!viewMode);
   };
 
@@ -196,6 +227,7 @@ function ContentView({
               viewMode ? styles.markdownContent : styles.markdownContentEdit
             }
           >
+            <Text>{contentCount}</Text>
             <View
               style={[
                 gutters.paddingHorizontal_8,

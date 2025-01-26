@@ -22,7 +22,7 @@ import {
   ProjectsDataStateAtom,
 } from '@/state/atoms/persistentContent';
 import { initialProjectContent } from '@/state/defaults';
-import { createNewUUID, formatTimestamp } from '@/utils/common';
+import { createNewUUID } from '@/utils/common';
 import { print } from '@/utils/logger';
 import {
   findProjectByTitle,
@@ -71,6 +71,10 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
               );
               if (persistedAndroidProjectContent) {
                 // It was mapped before on an Android device
+                // setAllProjects((prevState) => [
+                //   ...prevState,
+                //   persistedAndroidProjectContent,
+                // ]);
               } else {
                 // It wasn't mapped before on an Android device
                 // Check if it was mapped before on any other device
@@ -80,6 +84,14 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
                 );
                 if (persistedExternalProjectContent) {
                   // It was mapped before on other device
+                  // const __defineNewProject: Project = {
+                  //   ...persistedExternalProjectContent,
+                  //   androidFolderPath: project.uri,
+                  // };
+                  // setAllProjects((prevState) => [
+                  //   ...prevState,
+                  //   __defineNewProject,
+                  // ]);
                 } else {
                   // It wasn't mapped before on any other device
                   // Map the project for the first time
@@ -87,7 +99,7 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
                     ...initialProjectContent,
                     androidFolderPath: project.uri,
                     id: createNewUUID(),
-                    lastUpdate: formatTimestamp(project.lastModified, language),
+                    lastUpdate: project.lastModified,
                     title: project.name,
                   };
                   setAllProjects((prevState) => [

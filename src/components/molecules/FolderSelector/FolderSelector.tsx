@@ -5,7 +5,7 @@ import { useAtom } from 'jotai';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { exists, mkdir, openDocumentTree } from 'react-native-saf-x';
+import { exists, mkdir, createFile, openDocumentTree } from 'react-native-saf-x';
 import Toast from 'react-native-toast-message';
 
 import { useTheme } from '@/theme';
@@ -20,16 +20,15 @@ const pickFolder =
       const result = await openDocumentTree(true);
       if (result && result.uri) {
         const { uri } = result;
-
-        const folderExists = await exists(uri);
-        if (!folderExists) {
-          await mkdir(uri + '/.scriptura');
+        const supportFolder = `${uri}/.scriptura`;
+        const supportFolderExists = await exists(supportFolder);
+        if (!supportFolderExists) {
+          await mkdir(supportFolder);
+          await createFile(`${supportFolder}/projects.json`)
         }
 
         // Create Default Persistent Values
-
         setHomeFolder(uri);
-
         Toast.show({
           text1: t(
             'components.folder_selector.directory_selected_success.text1',

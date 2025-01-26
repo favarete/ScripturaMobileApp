@@ -14,6 +14,7 @@ const DEFAULT_THEME: Variant = 'default';
 const DEFAULT_HOME_FOLDER: string = '';
 const DEFAULT_LANGUAGE: SupportedLanguages = SupportedLanguages.EN_US;
 const DEFAULT_TYPEWRITER_MODE: boolean = true;
+const DEFAULT_AUTOSAVE_MODE: boolean = true;
 
 export type DailyGoalMode = { enabled: boolean; target: number };
 const DEFAULT_DAILY_GOAL_MODE: DailyGoalMode = {
@@ -68,12 +69,32 @@ export const enum ChapterStatusType {
   Undefined = 'indeterminate',
 }
 
+const VALID_CHAPTER_STATUS = new Set<string>([
+  ChapterStatusType.DraftReady,
+  ChapterStatusType.FirstRevisionDone,
+  ChapterStatusType.InFirstRevision,
+  ChapterStatusType.InProgress,
+  ChapterStatusType.InSecondRevision,
+  ChapterStatusType.InThirdRevision,
+  ChapterStatusType.ManuscriptDone,
+  ChapterStatusType.Planning,
+  ChapterStatusType.SecondRevisionDone,
+  ChapterStatusType.ThirdRevisionDone,
+  ChapterStatusType.ToDo,
+]);
+
+export const getValidChapterEnum = (value: string): ChapterStatusType => {
+  if (VALID_CHAPTER_STATUS.has(value)) {
+    return value as ChapterStatusType;
+  }
+  return ChapterStatusType.Undefined;
+}
 
 export type Chapter = {
   androidFilePath: string;
   id: ElementUUID;
   iphoneFilePath: string;
-  lastUpdate: string;
+  lastUpdate: number;
   linuxFilePath: string;
   osxFilePath: string;
   revisionPosition: number;
@@ -92,7 +113,7 @@ export type Project = {
   coverPath: string;
   id: ElementUUID;
   iphoneFolderPath: string;
-  lastUpdate: string;
+  lastUpdate: number;
   linuxFolderPath: string;
   osxFolderPath: string;
   title: string;
@@ -109,7 +130,7 @@ export const initialProjectContent: Project = {
   coverPath: '',
   id: '',
   iphoneFolderPath: '',
-  lastUpdate: '',
+  lastUpdate: -1,
   linuxFolderPath: '',
   osxFolderPath: '',
   title: '',
@@ -120,6 +141,7 @@ export const initialProjectContent: Project = {
 const DEFAULT_PROJECTS_DATA: Project[] = [];
 
 export const DEFAULT_DATA = {
+  autosaveMode: DEFAULT_AUTOSAVE_MODE,
   currentStreak: DEFAULT_CURRENT_STREAK,
   dailyGoalMode: DEFAULT_DAILY_GOAL_MODE,
   favoriteProjects: DEFAULT_FAVORITE_PROJECTS,

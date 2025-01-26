@@ -1,5 +1,4 @@
 import type { RootScreenProps } from '@/navigation/types';
-import type { Chapter, Project } from '@/state/defaults';
 
 import { useAtom, useAtomValue } from 'jotai/index';
 import React, { useEffect, useState } from 'react';
@@ -18,12 +17,19 @@ import {
   LanguageStateAtom,
   ProjectsDataStateAtom,
 } from '@/state/atoms/persistentContent';
-import { ChapterStatusType } from '@/state/defaults';
+import type {
+  Chapter,
+  Project} from '@/state/defaults';
+import {
+  ChapterStatusType,
+  getValidChapterEnum
+} from '@/state/defaults';
 import {
   countWordsFromHTML,
   findChapterByTitleAndPath,
   getProjectById,
   getTitleFromChapterFile,
+  updateChapterValue,
 } from '@/utils/chapterHelpers';
 import { createNewUUID, formatTimestamp } from '@/utils/common';
 import { print } from '@/utils/logger';
@@ -52,6 +58,17 @@ function ChaptersView({
         project.id === id ? { ...project, chapters: newChapters } : project,
       ),
     );
+  };
+
+  const updateChaptersStatus = (
+    projectId: string,
+    chapterId: string,
+    newStatus: string,
+  ) => {
+    const validEnum = getValidChapterEnum(newStatus);
+    updateChapterValue(setAllProjects, projectId, chapterId, {
+      status: validEnum,
+    });
   };
 
   const onNavigate = (id: string, chapterId: string) => {
@@ -96,22 +113,24 @@ function ChaptersView({
               chapter.uri,
             );
 
-            const __defineNewChapter: Chapter = savedChapter ? {
-              ...savedChapter,
-                wordCount: markdownWordCount,
-              } : {
-                androidFilePath: chapter.uri,
-                id: createNewUUID(),
-                iphoneFilePath: '',
-                lastUpdate: formatTimestamp(chapter.lastModified, language),
-                linuxFilePath: '',
-                osxFilePath: '',
-                revisionPosition: -1,
-                status: ChapterStatusType.Undefined,
-                title: chapterFileContentTitle,
-                windowsFilePath: '',
-                wordCount: markdownWordCount,
-              };
+            const __defineNewChapter: Chapter = savedChapter
+              ? {
+                  ...savedChapter,
+                  wordCount: markdownWordCount,
+                }
+              : {
+                  androidFilePath: chapter.uri,
+                  id: createNewUUID(),
+                  iphoneFilePath: '',
+                  lastUpdate: chapter.lastModified,
+                  linuxFilePath: '',
+                  osxFilePath: '',
+                  revisionPosition: -1,
+                  status: ChapterStatusType.Undefined,
+                  title: chapterFileContentTitle,
+                  windowsFilePath: '',
+                  wordCount: markdownWordCount,
+                };
             allChaptersData.push(__defineNewChapter);
           }
           setAllChapters(allChaptersData);
@@ -130,13 +149,17 @@ function ChaptersView({
     }
   }, [id, language, selectedBook, setAllProjects, t]);
 
+  const updatedOn = selectedBook
+    ? formatTimestamp(selectedBook.lastUpdate, language)
+    : '';
+
   return (
     <View>
       {selectedBook && (
         <ParallaxImage
           onNavigateBack={onNavigateBack}
           parallaxImage={PlaceholderImage}
-          parallaxSubtitle={`${t('screen_chapters.updated_at')} ${selectedBook.lastUpdate}`}
+          parallaxSubtitle={`${t('screen_chapters.updated_at')} ${updatedOn}`}
           parallaxTitle={`${selectedBook.title}`}
         >
           <View>
@@ -151,10 +174,12 @@ function ChaptersView({
                     key={chapter.id}
                     lastUpdate={chapter.lastUpdate}
                     lastViewedId={selectedBook.chapterLastViewed}
-                    onNavigate={() => onNavigate(id, chapter.id)}
+                    onNavigate={onNavigate}
+                    projectId={id}
                     setEditingId={setEditingId}
                     status={chapter.status}
                     title={chapter.title}
+                    updateChaptersStatus={updateChaptersStatus}
                     wordCount={chapter.wordCount}
                   />
                 );

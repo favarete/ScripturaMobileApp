@@ -4,12 +4,30 @@ import type {
   Project,
   WritingStats,
 } from '@/state/defaults';
+import type { Variant } from '@/theme/types/config';
 
+import { atomEffect } from 'jotai-effect';
 import { atomWithStorage, createJSONStorage } from 'jotai/utils';
 import { MMKV } from 'react-native-mmkv';
+import { writeFile } from 'react-native-saf-x';
 
 import { DEFAULT_DATA, DEFAULT_STORAGE_VALUES } from '@/state/defaults';
-import type { Variant } from '@/theme/types/config';
+import { print } from '@/utils/logger';
+
+export const SaveAtomEffect = atomEffect((get) => {
+  const allProjectsData = get(ProjectsDataStateAtom);
+  const homeFolder = get(HomeFolderStateAtom);
+  if (homeFolder) {
+    const supportFolder = `${homeFolder}/.scriptura`;
+    const projectsFile = `${supportFolder}/projects.json`;
+    try {
+      const jsonString = JSON.stringify(allProjectsData, null, 2);
+      void writeFile(projectsFile, jsonString);
+    } catch (error) {
+      print(error);
+    }
+  }
+});
 
 const atomWithMMKV = <T>(key: string, initialValue: T, storage: MMKV) =>
   atomWithStorage<T>(
@@ -62,6 +80,12 @@ export const LanguageStateAtom = atomWithMMKV<string>(
 export const TypewriterModeStateAtom = atomWithMMKV<boolean>(
   'typewriter_mode',
   DEFAULT_DATA.typewriterMode,
+  DeviceOnlyStorage,
+);
+
+export const AutosaveModeStateAtom = atomWithMMKV<boolean>(
+  'autosave_mode',
+  DEFAULT_DATA.autosaveMode,
   DeviceOnlyStorage,
 );
 

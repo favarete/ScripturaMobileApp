@@ -34,7 +34,7 @@ function CustomContextMenu({
   children = false,
   menuItems,
   menuTitle,
-                             menuTitleBackgroundColor,
+  menuTitleBackgroundColor,
   onPress,
 }: CustomContextMenuProps) {
   const [menuVisible, setMenuVisible] = useState(false);
@@ -145,7 +145,9 @@ function CustomContextMenu({
                   item.onPress?.();
                   handleCloseMenu();
                 }}
-                style={item.disabled ? styles.menuItemDisabled : styles.menuItem}
+                style={
+                  item.disabled ? styles.menuItemDisabled : styles.menuItem
+                }
               >
                 <Text style={styles.menuIcon}>{item.icon}</Text>
                 <Text style={{ color: item.color, fontSize: 16 }}>

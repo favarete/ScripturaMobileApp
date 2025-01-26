@@ -14,12 +14,18 @@ import CustomContextMenu from '@/components/atoms/CustomContextMenu/CustomContex
 type ChapterProps = {
   editingId: string;
   id: string;
-  lastUpdate: string;
+  lastUpdate: number;
   lastViewedId: string;
-  onNavigate: (id: string) => void;
+  onNavigate: (id: string, chapterId: string) => void;
+  projectId: string;
   setEditingId: React.Dispatch<React.SetStateAction<string>>;
   status: ChapterStatusType;
   title: string;
+  updateChaptersStatus: (
+    projectId: string,
+    chapterId: string,
+    newStatus: string,
+  ) => void;
   wordCount: number;
 };
 
@@ -29,9 +35,11 @@ function ChapterCard({
   lastUpdate,
   lastViewedId,
   onNavigate,
+  projectId,
   setEditingId,
   status,
   title,
+  updateChaptersStatus,
   wordCount,
 }: ChapterProps) {
   const { colors, fonts, gutters, layout } = useTheme();
@@ -66,16 +74,11 @@ function ChapterCard({
     editingStyle = undefined;
   }
 
-  const handleContextMenuPress = (status: string, id: string) => {
-    //const localizedStatuses = t('screen_chapters.status')
-    console.log(`Chapter '${id}' to Change Status to '${status}'`);
-  };
-
   const ICON_SIZE = 20;
   const menuItems: ContextMenuItem[] = [
     {
       color: colors.gray800,
-      disabled: true,
+      disabled: status === 'indeterminate',
       icon: (
         <MaterialIcons
           color={colors.purple500}
@@ -84,12 +87,11 @@ function ChapterCard({
         />
       ),
       label: t('screen_chapters.status.indeterminate'),
-      onPress: () => {
-        handleContextMenuPress('indeterminate', id);
-      },
+      onPress: () => updateChaptersStatus(projectId, id, 'indeterminate'),
     },
     {
       color: colors.gray800,
+      disabled: status === 'to_do',
       icon: (
         <MaterialIcons
           color={colors.purple500}
@@ -98,12 +100,11 @@ function ChapterCard({
         />
       ),
       label: t('screen_chapters.status.to_do'),
-      onPress: () => {
-        handleContextMenuPress('to_do', id);
-      },
+      onPress: () => updateChaptersStatus(projectId, id, 'to_do'),
     },
     {
       color: colors.gray800,
+      disabled: status === 'in_progress',
       icon: (
         <MaterialIcons
           color={colors.purple500}
@@ -112,12 +113,11 @@ function ChapterCard({
         />
       ),
       label: t('screen_chapters.status.in_progress'),
-      onPress: () => {
-        handleContextMenuPress('in_progress', id);
-      },
+      onPress: () => updateChaptersStatus(projectId, id, 'in_progress'),
     },
     {
       color: colors.gray800,
+      disabled: status === 'draft_ready',
       icon: (
         <MaterialIcons
           color={colors.purple500}
@@ -126,12 +126,11 @@ function ChapterCard({
         />
       ),
       label: t('screen_chapters.status.draft_ready'),
-      onPress: () => {
-        handleContextMenuPress('draft_ready', id);
-      },
+      onPress: () => updateChaptersStatus(projectId, id, 'draft_ready'),
     },
     {
       color: colors.gray800,
+      disabled: status === 'in_first_revision',
       icon: (
         <MaterialIcons
           color={colors.purple500}
@@ -140,12 +139,11 @@ function ChapterCard({
         />
       ),
       label: t('screen_chapters.status.in_first_revision'),
-      onPress: () => {
-        handleContextMenuPress('in_first_revision', id);
-      },
+      onPress: () => updateChaptersStatus(projectId, id, 'in_first_revision'),
     },
     {
       color: colors.gray800,
+      disabled: status === 'first_revision_done',
       icon: (
         <MaterialIcons
           color={colors.purple500}
@@ -154,12 +152,11 @@ function ChapterCard({
         />
       ),
       label: t('screen_chapters.status.first_revision_done'),
-      onPress: () => {
-        handleContextMenuPress('first_revision_done', id);
-      },
+      onPress: () => updateChaptersStatus(projectId, id, 'first_revision_done'),
     },
     {
       color: colors.gray800,
+      disabled: status === 'in_second_revision',
       icon: (
         <MaterialIcons
           color={colors.purple500}
@@ -168,12 +165,11 @@ function ChapterCard({
         />
       ),
       label: t('screen_chapters.status.in_second_revision'),
-      onPress: () => {
-        handleContextMenuPress('in_second_revision', id);
-      },
+      onPress: () => updateChaptersStatus(projectId, id, 'in_second_revision'),
     },
     {
       color: colors.gray800,
+      disabled: status === 'second_revision_done',
       icon: (
         <MaterialIcons
           color={colors.purple500}
@@ -182,12 +178,12 @@ function ChapterCard({
         />
       ),
       label: t('screen_chapters.status.second_revision_done'),
-      onPress: () => {
-        handleContextMenuPress('second_revision_done', id);
-      },
+      onPress: () =>
+        updateChaptersStatus(projectId, id, 'second_revision_done'),
     },
     {
       color: colors.gray800,
+      disabled: status === 'in_third_revision',
       icon: (
         <MaterialIcons
           color={colors.purple500}
@@ -196,12 +192,11 @@ function ChapterCard({
         />
       ),
       label: t('screen_chapters.status.in_third_revision'),
-      onPress: () => {
-        handleContextMenuPress('in_third_revision', id);
-      },
+      onPress: () => updateChaptersStatus(projectId, id, 'in_third_revision'),
     },
     {
       color: colors.gray800,
+      disabled: status === 'third_revision_done',
       icon: (
         <MaterialIcons
           color={colors.purple500}
@@ -210,12 +205,11 @@ function ChapterCard({
         />
       ),
       label: t('screen_chapters.status.third_revision_done'),
-      onPress: () => {
-        handleContextMenuPress('third_revision_done', id);
-      },
+      onPress: () => updateChaptersStatus(projectId, id, 'third_revision_done'),
     },
     {
       color: colors.gray800,
+      disabled: status === 'manuscript_done',
       icon: (
         <MaterialIcons
           color={colors.purple500}
@@ -224,9 +218,7 @@ function ChapterCard({
         />
       ),
       label: t('screen_chapters.status.manuscript_done'),
-      onPress: () => {
-        handleContextMenuPress('manuscript_done', id);
-      },
+      onPress: () => updateChaptersStatus(projectId, id, 'manuscript_done'),
     },
   ];
 
@@ -259,7 +251,7 @@ function ChapterCard({
             menuItems={menuItems}
             menuTitle={`${t('screen_chapters.status_header')} '${title}'`}
             menuTitleBackgroundColor={colors.purple100}
-            onPress={() => onNavigate(id)}
+            onPress={() => onNavigate(projectId, id)}
           >
             <View
               style={[
