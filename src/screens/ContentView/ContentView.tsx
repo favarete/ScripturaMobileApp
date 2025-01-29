@@ -2,44 +2,42 @@ import type { MarkdownStyle } from '@expensify/react-native-live-markdown';
 import type { RootScreenProps } from '@/navigation/types';
 import type { Chapter } from '@/state/defaults';
 
-import {
-  MarkdownTextInput,
-  parseExpensiMark,
-} from '@expensify/react-native-live-markdown';
+
+
+import { MarkdownTextInput, parseExpensiMark } from '@expensify/react-native-live-markdown';
 import { useAtomValue } from 'jotai/index';
 import { useAtom } from 'jotai/react';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  Alert,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Alert, Keyboard, NativeModules, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { readFile, writeFile } from 'react-native-saf-x';
 import Toast from 'react-native-toast-message';
 
+
+const { KeyboardModule } = NativeModules;
+
+if (!KeyboardModule) {
+  console.error("KeyboardModule não foi encontrado! Verifique o código nativo.");
+}
+
 import { useTheme } from '@/theme';
 import { Paths } from '@/navigation/paths';
+
+
 
 import { TitleBar } from '@/components/atoms';
 import StatisticsBar from '@/components/atoms/StatisticsBar/StatisticsBar';
 import MarkdownRenderer from '@/components/molecules/MarkdownRenderer/MarkdownRenderer';
 
-import {
-  AutosaveModeStateAtom,
-  ProjectsDataStateAtom,
-  SaveAtomEffect,
-} from '@/state/atoms/persistentContent';
-import {
-  countWordsFromHTML,
-  getChapterById,
-  getTitleFromChapterFile,
-  updateChapterValue,
-} from '@/utils/chapterHelpers';
+
+
+import { AutosaveModeStateAtom, ProjectsDataStateAtom, SaveAtomEffect } from '@/state/atoms/persistentContent';
+import { countWordsFromHTML, getChapterById, getTitleFromChapterFile, updateChapterValue } from '@/utils/chapterHelpers';
 import { print } from '@/utils/logger';
+
+
+
+
 
 function ContentView({
   navigation,
@@ -55,6 +53,8 @@ function ContentView({
   const autosaveMode = useAtomValue(AutosaveModeStateAtom);
 
   const [viewMode, setViewMode] = useState<boolean>(true);
+  const [isPhysicalKeyboard, setIsPhysicalKeyboard] = useState<boolean>(false);
+
   const [chapterTitle, setChapterTitle] = useState<string>();
   const [selectedChapter, setSelectedChapter] = useState<Chapter>();
   const [markdownText, setMarkdownText] = useState<string>('');
@@ -119,6 +119,23 @@ function ContentView({
     }, 1000);
     return () => clearInterval(interval);
   }, [autosaveMode, viewMode]);
+
+  useEffect(() => {
+    const checkKeyboard = async () => {
+      try {
+        const isPhysical = await KeyboardModule.isPhysicalKeyboardConnected();
+        setIsPhysicalKeyboard(isPhysical);
+        if (isPhysical) {
+          Keyboard.dismiss();
+        }
+      } catch (error) {
+        print(error);
+      }
+    };
+
+    void checkKeyboard();
+  }, []);
+
 
   const onToggleView = () => {
     onSave();
@@ -243,11 +260,13 @@ function ContentView({
                 <MarkdownTextInput
                   autoCapitalize="none"
                   autoFocus
+                  keyboardType='visible-password'
                   markdownStyle={markdownStylesEdit}
                   maxLength={30_000}
                   multiline
                   onChangeText={setMarkdownText}
                   parser={parseExpensiMark}
+                  showSoftInputOnFocus={!isPhysicalKeyboard}
                   style={[markdownEditStyles]}
                   value={markdownText}
                 />
