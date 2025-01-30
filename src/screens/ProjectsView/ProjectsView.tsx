@@ -5,7 +5,17 @@ import { useAtom, useAtomValue } from 'jotai';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, Text, View } from 'react-native';
-import { hasPermission, listFiles } from 'react-native-saf-x';
+import {
+  createFile,
+  DocumentFileDetail,
+  exists,
+  hasPermission,
+  listFiles,
+  mkdir,
+  openDocument,
+  openDocumentTree,
+  rename,
+} from 'react-native-saf-x';
 import Toast from 'react-native-toast-message';
 
 import { useTheme } from '@/theme';
@@ -22,9 +32,10 @@ import {
   ProjectsDataStateAtom,
 } from '@/state/atoms/persistentContent';
 import { initialProjectContent } from '@/state/defaults';
-import { createNewUUID } from '@/utils/common';
+import { createNewUUID, updateLastSegment } from '@/utils/common';
 import { print } from '@/utils/logger';
 import {
+  findProjectById,
   findProjectByTitle,
   findProjectByTitleAndPath,
 } from '@/utils/projectHelpers';
@@ -69,13 +80,7 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
                 project.name,
                 project.uri,
               );
-              if (persistedAndroidProjectContent) {
-                // It was mapped before on an Android device
-                // setAllProjects((prevState) => [
-                //   ...prevState,
-                //   persistedAndroidProjectContent,
-                // ]);
-              } else {
+              if (!persistedAndroidProjectContent) {
                 // It wasn't mapped before on an Android device
                 // Check if it was mapped before on any other device
                 const persistedExternalProjectContent = findProjectByTitle(
@@ -84,14 +89,17 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
                 );
                 if (persistedExternalProjectContent) {
                   // It was mapped before on other device
-                  // const __defineNewProject: Project = {
-                  //   ...persistedExternalProjectContent,
-                  //   androidFolderPath: project.uri,
-                  // };
-                  // setAllProjects((prevState) => [
-                  //   ...prevState,
-                  //   __defineNewProject,
-                  // ]);
+                  setAllProjects((prevState) =>
+                    prevState.map((salvedProject) =>
+                      salvedProject.id === persistedExternalProjectContent.id
+                        ? {
+                            ...salvedProject,
+                            androidFolderPath: project.uri,
+                            lastUpdate: Date.now(),
+                          }
+                        : salvedProject,
+                    ),
+                  );
                 } else {
                   // It wasn't mapped before on any other device
                   // Map the project for the first time
@@ -124,10 +132,96 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
     };
 
     void fetchAllProjects();
-  }, [allProjects, homeFolder, language, setAllProjects, t]);
+  }, [allProjects, homeFolder, language, loadingProjects, setAllProjects, t]);
 
   const onNavigate = (id: string) => {
     navigation.navigate(Paths.ChaptersView, { id });
+  };
+
+  // Change the exhibition title and the folder name
+  const changeProjectTitle = (projectId: string, newTitle: string) => {
+    const projectContent = findProjectById(allProjects, projectId);
+    if (projectContent) {
+      (async () => {
+        try {
+          const folderRenamed = await rename(
+            projectContent.androidFolderPath,
+            newTitle,
+          );
+          if (folderRenamed) {
+            const newAndroidPath = updateLastSegment(
+              projectContent.androidFolderPath,
+              newTitle,
+            );
+            setAllProjects((prevState) =>
+              prevState.map((project) =>
+                project.id === projectId
+                  ? {
+                      ...project,
+                      androidFolderPath: newAndroidPath,
+                      lastUpdate: Date.now(),
+                      title: newTitle,
+                    }
+                  : project,
+              ),
+            );
+            Toast.show({
+              text1: t('screen_projects.folder_renamed.text1'),
+              text2: t('screen_projects.folder_renamed.text2'),
+              type: 'success',
+            });
+          } else {
+            Toast.show({
+              text1: t('screen_projects.folder_not_renamed.text1'),
+              text2: t('screen_projects.folder_not_renamed.text2'),
+              type: 'error',
+            });
+          }
+        } catch (error) {
+          print(error);
+        }
+      })();
+    }
+  };
+
+  const changeProjectDescription = (
+    projectId: string,
+    newDescription: string,
+  ) => {
+    setAllProjects((prevState) =>
+      prevState.map((project) =>
+        project.id === projectId
+          ? { ...project, blurb: newDescription, lastUpdate: Date.now() }
+          : project,
+      ),
+    );
+    Toast.show({
+      text1: t('screen_projects.description_updated.text1'),
+      text2: t('screen_projects.description_updated.text2'),
+      type: 'success',
+    });
+  };
+
+  const changeProjectImage = (projectId: string, imageUri: string) => {
+    console.log(`CHANGE IMAGE in project ${projectId}`);
+    // (async () => {
+    //   try {
+    //     const result = await openDocument({
+    //       multiple: false, persist: false
+    //     });
+    //     const isValidImage = (file: DocumentFileDetail) => {
+    //       const validMimeTypes = ['image/jpeg', 'image/png'];
+    //       return file?.type === 'file' && validMimeTypes.includes(file.mime);
+    //     };
+    //     if(result?.length === 1 && isValidImage(result[0])) {
+    //
+    //       console.log(result);
+    //
+    //     }
+    //   } catch (error) {
+    //     print(error);
+    //   }
+    // })();
   };
 
   // changeLanguage(i18next.language === SupportedLanguages.EN_EN
@@ -156,6 +250,9 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
               allProjects.map((project: Project) => {
                 return (
                   <ProjectCard
+                    changeProjectDescription={changeProjectDescription}
+                    changeProjectImage={changeProjectImage}
+                    changeProjectTitle={changeProjectTitle}
                     description={project.blurb}
                     editingId={editingId}
                     id={project.id}
@@ -168,7 +265,7 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
                 );
               })
             ) : (
-              <Text>No projects available</Text>
+              <Text>{t('screen_projects.nothing_found')}</Text>
             )}
           </View>
         </View>

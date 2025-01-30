@@ -41,6 +41,19 @@
       "title": "$t(common_appName.full)",
       "view": "Projetos",
       "placeholder": "Pasta Principal",
+      "nothing_found": "Nenhum projeto disponível",
+      "folder_renamed": {
+        "text1": "Pasta renomeada!",
+        "text2": "A pasta do projeto foi renomeada."
+      },
+      "folder_not_renamed": {
+        "text1": "Algo deu Errado!",
+        "text2": "A pasta do projeto não foi renomeada."
+      },
+      "description_updated": {
+        "text1": "Descrição atualizada!",
+        "text2": "A nova descrição foi salva."
+      },
       "project_description_placeholder": "Insira uma descrição para o livro (máximo de 130 caracteres)",
       "fetch_projects_data": {
         "error": {

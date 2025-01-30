@@ -41,6 +41,19 @@
       "title": "$t(common_appName.full)",
       "view": "Projects",
       "placeholder": "Home Folder",
+      "nothing_found": "No projects available",
+      "folder_renamed": {
+        "text1": "Folder renamed!",
+        "text2": "The project's folder was renamed."
+      },
+      "description_updated": {
+        "text1": "Description Updated!",
+        "text2": "The new description was saved."
+      },
+      "folder_not_renamed": {
+        "text1": "Something went wrong!",
+        "text2": "The project's folder wasn't renamed."
+      },
       "project_description_placeholder": "Enter a description for the book (maximum 130 characters)",
       "fetch_projects_data": {
         "error": {

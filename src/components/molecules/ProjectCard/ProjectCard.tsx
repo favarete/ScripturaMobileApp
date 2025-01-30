@@ -1,3 +1,5 @@
+import type { ImageURISource } from 'react-native';
+import type { DocumentFileDetail } from 'react-native-saf-x';
 import type { ContextMenuItem } from '@/components/atoms/CustomContextMenu/CustomContextMenu';
 
 import FeatherIcons from '@react-native-vector-icons/feather';
@@ -5,6 +7,7 @@ import SimpleLineIcons from '@react-native-vector-icons/simple-line-icons';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, StyleSheet, Text, TextInput, View } from 'react-native';
+import { openDocument } from 'react-native-saf-x';
 
 import { useTheme } from '@/theme';
 import PlaceholderImage from '@/theme/assets/images/placeholder_book_cover.png';
@@ -15,6 +18,9 @@ import CustomContextMenu from '@/components/atoms/CustomContextMenu/CustomContex
 import { print } from '@/utils/logger';
 
 type ProjectProps = {
+  changeProjectDescription: (projectId: string, newDescription: string) => void;
+  changeProjectImage: (projectId: string, imagePath: string) => void;
+  changeProjectTitle: (projectId: string, newTitle: string) => void;
   description: string;
   editingId: string;
   id: string;
@@ -24,7 +30,14 @@ type ProjectProps = {
   title: string;
 };
 
+export const EDIT_TITLE_TYPE = 'edit-title';
+export const EDIT_DESCRIPTION_TYPE = 'edit-description';
+export const CHANGE_IMAGE_TYPE = 'change-image';
+
 function ProjectCard({
+  changeProjectDescription,
+  changeProjectImage,
+  changeProjectTitle,
   description,
   editingId,
   id,
@@ -37,29 +50,61 @@ function ProjectCard({
 
   const { t } = useTranslation();
 
-  const imageToLoad = image ? { uri: image } : PlaceholderImage;
+  const [imageToLoad, setImageToLoad] = useState<ImageURISource>(
+    image ? { uri: image } : PlaceholderImage,
+  );
+  const [tempImage, setTempImage] = useState<ImageURISource | null>(null);
   const [isEditing, setIsEditing] = useState<string>('');
   const [editedTitle, setEditedTitle] = useState(title);
   const [editedDescription, setEditedDescription] = useState(description);
-
-  const EDIT_TITLE_TYPE = 'edit-title';
-  const EDIT_DESCRIPTION_TYPE = 'edit-description';
-  const CHANGE_IMAGE_TYPE = 'change-image';
   const ICON_SIZE = 20;
+
+  const changeImage = () => {
+    (async () => {
+      try {
+        const result = await openDocument({
+          multiple: false,
+          persist: true,
+        });
+        const isValidImage = (file: DocumentFileDetail) => {
+          const validMimeTypes = ['image/jpeg', 'image/png'];
+          return file?.type === 'file' && validMimeTypes.includes(file.mime);
+        };
+        if (result?.length === 1 && isValidImage(result[0])) {
+          // ImageSourcePropType Example:
+          // {
+          //   "size": 136507,
+          //   "mime": "image/jpeg",
+          //   "lastModified": 1738265118000,
+          //   "name": "9781844137879_Heritage_Books_Banksy_Wall_and_Piece.jpg",
+          //   "type": "file",
+          //   "uri": "content://com.android.providers.downloads.documents/document/msf%3A1000000130"
+          // }
+          setTempImage({ uri: result[0].uri });
+        }
+      } catch (error) {
+        print(error);
+      }
+    })();
+  };
 
   const menuItems: ContextMenuItem[] = [
     {
       color: colors.gray800,
-      icon: <FeatherIcons color={colors.gray800} name="edit-3" size={ICON_SIZE} />,
+      icon: (
+        <FeatherIcons color={colors.gray800} name="edit-3" size={ICON_SIZE} />
+      ),
       label: t('screen_projects.cards.edit_title'),
       onPress: () => {
         setIsEditing(EDIT_TITLE_TYPE);
         setEditingId(id);
-      }
+      },
     },
     {
       color: colors.gray800,
-      icon: <FeatherIcons color={colors.gray800} name="edit" size={ICON_SIZE} />,
+      icon: (
+        <FeatherIcons color={colors.gray800} name="edit" size={ICON_SIZE} />
+      ),
       label: t('screen_projects.cards.edit_description'),
       onPress: () => {
         setIsEditing(EDIT_DESCRIPTION_TYPE);
@@ -68,29 +113,47 @@ function ProjectCard({
     },
     {
       color: colors.gray800,
-      icon: <SimpleLineIcons color={colors.gray800} name="picture" size={ICON_SIZE} />,
+      icon: (
+        <SimpleLineIcons
+          color={colors.gray800}
+          name="picture"
+          size={ICON_SIZE}
+        />
+      ),
       label: t('screen_projects.cards.change_image'),
       onPress: () => {
+        changeImage();
         setIsEditing(CHANGE_IMAGE_TYPE);
         setEditingId(id);
       },
     },
   ];
 
-  const handleDialogClick = (dialogType: string, action: string): void => {
-    switch (action) {
-      case 'cancel': {
-        setEditingId('');
-        setIsEditing('');
-        break;
-      }
-      default: {
-        print(
-          `Something Odd Happened: action: ${action}, dialogType: ${dialogType}`,
-        );
-        break;
+  const handleDialogClick = (action: string, dialogType: string): void => {
+    if (dialogType === 'save') {
+      switch (action) {
+        case CHANGE_IMAGE_TYPE: {
+          if (tempImage?.uri) {
+            setImageToLoad(tempImage);
+            changeProjectImage(id, tempImage.uri);
+          }
+          break;
+        }
+        case EDIT_DESCRIPTION_TYPE: {
+          changeProjectDescription(id, editedDescription);
+          break;
+        }
+        case EDIT_TITLE_TYPE: {
+          changeProjectTitle(id, editedTitle);
+          break;
+        }
+        default:
+          break;
       }
     }
+    setEditingId('');
+    setIsEditing('');
+    setTempImage(null);
   };
 
   const descriptionContent = description
@@ -153,7 +216,7 @@ function ProjectCard({
       textAlignVertical: 'center',
     },
     sendToBackground: {
-      opacity: 0.3,
+      opacity: 0.5,
       zIndex: 1,
     },
     sendToForeground: {
@@ -179,7 +242,25 @@ function ProjectCard({
         onPress={() => onNavigate(id)}
       >
         <View style={layout.row}>
-          <Image resizeMode="cover" source={imageToLoad} style={styles.image} />
+          <View>
+            <Image
+              resizeMode="cover"
+              source={tempImage ?? imageToLoad}
+              style={[
+                styles.image,
+                editingId.length === 0 ||
+                (editingId === id && isEditing === CHANGE_IMAGE_TYPE)
+                  ? styles.sendToForeground
+                  : styles.sendToBackground,
+              ]}
+            />
+            {isEditing === CHANGE_IMAGE_TYPE && (
+              <ConfirmationDialog
+                dialogType={CHANGE_IMAGE_TYPE}
+                handleDialogClick={handleDialogClick}
+              />
+            )}
+          </View>
           <View
             style={[
               layout.flex_1,
@@ -224,6 +305,10 @@ function ProjectCard({
                   fonts.defaultFontFamilyBold,
                   fonts.size_16,
                   gutters.marginBottom_12,
+                  editingId.length === 0 ||
+                  (editingId === id && isEditing === EDIT_TITLE_TYPE)
+                    ? styles.sendToForeground
+                    : styles.sendToBackground,
                 ]}
               >
                 {title}

@@ -4,6 +4,12 @@ export const createNewUUID = () : string => {
   return uuid.v4();
 }
 
+export const updateLastSegment = (path: string, newSegment: string): string => {
+  const lastSlashIndex = path.lastIndexOf("/");
+  if (lastSlashIndex === -1) {return path;}
+  return path.slice(0, Math.max(0, lastSlashIndex + 1)) + newSegment;
+};
+
 export const formatTimestamp = (timestamp: number, locale: string) => {
   const date = new Date(Number(timestamp));
   return new Intl.DateTimeFormat(locale, {

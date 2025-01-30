@@ -5,7 +5,7 @@ import { useAtom } from 'jotai';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { exists, mkdir, createFile, openDocumentTree } from 'react-native-saf-x';
+import { createFile, exists, mkdir, openDocumentTree } from 'react-native-saf-x';
 import Toast from 'react-native-toast-message';
 
 import { useTheme } from '@/theme';
@@ -24,6 +24,7 @@ const pickFolder =
         const supportFolderExists = await exists(supportFolder);
         if (!supportFolderExists) {
           await mkdir(supportFolder);
+          await mkdir(`${supportFolder}/covers`);
           await createFile(`${supportFolder}/projects.json`)
         }
 

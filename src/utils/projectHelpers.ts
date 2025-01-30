@@ -20,3 +20,11 @@ export const findProjectByTitle = (
 ): null | Project => {
   return projects.find((project) => project.title === title) || null;
 };
+
+export const findProjectById = (
+  projects: Project[],
+  id: string,
+): null | Project => {
+  return projects.find((project) => project.id === id) || null;
+};
+
