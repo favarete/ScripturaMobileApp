@@ -54,6 +54,10 @@
         "text1": "Something went wrong!",
         "text2": "The project's folder wasn't renamed."
       },
+      "image_changed": {
+        "text1": "Image Updated!",
+        "text2": "The new image was saved."
+      },
       "project_description_placeholder": "Enter a description for the book (maximum 130 characters)",
       "fetch_projects_data": {
         "error": {

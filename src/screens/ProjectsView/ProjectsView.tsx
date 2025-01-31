@@ -2,10 +2,11 @@ import type { RootScreenProps } from '@/navigation/types';
 import type { Project } from '@/state/defaults';
 
 import { useAtom, useAtomValue } from 'jotai';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, Text, View } from 'react-native';
 import {
+  copyFile,
   createFile,
   DocumentFileDetail,
   exists,
@@ -203,25 +204,36 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
   };
 
   const changeProjectImage = (projectId: string, imageUri: string) => {
-    console.log(`CHANGE IMAGE in project ${projectId}`);
-    // (async () => {
-    //   try {
-    //     const result = await openDocument({
-    //       multiple: false, persist: false
-    //     });
-    //     const isValidImage = (file: DocumentFileDetail) => {
-    //       const validMimeTypes = ['image/jpeg', 'image/png'];
-    //       return file?.type === 'file' && validMimeTypes.includes(file.mime);
-    //     };
-    //     if(result?.length === 1 && isValidImage(result[0])) {
-    //
-    //       console.log(result);
-    //
-    //     }
-    //   } catch (error) {
-    //     print(error);
-    //   }
-    // })();
+    (async () => {
+      try {
+        const coverFolder = `.scriptura/covers`;
+        await copyFile(
+          imageUri,
+          `${homeFolder}/${coverFolder}/${projectId}.png`,
+          {
+            replaceIfDestinationExists: true,
+          },
+        );
+        setAllProjects((prevState) =>
+          prevState.map((project) =>
+            project.id === projectId
+              ? {
+                  ...project,
+                  coverPath: `${coverFolder}/${projectId}.png`,
+                  lastUpdate: Date.now(),
+                }
+              : project,
+          ),
+        );
+        Toast.show({
+          text1: t('screen_projects.image_changed.text1'),
+          text2: t('screen_projects.image_changed.text2'),
+          type: 'success',
+        });
+      } catch (error) {
+        print(error);
+      }
+    })();
   };
 
   // changeLanguage(i18next.language === SupportedLanguages.EN_EN

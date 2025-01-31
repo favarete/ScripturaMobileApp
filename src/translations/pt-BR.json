@@ -50,6 +50,10 @@
         "text1": "Algo deu Errado!",
         "text2": "A pasta do projeto não foi renomeada."
       },
+      "image_changed": {
+        "text1": "Imagem Atualizada!",
+        "text2": "A nova imagem foi salva."
+      },
       "description_updated": {
         "text1": "Descrição atualizada!",
         "text2": "A nova descrição foi salva."

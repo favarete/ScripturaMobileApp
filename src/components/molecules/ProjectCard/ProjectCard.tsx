@@ -16,6 +16,8 @@ import ConfirmationDialog from '@/components/atoms/ConfirmationDialog/Confirmati
 import CustomContextMenu from '@/components/atoms/CustomContextMenu/CustomContextMenu';
 
 import { print } from '@/utils/logger';
+import { useAtomValue } from 'jotai/index';
+import { HomeFolderStateAtom } from '@/state/atoms/persistentContent';
 
 type ProjectProps = {
   changeProjectDescription: (projectId: string, newDescription: string) => void;
@@ -49,9 +51,10 @@ function ProjectCard({
   const { colors, fonts, gutters, layout } = useTheme();
 
   const { t } = useTranslation();
+  const homeFolder = useAtomValue(HomeFolderStateAtom);
 
   const [imageToLoad, setImageToLoad] = useState<ImageURISource>(
-    image ? { uri: image } : PlaceholderImage,
+    image ? { uri: `${homeFolder}/${image}` } : PlaceholderImage,
   );
   const [tempImage, setTempImage] = useState<ImageURISource | null>(null);
   const [isEditing, setIsEditing] = useState<string>('');
@@ -81,6 +84,8 @@ function ProjectCard({
           //   "uri": "content://com.android.providers.downloads.documents/document/msf%3A1000000130"
           // }
           setTempImage({ uri: result[0].uri });
+          setIsEditing(CHANGE_IMAGE_TYPE);
+          setEditingId(id);
         }
       } catch (error) {
         print(error);
@@ -123,8 +128,6 @@ function ProjectCard({
       label: t('screen_projects.cards.change_image'),
       onPress: () => {
         changeImage();
-        setIsEditing(CHANGE_IMAGE_TYPE);
-        setEditingId(id);
       },
     },
   ];
