@@ -4,6 +4,11 @@ export const createNewUUID = () : string => {
   return uuid.v4();
 }
 
+export const getNameAlias = (fullUri: string) => {
+  const finalSection = fullUri.split(':').pop();
+  return finalSection ? finalSection.replace('/', '_') : '';
+}
+
 export const updateLastSegment = (path: string, newSegment: string): string => {
   const lastSlashIndex = path.lastIndexOf("/");
   if (lastSlashIndex === -1) {return path;}

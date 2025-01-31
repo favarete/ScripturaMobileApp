@@ -12,6 +12,7 @@ import { useTheme } from '@/theme';
 
 import { HomeFolderStateAtom } from '@/state/atoms/persistentContent';
 import { print } from '@/utils/logger';
+import { getNameAlias } from '@/utils/common';
 
 const pickFolder =
   (setHomeFolder: (folderPath: string) => void, t: Translations) =>
@@ -25,7 +26,8 @@ const pickFolder =
         if (!supportFolderExists) {
           await mkdir(supportFolder);
           await mkdir(`${supportFolder}/covers`);
-          await createFile(`${supportFolder}/projects.json`)
+          const nameAlias = getNameAlias(uri);
+          await createFile(`${supportFolder}/${nameAlias}.json`)
         }
 
         // Create Default Persistent Values

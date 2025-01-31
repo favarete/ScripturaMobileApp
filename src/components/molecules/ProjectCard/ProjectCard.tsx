@@ -4,9 +4,18 @@ import type { ContextMenuItem } from '@/components/atoms/CustomContextMenu/Custo
 
 import FeatherIcons from '@react-native-vector-icons/feather';
 import SimpleLineIcons from '@react-native-vector-icons/simple-line-icons';
-import React, { useState } from 'react';
+import { useAtomValue } from 'jotai/index';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Image, StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+  Image,
+  Keyboard,
+  NativeModules,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { openDocument } from 'react-native-saf-x';
 
 import { useTheme } from '@/theme';
@@ -15,9 +24,8 @@ import PlaceholderImage from '@/theme/assets/images/placeholder_book_cover.png';
 import ConfirmationDialog from '@/components/atoms/ConfirmationDialog/ConfirmationDialog';
 import CustomContextMenu from '@/components/atoms/CustomContextMenu/CustomContextMenu';
 
-import { print } from '@/utils/logger';
-import { useAtomValue } from 'jotai/index';
 import { HomeFolderStateAtom } from '@/state/atoms/persistentContent';
+import { print } from '@/utils/logger';
 
 type ProjectProps = {
   changeProjectDescription: (projectId: string, newDescription: string) => void;
@@ -31,6 +39,7 @@ type ProjectProps = {
   setEditingId: React.Dispatch<React.SetStateAction<string>>;
   title: string;
 };
+const { KeyboardModule } = NativeModules;
 
 export const EDIT_TITLE_TYPE = 'edit-title';
 export const EDIT_DESCRIPTION_TYPE = 'edit-description';
@@ -60,7 +69,25 @@ function ProjectCard({
   const [isEditing, setIsEditing] = useState<string>('');
   const [editedTitle, setEditedTitle] = useState(title);
   const [editedDescription, setEditedDescription] = useState(description);
+  const [isPhysicalKeyboard, setIsPhysicalKeyboard] = useState<boolean>(false);
+
   const ICON_SIZE = 20;
+
+  useEffect(() => {
+    const checkKeyboard = async () => {
+      try {
+        const isPhysical = await KeyboardModule.isPhysicalKeyboardConnected();
+        setIsPhysicalKeyboard(isPhysical);
+        if (isPhysical) {
+          Keyboard.dismiss();
+        }
+      } catch (error) {
+        print(error);
+      }
+    };
+
+    void checkKeyboard();
+  }, []);
 
   const changeImage = () => {
     (async () => {
@@ -276,8 +303,10 @@ function ProjectCard({
                 <TextInput
                   autoFocus
                   cursorColor={colors.purple500}
+                  keyboardType='visible-password'
                   maxLength={25}
                   onChangeText={setEditedTitle}
+                  showSoftInputOnFocus={!isPhysicalKeyboard}
                   style={[
                     fonts.defaultFontFamilyBold,
                     styles.inputTitleContent,
@@ -322,9 +351,11 @@ function ProjectCard({
                 <TextInput
                   autoFocus
                   cursorColor={colors.purple500}
+                  keyboardType='visible-password'
                   maxLength={130}
                   multiline
                   onChangeText={setEditedDescription}
+                  showSoftInputOnFocus={!isPhysicalKeyboard}
                   style={[
                     styles.inputDescriptionContent,
                     gutters.marginBottom_12,

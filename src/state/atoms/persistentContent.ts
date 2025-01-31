@@ -13,18 +13,22 @@ import { writeFile } from 'react-native-saf-x';
 
 import { DEFAULT_DATA, DEFAULT_STORAGE_VALUES } from '@/state/defaults';
 import { print } from '@/utils/logger';
+import { getNameAlias } from '@/utils/common';
 
 export const SaveAtomEffect = atomEffect((get) => {
   const allProjectsData = get(ProjectsDataStateAtom);
   const homeFolder = get(HomeFolderStateAtom);
   if (homeFolder) {
     const supportFolder = `${homeFolder}/.scriptura`;
-    const projectsFile = `${supportFolder}/projects.json`;
-    try {
-      const jsonString = JSON.stringify(allProjectsData, null, 2);
-      void writeFile(projectsFile, jsonString);
-    } catch (error) {
-      print(error);
+    const nameAlias = getNameAlias(homeFolder);
+    if(nameAlias) {
+      const projectsFile = `${supportFolder}/${nameAlias}.json`;
+      try {
+        const jsonString = JSON.stringify(allProjectsData, null, 2);
+        void writeFile(projectsFile, jsonString);
+      } catch (error) {
+        print(error);
+      }
     }
   }
 });

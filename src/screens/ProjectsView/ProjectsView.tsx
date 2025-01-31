@@ -2,19 +2,15 @@ import type { RootScreenProps } from '@/navigation/types';
 import type { Project } from '@/state/defaults';
 
 import { useAtom, useAtomValue } from 'jotai';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, Text, View } from 'react-native';
 import {
   copyFile,
-  createFile,
-  DocumentFileDetail,
   exists,
   hasPermission,
   listFiles,
-  mkdir,
-  openDocument,
-  openDocumentTree,
+  readFile,
   rename,
 } from 'react-native-saf-x';
 import Toast from 'react-native-toast-message';
@@ -31,9 +27,10 @@ import {
   HomeFolderStateAtom,
   LanguageStateAtom,
   ProjectsDataStateAtom,
+  SaveAtomEffect,
 } from '@/state/atoms/persistentContent';
 import { initialProjectContent } from '@/state/defaults';
-import { createNewUUID, updateLastSegment } from '@/utils/common';
+import { createNewUUID, getNameAlias, updateLastSegment } from '@/utils/common';
 import { print } from '@/utils/logger';
 import {
   findProjectById,
@@ -41,16 +38,19 @@ import {
   findProjectByTitleAndPath,
 } from '@/utils/projectHelpers';
 
+
 function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
   const { t } = useTranslation();
+  useAtom(SaveAtomEffect);
 
   const { fonts, gutters } = useTheme();
 
   const homeFolder = useAtomValue(HomeFolderStateAtom);
   const language = useAtomValue(LanguageStateAtom);
+  const [allProjects, setAllProjects] = useAtom(ProjectsDataStateAtom);
+
   const [loadingProjects, setLoadingProjects] = useState<boolean>(true);
   const [editingId, setEditingId] = useState<string>('');
-  const [allProjects, setAllProjects] = useAtom(ProjectsDataStateAtom);
 
   useEffect(() => {
     const fetchAllProjects = async () => {
@@ -64,6 +64,21 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
               type: 'error',
             });
           } else {
+            const supportFile = getNameAlias(homeFolder);
+            const allProjectsPersistedDataPath = `${homeFolder}/.scriptura/${supportFile}`;
+
+            const allProjectsPersistedDataPathExists = await exists(
+              allProjectsPersistedDataPath,
+            );
+
+            let allProjectsTemp: Project[] = [];
+            if (allProjectsPersistedDataPathExists) {
+              const allProjectsPersistedData: string = await readFile(
+                allProjectsPersistedDataPath,
+              );
+              allProjectsTemp = JSON.parse(allProjectsPersistedData);
+            }
+
             // List all files in "homeFolder" (selected by user)
             const __allExternalStorageFolders = await listFiles(homeFolder);
             // Remove everything that's not a directory and also hidden directories
@@ -77,7 +92,7 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
             for (const project of allExternalStorageFolders) {
               // Check if it was mapped before on an Android device
               const persistedAndroidProjectContent = findProjectByTitleAndPath(
-                allProjects,
+                allProjectsTemp,
                 project.name,
                 project.uri,
               );
@@ -85,21 +100,19 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
                 // It wasn't mapped before on an Android device
                 // Check if it was mapped before on any other device
                 const persistedExternalProjectContent = findProjectByTitle(
-                  allProjects,
+                  allProjectsTemp,
                   project.name,
                 );
                 if (persistedExternalProjectContent) {
                   // It was mapped before on other device
-                  setAllProjects((prevState) =>
-                    prevState.map((salvedProject) =>
-                      salvedProject.id === persistedExternalProjectContent.id
-                        ? {
-                            ...salvedProject,
-                            androidFolderPath: project.uri,
-                            lastUpdate: Date.now(),
-                          }
-                        : salvedProject,
-                    ),
+                  allProjectsTemp = allProjectsTemp.map((savedProject) =>
+                    savedProject.id === persistedExternalProjectContent.id
+                      ? {
+                          ...savedProject,
+                          androidFolderPath: project.uri,
+                          lastUpdate: Date.now(),
+                        }
+                      : savedProject,
                   );
                 } else {
                   // It wasn't mapped before on any other device
@@ -111,13 +124,14 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
                     lastUpdate: project.lastModified,
                     title: project.name,
                   };
-                  setAllProjects((prevState) => [
-                    ...prevState,
+                  allProjectsTemp = [
+                    ...allProjectsTemp,
                     __defineNewProject,
-                  ]);
+                  ];
                 }
               }
             }
+            setAllProjects(allProjectsTemp);
           }
         }
       } catch (error) {

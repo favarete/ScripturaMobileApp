@@ -2,42 +2,48 @@ import type { MarkdownStyle } from '@expensify/react-native-live-markdown';
 import type { RootScreenProps } from '@/navigation/types';
 import type { Chapter } from '@/state/defaults';
 
-
-
-import { MarkdownTextInput, parseExpensiMark } from '@expensify/react-native-live-markdown';
+import {
+  MarkdownTextInput,
+  parseExpensiMark,
+} from '@expensify/react-native-live-markdown';
 import { useAtomValue } from 'jotai/index';
 import { useAtom } from 'jotai/react';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Keyboard, NativeModules, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  Alert,
+  Keyboard,
+  NativeModules,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { readFile, writeFile } from 'react-native-saf-x';
 import Toast from 'react-native-toast-message';
 
-
-const { KeyboardModule } = NativeModules;
-
-if (!KeyboardModule) {
-  console.error("KeyboardModule não foi encontrado! Verifique o código nativo.");
-}
-
 import { useTheme } from '@/theme';
 import { Paths } from '@/navigation/paths';
-
-
 
 import { TitleBar } from '@/components/atoms';
 import StatisticsBar from '@/components/atoms/StatisticsBar/StatisticsBar';
 import MarkdownRenderer from '@/components/molecules/MarkdownRenderer/MarkdownRenderer';
 
-
-
-import { AutosaveModeStateAtom, ProjectsDataStateAtom, SaveAtomEffect } from '@/state/atoms/persistentContent';
-import { countWordsFromHTML, getChapterById, getTitleFromChapterFile, updateChapterValue } from '@/utils/chapterHelpers';
+import {
+  AutosaveModeStateAtom,
+  ProjectsDataStateAtom,
+  SaveAtomEffect,
+} from '@/state/atoms/persistentContent';
+import {
+  countWordsFromHTML,
+  getChapterById,
+  getTitleFromChapterFile,
+  updateChapterValue,
+} from '@/utils/chapterHelpers';
 import { print } from '@/utils/logger';
 
-
-
-
+const { KeyboardModule } = NativeModules;
 
 function ContentView({
   navigation,
@@ -83,14 +89,7 @@ function ContentView({
       };
       void saveFileContent();
     }
-  }, [
-    selectedChapter,
-    markdownText,
-    setAllProjects,
-    id,
-    chapterId,
-    t,
-  ]);
+  }, [selectedChapter, markdownText, setAllProjects, id, chapterId, t]);
 
   const onNavigateBack = () => {
     onSave();
@@ -105,7 +104,16 @@ function ContentView({
     if (contentCount > 0 && contentCount % 5 === 0) {
       onSave();
     }
-  }, [chapterId, contentCount, id, markdownText, onSave, selectedChapter, setAllProjects, t]);
+  }, [
+    chapterId,
+    contentCount,
+    id,
+    markdownText,
+    onSave,
+    selectedChapter,
+    setAllProjects,
+    t,
+  ]);
 
   useEffect(() => {
     setContentCount(0);
@@ -135,7 +143,6 @@ function ContentView({
 
     void checkKeyboard();
   }, []);
-
 
   const onToggleView = () => {
     onSave();
@@ -260,7 +267,7 @@ function ContentView({
                 <MarkdownTextInput
                   autoCapitalize="none"
                   autoFocus
-                  keyboardType='visible-password'
+                  keyboardType="visible-password"
                   markdownStyle={markdownStylesEdit}
                   maxLength={30_000}
                   multiline
