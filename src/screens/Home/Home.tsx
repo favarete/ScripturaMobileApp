@@ -52,7 +52,7 @@ function Home() {
 
           <View style={[layout.absolute, gutters.paddingTop_80]}>
             <AssetByVariant
-              path={'tom'}
+              path={'ScripturaLogo'}
               resizeMode={'contain'}
               style={{ height: 300, width: 300 }}
             />

@@ -42,7 +42,7 @@ function Startup({ navigation }: RootScreenProps<Paths.Startup>) {
         ]}
       >
         <AssetByVariant
-          path={'tom'}
+          path={'ScripturaLogo'}
           resizeMode={'contain'}
           style={{ height: 300, width: 300 }}
         />
