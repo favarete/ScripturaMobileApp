@@ -2,8 +2,8 @@ import type { StackScreenProps } from '@react-navigation/stack';
 import type { Paths } from '@/navigation/paths';
 
 export type RootStackParamList = {
-  [Paths.ChaptersView]: {id: string};
-  [Paths.ContentView]: {chapterId: string, id: string};
+  [Paths.ChaptersView]: {projectId: string};
+  [Paths.ContentView]: {chapterId: string, projectId: string};
   [Paths.Example]: undefined;
   [Paths.Home]: undefined;
   [Paths.ProjectsView]: undefined;

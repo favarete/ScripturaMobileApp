@@ -5,7 +5,7 @@ import { useAtom } from 'jotai';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { createFile, exists, mkdir, openDocumentTree } from 'react-native-saf-x';
+import { createFile, exists, mkdir, openDocumentTree, writeFile } from 'react-native-saf-x';
 import Toast from 'react-native-toast-message';
 
 import { useTheme } from '@/theme';
@@ -27,7 +27,10 @@ const pickFolder =
           await mkdir(supportFolder);
           await mkdir(`${supportFolder}/covers`);
           const nameAlias = getNameAlias(uri);
-          await createFile(`${supportFolder}/${nameAlias}.json`)
+
+          const projectsFile = `${supportFolder}/${nameAlias}.json`
+          await createFile(projectsFile)
+          await writeFile(projectsFile, JSON.stringify([], null, 2));
         }
 
         // Create Default Persistent Values

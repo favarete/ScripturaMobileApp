@@ -53,7 +53,7 @@ function ContentView({
   const { t } = useTranslation();
 
   const { colors, fonts, gutters, layout } = useTheme();
-  const { chapterId, id } = route.params;
+  const { chapterId, projectId } = route.params;
 
   const [allProjects, setAllProjects] = useAtom(ProjectsDataStateAtom);
   const autosaveMode = useAtomValue(AutosaveModeStateAtom);
@@ -72,7 +72,7 @@ function ContentView({
       const saveFileContent = async () => {
         try {
           await writeFile(selectedChapter.androidFilePath, markdownText);
-          updateChapterValue(setAllProjects, id, chapterId, {
+          updateChapterValue(setAllProjects, projectId, chapterId, {
             title:
               getTitleFromChapterFile(markdownText) ??
               t('screen_chapters.no_title'),
@@ -89,11 +89,11 @@ function ContentView({
       };
       void saveFileContent();
     }
-  }, [selectedChapter, markdownText, setAllProjects, id, chapterId, t]);
+  }, [selectedChapter, markdownText, setAllProjects, projectId, chapterId, t]);
 
   const onNavigateBack = () => {
     onSave();
-    navigation.navigate(Paths.ChaptersView, { id });
+    navigation.navigate(Paths.ChaptersView, { projectId });
   };
 
   const onNavigateToStatistics = () => {
@@ -107,7 +107,7 @@ function ContentView({
   }, [
     chapterId,
     contentCount,
-    id,
+    projectId,
     markdownText,
     onSave,
     selectedChapter,
@@ -162,11 +162,11 @@ function ContentView({
   });
 
   useEffect(() => {
-    const chapter = getChapterById(id, chapterId, allProjects);
+    const chapter = getChapterById(projectId, chapterId, allProjects);
     if (chapter) {
       setSelectedChapter(chapter);
     }
-  }, [allProjects, chapterId, id]);
+  }, [allProjects, chapterId, projectId]);
 
   useEffect(() => {
     if (selectedChapter) {

@@ -2,12 +2,11 @@ import type { RootScreenProps } from '@/navigation/types';
 import type { Project } from '@/state/defaults';
 
 import { useAtom, useAtomValue } from 'jotai';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, Text, View } from 'react-native';
 import {
   copyFile,
-  exists,
   hasPermission,
   listFiles,
   readFile,
@@ -36,8 +35,8 @@ import {
   findProjectById,
   findProjectByTitle,
   findProjectByTitleAndPath,
+  projectListsAreEqual,
 } from '@/utils/projectHelpers';
-
 
 function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
   const { t } = useTranslation();
@@ -52,10 +51,14 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
   const [loadingProjects, setLoadingProjects] = useState<boolean>(true);
   const [editingId, setEditingId] = useState<string>('');
 
+  const prevHomeFolderRef = useRef<null | string>(null);
+
   useEffect(() => {
     const fetchAllProjects = async () => {
       try {
-        if (homeFolder.length > 0) {
+        if (homeFolder.length > 0 && prevHomeFolderRef.current !== homeFolder) {
+          prevHomeFolderRef.current = homeFolder;
+
           const permissionToHomeFolder = await hasPermission(homeFolder);
           if (!permissionToHomeFolder) {
             Toast.show({
@@ -65,73 +68,72 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
             });
           } else {
             const supportFile = getNameAlias(homeFolder);
-            const allProjectsPersistedDataPath = `${homeFolder}/.scriptura/${supportFile}`;
+            const allProjectsPersistedDataPath = `${homeFolder}/.scriptura/${supportFile}.json`;
 
-            const allProjectsPersistedDataPathExists = await exists(
+            const allProjectsPersistedData: string = await readFile(
               allProjectsPersistedDataPath,
             );
+            let allProjectsTemp: Project[] = JSON.parse(
+              allProjectsPersistedData,
+            );
 
-            let allProjectsTemp: Project[] = [];
-            if (allProjectsPersistedDataPathExists) {
-              const allProjectsPersistedData: string = await readFile(
-                allProjectsPersistedDataPath,
-              );
-              allProjectsTemp = JSON.parse(allProjectsPersistedData);
-            }
-
-            // List all files in "homeFolder" (selected by user)
-            const __allExternalStorageFolders = await listFiles(homeFolder);
-            // Remove everything that's not a directory and also hidden directories
-            const allExternalStorageFolders =
-              __allExternalStorageFolders.filter(
-                (item) =>
-                  item.type === 'directory' && !item.name.startsWith('.'),
-              );
-
-            // Check if these directories were already mapped before
-            for (const project of allExternalStorageFolders) {
-              // Check if it was mapped before on an Android device
-              const persistedAndroidProjectContent = findProjectByTitleAndPath(
-                allProjectsTemp,
-                project.name,
-                project.uri,
-              );
-              if (!persistedAndroidProjectContent) {
-                // It wasn't mapped before on an Android device
-                // Check if it was mapped before on any other device
-                const persistedExternalProjectContent = findProjectByTitle(
-                  allProjectsTemp,
-                  project.name,
+            const alreadyLoadedProjects = projectListsAreEqual(
+              allProjectsTemp,
+              allProjects,
+            );
+            if (!alreadyLoadedProjects) {
+              // List all files in "homeFolder" (selected by user)
+              const __allExternalStorageFolders = await listFiles(homeFolder);
+              // Remove everything that's not a directory and also hidden directories
+              const allExternalStorageFolders =
+                __allExternalStorageFolders.filter(
+                  (item) =>
+                    item.type === 'directory' && !item.name.startsWith('.'),
                 );
-                if (persistedExternalProjectContent) {
-                  // It was mapped before on other device
-                  allProjectsTemp = allProjectsTemp.map((savedProject) =>
-                    savedProject.id === persistedExternalProjectContent.id
-                      ? {
-                          ...savedProject,
-                          androidFolderPath: project.uri,
-                          lastUpdate: Date.now(),
-                        }
-                      : savedProject,
+
+              // Check if these directories were already mapped before
+              for (const project of allExternalStorageFolders) {
+                // Check if it was mapped before on an Android device
+                const persistedAndroidProjectContent =
+                  findProjectByTitleAndPath(
+                    allProjectsTemp,
+                    project.name,
+                    project.uri,
                   );
-                } else {
-                  // It wasn't mapped before on any other device
-                  // Map the project for the first time
-                  const __defineNewProject: Project = {
-                    ...initialProjectContent,
-                    androidFolderPath: project.uri,
-                    id: createNewUUID(),
-                    lastUpdate: project.lastModified,
-                    title: project.name,
-                  };
-                  allProjectsTemp = [
-                    ...allProjectsTemp,
-                    __defineNewProject,
-                  ];
+                if (!persistedAndroidProjectContent) {
+                  // It wasn't mapped before on an Android device
+                  // Check if it was mapped before on any other device
+                  const persistedExternalProjectContent = findProjectByTitle(
+                    allProjectsTemp,
+                    project.name,
+                  );
+                  if (persistedExternalProjectContent) {
+                    // It was mapped before on other device
+                    allProjectsTemp = allProjectsTemp.map((savedProject) =>
+                      savedProject.id === persistedExternalProjectContent.id
+                        ? {
+                            ...savedProject,
+                            androidFolderPath: project.uri,
+                            lastUpdate: Date.now(),
+                          }
+                        : savedProject,
+                    );
+                  } else {
+                    // It wasn't mapped before on any other device
+                    // Map the project for the first time
+                    const __defineNewProject: Project = {
+                      ...initialProjectContent,
+                      androidFolderPath: project.uri,
+                      id: createNewUUID(),
+                      lastUpdate: project.lastModified,
+                      title: project.name,
+                    };
+                    allProjectsTemp = [...allProjectsTemp, __defineNewProject];
+                  }
                 }
               }
+              setAllProjects(allProjectsTemp);
             }
-            setAllProjects(allProjectsTemp);
           }
         }
       } catch (error) {
@@ -149,8 +151,8 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
     void fetchAllProjects();
   }, [allProjects, homeFolder, language, loadingProjects, setAllProjects, t]);
 
-  const onNavigate = (id: string) => {
-    navigation.navigate(Paths.ChaptersView, { id });
+  const onNavigate = (projectId: string) => {
+    navigation.navigate(Paths.ChaptersView, { projectId });
   };
 
   // Change the exhibition title and the folder name

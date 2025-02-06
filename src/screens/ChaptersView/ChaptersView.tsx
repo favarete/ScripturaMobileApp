@@ -39,7 +39,7 @@ function ChaptersView({
   route,
 }: RootScreenProps<Paths.ChaptersView>) {
   const { t } = useTranslation();
-  const { id } = route.params;
+  const { projectId } = route.params;
 
   const language = useAtomValue(LanguageStateAtom);
   const [allProjects, setAllProjects] = useAtom(ProjectsDataStateAtom);
@@ -71,15 +71,15 @@ function ChaptersView({
     });
   };
 
-  const onNavigate = (id: string, chapterId: string) => {
-    updateChaptersById(id, allChapters);
-    navigation.navigate(Paths.ContentView, { chapterId, id });
+  const onNavigate = (projectId: string, chapterId: string) => {
+    updateChaptersById(projectId, allChapters);
+    navigation.navigate(Paths.ContentView, { chapterId, projectId });
   };
 
   useEffect(() => {
-    const book = getProjectById(id, allProjects);
+    const book = getProjectById(projectId, allProjects);
     setSelectedBook(book);
-  }, [allProjects, id]);
+  }, [allProjects, projectId]);
 
   useEffect(() => {
     if (selectedBook) {
@@ -147,7 +147,7 @@ function ChaptersView({
       };
       void fetchAllChapters();
     }
-  }, [id, language, selectedBook, setAllProjects, t]);
+  }, [projectId, language, selectedBook, setAllProjects, t]);
 
   const updatedOn = selectedBook
     ? formatTimestamp(selectedBook.lastUpdate, language)
@@ -175,7 +175,7 @@ function ChaptersView({
                     lastUpdate={chapter.lastUpdate}
                     lastViewedId={selectedBook.chapterLastViewed}
                     onNavigate={onNavigate}
-                    projectId={id}
+                    projectId={projectId}
                     setEditingId={setEditingId}
                     status={chapter.status}
                     title={chapter.title}
