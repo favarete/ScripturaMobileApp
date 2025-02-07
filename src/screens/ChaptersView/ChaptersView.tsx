@@ -244,7 +244,7 @@ function ChaptersView({
   };
 
   const handleDragEnd = ({ data }: { data: Chapter[] }) => {
-    setAllChaptersSorted(data);
+    setAllChaptersSorted(data.map(item => ({ ...item })));
   };
 
   return (
