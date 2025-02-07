@@ -76,7 +76,11 @@
       "view": "Chapters Screen",
       "word_count": "Words",
       "status_header": "Status for",
-      "updated_at": "Last Updated at",
+      "updated_at": "Last Updated on",
+      "chapter_updated_at": {
+        "today": "Last Updated at",
+        "past": "Last Updated on"
+      },
       "no_title": "No title! Use '# Some title' on your file",
       "no_chapters": "No chapters available",
       "status": {

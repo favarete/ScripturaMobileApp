@@ -12,13 +12,16 @@ import { useTheme } from '@/theme';
 import CustomContextMenu from '@/components/atoms/CustomContextMenu/CustomContextMenu';
 
 type ChapterProps = {
+  drag: () => void;
   editingId: string;
   id: string;
-  lastUpdate: number;
+  isActive: boolean;
+  lastUpdate: string;
   lastViewedId: string;
   onNavigate: (id: string, chapterId: string) => void;
   projectId: string;
   setEditingId: React.Dispatch<React.SetStateAction<string>>;
+  setReorderingChapters: React.Dispatch<React.SetStateAction<boolean>>;
   status: ChapterStatusType;
   title: string;
   updateChaptersStatus: (
@@ -30,13 +33,16 @@ type ChapterProps = {
 };
 
 function ChapterCard({
+  drag,
   editingId,
   id,
+  isActive,
   lastUpdate,
   lastViewedId,
   onNavigate,
   projectId,
   setEditingId,
+  setReorderingChapters,
   status,
   title,
   updateChaptersStatus,
@@ -53,6 +59,16 @@ function ChapterCard({
   const styles = StyleSheet.create({
     cardContent: {
       alignItems: 'center',
+    },
+    elevatedBox: {
+      backgroundColor: colors.full,
+      borderRadius: 10,
+      elevation: 4,
+      ...gutters.padding_4,
+      shadowColor: colors.fullOpposite,
+      shadowOffset: { height: 4, width: 0 },
+      shadowOpacity: 0.3,
+      shadowRadius: 6,
     },
     hiddenIcon: {
       opacity: 0,
@@ -230,7 +246,7 @@ function ChapterCard({
         gutters.marginHorizontal_32,
         gutters.marginVertical_12,
         styles.cardContent,
-        editingStyle,
+        isActive ? styles.elevatedBox : editingStyle,
       ]}
     >
       <View style={[layout.row, styles.cardContent]}>
@@ -271,25 +287,34 @@ function ChapterCard({
               >
                 {title}
               </Text>
+              <Text style={[fonts.size_12, styles.cardContent]}>
+                <Text style={[fonts.defaultFontFamilyBold, fonts.purple500]}>
+                  {t(`screen_chapters.status.${status}`)}
+                </Text>
+                <Text style={[fonts.defaultFontFamilyRegular, fonts.gray800]}>
+                  {` | ${t('screen_chapters.word_count')}: ${wordCount}`}
+                </Text>
+              </Text>
               <Text
                 style={[
                   fonts.defaultFontFamilyRegular,
-                  fonts.gray800,
+                  fonts.gray400,
                   fonts.size_12,
                   styles.cardContent,
                 ]}
               >
-                <Text style={[fonts.defaultFontFamilyBold, fonts.purple500]}>
-                  {t(`screen_chapters.status.${status}`)}
-                </Text>
-                <Text>{` | ${t('screen_chapters.word_count')}: ${wordCount}`}</Text>
+                <Text>{lastUpdate}</Text>
               </Text>
             </View>
           </CustomContextMenu>
         </View>
       </View>
       <View>
-        <TouchableOpacity onPress={handleSort}>
+        <TouchableOpacity
+          onLongPress={drag}
+          onPressIn={() => setReorderingChapters(true)}
+          onPressOut={() => setReorderingChapters(false)}
+        >
           <Text>
             <MaterialIcons color={colors.gray800} name="sort" size={30} />
           </Text>

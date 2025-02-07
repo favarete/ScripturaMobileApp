@@ -56,7 +56,11 @@ function ParallaxImage({
   });
 
   const styles = StyleSheet.create({
+    childrenContainer: {
+      backgroundColor: colors.full,
+    },
     image: {
+      filter: 'brightness(20%)',
       height: IMG_HEIGHT,
       resizeMode: 'cover',
       width: '100%',
@@ -66,7 +70,6 @@ function ParallaxImage({
     },
     overlay: {
       alignItems: 'flex-start',
-      backgroundColor: 'rgba(0, 0, 0, 0.7)',
       bottom: 0,
       justifyContent: 'space-between',
       left: 0,
@@ -81,7 +84,7 @@ function ParallaxImage({
 
   return (
     <Animated.ScrollView ref={scrollRef} scrollEventThrottle={16}>
-      <View style={[styles.imageContainer, gutters.marginBottom_16]}>
+      <View style={[styles.imageContainer]}>
         <Animated.Image
           source={parallaxImage}
           style={[styles.image, imageAnimatedStyle]}
@@ -123,7 +126,7 @@ function ParallaxImage({
           </View>
         </View>
       </View>
-      {children}
+      <View style={[styles.childrenContainer]}>{children}</View>
     </Animated.ScrollView>
   );
 }
