@@ -17,7 +17,6 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
-  Text,
   View,
 } from 'react-native';
 import { readFile, writeFile } from 'react-native-saf-x';
@@ -68,7 +67,17 @@ function ContentView({
   const [contentCount, setContentCount] = useState<number>(0);
 
   const prevMarkdownTextRef = useRef<null | string>(null);
+  const lastSaveRef = useRef<number>(0);
+
   const onSave = useCallback(() => {
+    const now = Date.now();
+
+    if (now - lastSaveRef.current < 5000) {
+      return;
+    }
+
+    lastSaveRef.current = now;
+
     if (selectedChapter) {
       const saveFileContent = async () => {
         try {
@@ -245,7 +254,12 @@ function ContentView({
   let titleToRender: string;
   if (chapterTitle) {
     titleToRender =
-      prevMarkdownTextRef.current !== markdownText && !viewMode
+      prevMarkdownTextRef.current &&
+      prevMarkdownTextRef.current.length > 0 &&
+      markdownText &&
+      markdownText.length > 0 &&
+      prevMarkdownTextRef.current !== markdownText &&
+      !viewMode
         ? `${chapterTitle}*`
         : chapterTitle;
   } else {
@@ -267,7 +281,6 @@ function ContentView({
               viewMode ? styles.markdownContent : styles.markdownContentEdit
             }
           >
-            <Text>{contentCount}</Text>
             <View
               style={[
                 gutters.paddingHorizontal_8,
