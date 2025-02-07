@@ -235,7 +235,7 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
             project.id === projectId
               ? {
                   ...project,
-                  coverPath: `${coverFolder}/${projectId}.png`,
+                  coverPath: `${projectId}.png`,
                   lastUpdate: Date.now(),
                 }
               : project,

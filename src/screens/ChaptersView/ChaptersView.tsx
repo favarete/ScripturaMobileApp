@@ -3,8 +3,8 @@ import type { RootScreenProps } from '@/navigation/types';
 import { useAtom, useAtomValue } from 'jotai/index';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Text, View } from 'react-native';
-import { listFiles, readFile } from 'react-native-saf-x';
+import { type ImageURISource, Text, View } from 'react-native';
+import { hasPermission, listFiles, readFile } from 'react-native-saf-x';
 import Toast from 'react-native-toast-message';
 
 import PlaceholderImage from '@/theme/assets/images/placeholder_book_cover.png';
@@ -14,8 +14,9 @@ import ParallaxImage from '@/components/atoms/ParallaxImage/ParallaxImage';
 import ChapterCard from '@/components/molecules/ChapterCard/ChapterCard';
 
 import {
+  HomeFolderStateAtom,
   LanguageStateAtom,
-  ProjectsDataStateAtom,
+  ProjectsDataStateAtom
 } from '@/state/atoms/persistentContent';
 import type {
   Chapter,
@@ -42,11 +43,15 @@ function ChaptersView({
   const { projectId } = route.params;
 
   const language = useAtomValue(LanguageStateAtom);
+  const homeFolder = useAtomValue(HomeFolderStateAtom);
+
   const [allProjects, setAllProjects] = useAtom(ProjectsDataStateAtom);
   const [loadingChapters, setLoadingChapters] = useState<boolean>(true);
   const [selectedBook, setSelectedBook] = useState<Project>();
   const [editingId, setEditingId] = useState<string>('');
   const [allChapters, setAllChapters] = useState<Chapter[]>([]);
+  const [imageToLoad, setImageToLoad] =
+    useState<ImageURISource>(PlaceholderImage);
 
   const onNavigateBack = () => {
     navigation.navigate(Paths.ProjectsView);
@@ -77,9 +82,27 @@ function ChaptersView({
   };
 
   useEffect(() => {
-    const book = getProjectById(projectId, allProjects);
-    setSelectedBook(book);
-  }, [allProjects, projectId]);
+    const book: Project | undefined = getProjectById(projectId, allProjects);
+    if (book){
+      (async () => {
+        try {
+          const imageURI = `${homeFolder}/.scriptura/covers/${book.coverPath}`;
+          const __hasPermission = await hasPermission(imageURI);
+          if (__hasPermission) {
+            const base64String = await readFile(imageURI, {
+              encoding: 'base64',
+            });
+
+            setImageToLoad({ uri: `data:image/png;base64,${base64String}` });
+          }
+        } catch (error) {
+          print(error);
+        }
+      })();
+      setSelectedBook(book);
+    }
+
+  }, [allProjects, homeFolder, projectId]);
 
   useEffect(() => {
     if (selectedBook) {
@@ -158,7 +181,7 @@ function ChaptersView({
       {selectedBook && (
         <ParallaxImage
           onNavigateBack={onNavigateBack}
-          parallaxImage={PlaceholderImage}
+          parallaxImage={imageToLoad}
           parallaxSubtitle={`${t('screen_chapters.updated_at')} ${updatedOn}`}
           parallaxTitle={`${selectedBook.title}`}
         >

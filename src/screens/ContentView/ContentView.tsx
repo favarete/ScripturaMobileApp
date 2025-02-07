@@ -8,7 +8,7 @@ import {
 } from '@expensify/react-native-live-markdown';
 import { useAtomValue } from 'jotai/index';
 import { useAtom } from 'jotai/react';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Alert,
@@ -67,6 +67,7 @@ function ContentView({
 
   const [contentCount, setContentCount] = useState<number>(0);
 
+  const prevMarkdownTextRef = useRef<null | string>(null);
   const onSave = useCallback(() => {
     if (selectedChapter) {
       const saveFileContent = async () => {
@@ -78,6 +79,7 @@ function ContentView({
               t('screen_chapters.no_title'),
             wordCount: countWordsFromHTML(markdownText),
           });
+          prevMarkdownTextRef.current = markdownText;
         } catch (error) {
           Toast.show({
             text1: t('saving_error.text1'),
@@ -101,7 +103,7 @@ function ContentView({
   };
 
   useEffect(() => {
-    if (contentCount > 0 && contentCount % 5 === 0) {
+    if (contentCount > 0 && contentCount % 3 === 0) {
       onSave();
     }
   }, [
@@ -122,11 +124,15 @@ function ContentView({
   useEffect(() => {
     const interval = setInterval(() => {
       if (autosaveMode && !viewMode) {
-        setContentCount((prevState) => prevState + 1);
+        setContentCount(
+          prevMarkdownTextRef.current === markdownText
+            ? 0
+            : (count) => count + 1,
+        );
       }
     }, 1000);
     return () => clearInterval(interval);
-  }, [autosaveMode, viewMode]);
+  }, [autosaveMode, markdownText, viewMode]);
 
   useEffect(() => {
     const checkKeyboard = async () => {
@@ -236,6 +242,16 @@ function ContentView({
     },
   };
 
+  let titleToRender: string;
+  if (chapterTitle) {
+    titleToRender =
+      prevMarkdownTextRef.current !== markdownText
+        ? `${chapterTitle}*`
+        : chapterTitle;
+  } else {
+    titleToRender = t('screen_content.view');
+  }
+
   return (
     <View style={layout.flex_1}>
       {selectedChapter && (
@@ -243,7 +259,7 @@ function ContentView({
           <TitleBar
             onNavigateBack={onNavigateBack}
             onToggleView={onToggleView}
-            title={chapterTitle ?? t('screen_content.view')}
+            title={titleToRender}
             viewMode={viewMode}
           />
           <ScrollView

@@ -16,7 +16,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { openDocument } from 'react-native-saf-x';
+import { hasPermission, openDocument, readFile } from 'react-native-saf-x';
 
 import { useTheme } from '@/theme';
 import PlaceholderImage from '@/theme/assets/images/placeholder_book_cover.png';
@@ -62,9 +62,29 @@ function ProjectCard({
   const { t } = useTranslation();
   const homeFolder = useAtomValue(HomeFolderStateAtom);
 
-  const [imageToLoad, setImageToLoad] = useState<ImageURISource>(
-    image ? { uri: `${homeFolder}/${image}` } : PlaceholderImage,
-  );
+  const [imageToLoad, setImageToLoad] =
+    useState<ImageURISource>(PlaceholderImage);
+
+  useEffect(() => {
+    if (image && image.length > 0) {
+      (async () => {
+        try {
+          const imageURI = `${homeFolder}/.scriptura/covers/${image}`;
+          const __hasPermission = await hasPermission(imageURI);
+          if (__hasPermission) {
+            const base64String = await readFile(imageURI, {
+              encoding: 'base64',
+            });
+
+            setImageToLoad({ uri: `data:image/png;base64,${base64String}` });
+          }
+        } catch (error) {
+          print(error);
+        }
+      })();
+    }
+  }, [homeFolder, image]);
+
   const [tempImage, setTempImage] = useState<ImageURISource | null>(null);
   const [isEditing, setIsEditing] = useState<string>('');
   const [editedTitle, setEditedTitle] = useState(title);
@@ -101,15 +121,6 @@ function ProjectCard({
           return file?.type === 'file' && validMimeTypes.includes(file.mime);
         };
         if (result?.length === 1 && isValidImage(result[0])) {
-          // ImageSourcePropType Example:
-          // {
-          //   "size": 136507,
-          //   "mime": "image/jpeg",
-          //   "lastModified": 1738265118000,
-          //   "name": "9781844137879_Heritage_Books_Banksy_Wall_and_Piece.jpg",
-          //   "type": "file",
-          //   "uri": "content://com.android.providers.downloads.documents/document/msf%3A1000000130"
-          // }
           setTempImage({ uri: result[0].uri });
           setIsEditing(CHANGE_IMAGE_TYPE);
           setEditingId(id);
@@ -303,7 +314,7 @@ function ProjectCard({
                 <TextInput
                   autoFocus
                   cursorColor={colors.purple500}
-                  keyboardType='visible-password'
+                  keyboardType="visible-password"
                   maxLength={25}
                   onChangeText={setEditedTitle}
                   showSoftInputOnFocus={!isPhysicalKeyboard}
@@ -351,7 +362,7 @@ function ProjectCard({
                 <TextInput
                   autoFocus
                   cursorColor={colors.purple500}
-                  keyboardType='visible-password'
+                  keyboardType="visible-password"
                   maxLength={130}
                   multiline
                   onChangeText={setEditedDescription}
