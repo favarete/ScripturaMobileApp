@@ -245,7 +245,7 @@ function ContentView({
   let titleToRender: string;
   if (chapterTitle) {
     titleToRender =
-      prevMarkdownTextRef.current !== markdownText
+      prevMarkdownTextRef.current !== markdownText && !viewMode
         ? `${chapterTitle}*`
         : chapterTitle;
   } else {
