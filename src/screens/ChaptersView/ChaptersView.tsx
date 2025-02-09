@@ -45,9 +45,7 @@ function ChaptersView({
 
   const [allProjects, setAllProjects] = useAtom(ProjectsDataStateAtom);
   const [loadingChapters, setLoadingChapters] = useState<boolean>(true);
-  const [reorderingChapter, setReorderingChapter] = useState<string>('');
   const [selectedBook, setSelectedBook] = useState<Project>();
-  const [editingId, setEditingId] = useState<string>('');
   const [allChapters, setAllChapters] = useState<Chapter[]>([]);
   const [allChaptersSorted, setAllChaptersSorted] = useState<Chapter[]>([]);
   const [imageToLoad, setImageToLoad] =
@@ -219,14 +217,11 @@ function ChaptersView({
           ) : allChapters.length > 0 ? (
             <ChaptersDynamicList
               onNavigateBack={onNavigateBack}
-              editingId={editingId}
               setAllChaptersSorted={setAllChaptersSorted}
               selectedBook={selectedBook}
               allChaptersSorted={allChaptersSorted}
               onNavigate={onNavigate}
-              setEditingId={setEditingId}
               updateChaptersStatus={updateChaptersStatus}
-              setReorderingChapter={setReorderingChapter}
               projectId={projectId}
               parallaxImage={imageToLoad}
               parallaxSubtitle={`${t('screen_chapters.updated_at')} ${projectUpdatedOn}`}

@@ -1,7 +1,7 @@
 import type { Chapter, Project } from '@/state/defaults';
 
 import { useAtomValue } from 'jotai/index';
-import React, { Dispatch, FC, memo, useRef } from 'react';
+import React, { FC, memo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   FlatList,
@@ -9,7 +9,7 @@ import {
   ListRenderItemInfo,
   StyleSheet,
   Text,
-  View
+  View,
 } from 'react-native';
 import Animated, {
   interpolate,
@@ -20,6 +20,7 @@ import Animated, {
 import ReorderableList, {
   ReorderableListReorderEvent,
   reorderItems,
+  useIsActive,
   useReorderableDrag,
 } from 'react-native-reorderable-list';
 
@@ -40,11 +41,8 @@ type ChaptersDynamicListType = {
   parallaxSubtitle: string;
   parallaxTitle: string;
   projectId: string;
-  editingId: string;
   selectedBook: Project;
   allChaptersSorted: Chapter[];
-  setReorderingChapter: Dispatch<React.SetStateAction<string>>;
-  setEditingId: React.Dispatch<React.SetStateAction<string>>;
   onNavigate: (projectId: string, chapterId: string) => void;
   updateChaptersStatus: (
     projectId: string,
@@ -61,10 +59,7 @@ export function ChaptersDynamicList({
   parallaxSubtitle,
   parallaxTitle,
   selectedBook,
-  editingId,
   updateChaptersStatus,
-  setReorderingChapter,
-  setEditingId,
   projectId,
   setAllChaptersSorted,
   allChaptersSorted,
@@ -80,30 +75,18 @@ export function ChaptersDynamicList({
   const ChapterCardInstance: FC<Chapter> = memo(
     ({ id, title, lastUpdate, status, wordCount }) => {
       const drag = useReorderableDrag();
-
-      // const ChapterCardInstance: FC<Chapter> = memo(
-      //   ({ id, title, lastUpdate, status, wordCount }) => {
-      //     const drag = useReorderableDrag();
-      //
-      //     return (
-      //       <Pressable onLongPress={drag}>
-      //         <Text>Card {id}</Text>
-      //       </Pressable>
-      //     );
-      //   },
-      // );
+      const isActive = useIsActive();
 
       return (
         <ChapterCard
           drag={drag}
-          editingId={editingId}
           id={id}
           key={id}
+          isActive={isActive}
           lastUpdate={chapterUpdatedOn(lastUpdate)}
           lastViewedId={selectedBook.chapterLastViewed}
           onNavigate={onNavigate}
           projectId={projectId}
-          setEditingId={setEditingId}
           status={status}
           title={title}
           updateChaptersStatus={updateChaptersStatus}
@@ -237,9 +220,12 @@ export function ChaptersDynamicList({
       </View>
       <ReorderableList
         contentContainerStyle={styles.listContainer}
+        shouldUpdateActiveItem
         ListHeaderComponent={
-          <View style={styles.header}>
-            <TitleBar onNavigateBack={onNavigateBack} title={parallaxTitle} />
+          <View style={gutters.marginBottom_16}>
+            <View style={styles.header}>
+              <TitleBar onNavigateBack={onNavigateBack} title={parallaxTitle} />
+            </View>
           </View>
         }
         ref={listRef}

@@ -1,7 +1,12 @@
-import type { PropsWithChildren, ReactElement } from 'react';
 import type { GestureResponderEvent, LayoutChangeEvent } from 'react-native';
 
-import React, { useState } from 'react';
+import { useSetAtom } from 'jotai';
+import React, {
+  PropsWithChildren,
+  ReactElement,
+  useEffect,
+  useState,
+} from 'react';
 import {
   Dimensions,
   Modal,
@@ -10,6 +15,8 @@ import {
   Text,
   View,
 } from 'react-native';
+
+import { SelectedChapterStateAtom } from '@/state/atoms/temporaryContent';
 
 export type ContextMenuItem = {
   color: string;
@@ -22,6 +29,7 @@ export type ContextMenuItem = {
 type CustomContextMenuProps = PropsWithChildren<{
   backgroundColor: string;
   menuItems: ContextMenuItem[];
+  id: string;
   menuTitle: string;
   menuTitleBackgroundColor: string;
   onPress: () => void;
@@ -32,11 +40,13 @@ const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
 function CustomContextMenu({
   backgroundColor,
   children = false,
+  id,
   menuItems,
   menuTitle,
   menuTitleBackgroundColor,
   onPress,
 }: CustomContextMenuProps) {
+  const setSelectedChapterId = useSetAtom(SelectedChapterStateAtom);
   const [menuVisible, setMenuVisible] = useState(false);
   const [touchPosition, setTouchPosition] = useState({ x: 0, y: 0 });
   const [finalPosition, setFinalPosition] = useState({ x: -9999, y: -9999 });
@@ -110,6 +120,10 @@ function CustomContextMenu({
 
     setFinalPosition({ x: px, y: py });
   };
+
+  useEffect(() => {
+    menuVisible ? setSelectedChapterId(id) : setSelectedChapterId('');
+  }, [menuVisible]);
 
   return (
     <View>

@@ -3,7 +3,8 @@ import type { ChapterStatusType } from '@/state/defaults';
 
 import MaterialIcons from '@react-native-vector-icons/material-icons';
 import SimpleLineIcons from '@react-native-vector-icons/simple-line-icons';
-import React from 'react';
+import { useAtomValue } from 'jotai';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -11,16 +12,16 @@ import { useTheme } from '@/theme';
 
 import CustomContextMenu from '@/components/atoms/CustomContextMenu/CustomContextMenu';
 
+import { SelectedChapterStateAtom } from '@/state/atoms/temporaryContent';
+
 export type ChapterCardProps = {
   drag: () => void;
-  editingId: string;
   id: string;
-  isActive?: boolean;
+  isActive: boolean;
   lastUpdate: string;
   lastViewedId: string;
   onNavigate: (id: string, chapterId: string) => void;
   projectId: string;
-  setEditingId: React.Dispatch<React.SetStateAction<string>>;
   status: ChapterStatusType;
   title: string;
   updateChaptersStatus: (
@@ -31,16 +32,16 @@ export type ChapterCardProps = {
   wordCount: number;
 };
 
+type DynamicStyleType = { opacity?: number; zIndex: number } | undefined;
+
 function ChapterCard({
   drag,
-  editingId,
   id,
-  isActive = false,
+  isActive,
   lastUpdate,
   lastViewedId,
   onNavigate,
   projectId,
-  setEditingId,
   status,
   title,
   updateChaptersStatus,
@@ -50,23 +51,17 @@ function ChapterCard({
 
   const { t } = useTranslation();
 
-  const handleSort = () => {
-    setEditingId(id);
-  };
+  const selectedChapterId = useAtomValue(SelectedChapterStateAtom);
+  const [dynamicStyle, setDynamicStyle] = useState<DynamicStyleType>();
 
   const styles = StyleSheet.create({
     cardContent: {
       alignItems: 'center',
+      ...gutters.paddingVertical_4,
     },
     elevatedBox: {
-      backgroundColor: colors.full,
+      backgroundColor: colors.purple100 + '4E',
       borderRadius: 10,
-      elevation: 4,
-      ...gutters.padding_4,
-      shadowColor: colors.fullOpposite,
-      shadowOffset: { height: 4, width: 0 },
-      shadowOpacity: 0.3,
-      shadowRadius: 6,
     },
     hiddenIcon: {
       opacity: 0,
@@ -80,13 +75,13 @@ function ChapterCard({
     },
   });
 
-  let editingStyle;
-  if (editingId.length > 0) {
-    editingStyle =
-      editingId === id ? styles.sendToForeground : styles.sendToBackground;
-  } else {
-    editingStyle = undefined;
-  }
+  useEffect(() => {
+    selectedChapterId.length === 0
+      ? setDynamicStyle(styles.sendToForeground)
+      : selectedChapterId === id
+        ? setDynamicStyle(styles.sendToForeground)
+        : setDynamicStyle(styles.sendToBackground);
+  }, [selectedChapterId]);
 
   const ICON_SIZE = 20;
   const menuItems: ContextMenuItem[] = [
@@ -242,25 +237,19 @@ function ChapterCard({
         layout.row,
         layout.justifyBetween,
         gutters.marginHorizontal_32,
-        gutters.marginVertical_12,
         styles.cardContent,
-        isActive ? styles.elevatedBox : editingStyle,
+        isActive && styles.elevatedBox,
       ]}
     >
-      <View style={[layout.row, styles.cardContent]}>
+      <View style={[layout.row, styles.cardContent, dynamicStyle]}>
         <View style={lastViewedId !== id && styles.hiddenIcon}>
-          <TouchableOpacity onPress={handleSort}>
-            <Text>
-              <SimpleLineIcons
-                color={colors.fullOpposite}
-                name="cup"
-                size={25}
-              />
-            </Text>
-          </TouchableOpacity>
+          <Text>
+            <SimpleLineIcons color={colors.fullOpposite} name="cup" size={25} />
+          </Text>
         </View>
         <View>
           <CustomContextMenu
+            id={id}
             backgroundColor={colors.full}
             menuItems={menuItems}
             menuTitle={`${t('screen_chapters.status_header')} '${title}'`}
@@ -308,9 +297,7 @@ function ChapterCard({
         </View>
       </View>
       <View>
-        <TouchableOpacity
-          onLongPress={drag}
-        >
+        <TouchableOpacity onLongPress={drag}>
           <Text>
             <MaterialIcons color={colors.gray800} name="sort" size={30} />
           </Text>
