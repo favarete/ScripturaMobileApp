@@ -76,6 +76,7 @@
       "view": "Tela de Capítulos",
       "word_count": "Palavras",
       "status_header": "Status para",
+      "total_word_count": "Palavras Totais",
       "updated_at": "Última atualização em",
       "chapter_updated_at": {
         "today": "Atualizado às",

@@ -20,13 +20,23 @@ function TitleBar({
 }: Props) {
   const { backgrounds, colors, fonts, gutters, layout } = useTheme();
 
-  const extraElements = onToggleView && onNavigateBack;
+  const extraElements = onToggleView || onNavigateBack;
   const ICON_SIZE = 25;
   const styles = StyleSheet.create({
     container: {
       height: 52,
     },
+    hide: {
+      opacity: 0,
+    }
   });
+
+  const getOnToggleViewHandler = (
+    onToggleView?: (() => void) | false,
+  ): (() => void) | undefined => {
+    return onToggleView || undefined;
+  };
+
   return (
     <View
       style={[
@@ -39,7 +49,7 @@ function TitleBar({
         styles.container,
       ]}
     >
-      {extraElements && (
+      {onNavigateBack && (
         <View>
           <TouchableOpacity onPress={onNavigateBack}>
             <Text>
@@ -58,8 +68,11 @@ function TitleBar({
         {title}
       </Text>
       {extraElements && (
-        <View>
-          <TouchableOpacity onPress={onToggleView}>
+        <View style={!onToggleView && styles.hide}>
+          <TouchableOpacity
+            disabled={!onToggleView}
+            onPress={getOnToggleViewHandler(onToggleView)}
+          >
             <Text>
               <FeatherIcons
                 color={colors.fullOpposite}

@@ -11,17 +11,16 @@ import { useTheme } from '@/theme';
 
 import CustomContextMenu from '@/components/atoms/CustomContextMenu/CustomContextMenu';
 
-type ChapterProps = {
+export type ChapterCardProps = {
   drag: () => void;
   editingId: string;
   id: string;
-  isActive: boolean;
+  isActive?: boolean;
   lastUpdate: string;
   lastViewedId: string;
   onNavigate: (id: string, chapterId: string) => void;
   projectId: string;
   setEditingId: React.Dispatch<React.SetStateAction<string>>;
-  setReorderingChapters: React.Dispatch<React.SetStateAction<boolean>>;
   status: ChapterStatusType;
   title: string;
   updateChaptersStatus: (
@@ -36,18 +35,17 @@ function ChapterCard({
   drag,
   editingId,
   id,
-  isActive,
+  isActive = false,
   lastUpdate,
   lastViewedId,
   onNavigate,
   projectId,
   setEditingId,
-  setReorderingChapters,
   status,
   title,
   updateChaptersStatus,
   wordCount,
-}: ChapterProps) {
+}: ChapterCardProps) {
   const { colors, fonts, gutters, layout } = useTheme();
 
   const { t } = useTranslation();
@@ -312,8 +310,6 @@ function ChapterCard({
       <View>
         <TouchableOpacity
           onLongPress={drag}
-          onPressIn={() => setReorderingChapters(true)}
-          onPressOut={() => setReorderingChapters(false)}
         >
           <Text>
             <MaterialIcons color={colors.gray800} name="sort" size={30} />

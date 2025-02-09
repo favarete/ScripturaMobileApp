@@ -1,5 +1,4 @@
 import type { ImageURISource } from 'react-native';
-import type { RenderItemParams } from 'react-native-draggable-flatlist';
 import type { RootScreenProps } from '@/navigation/types';
 import type { Chapter, Project } from '@/state/defaults';
 
@@ -7,8 +6,6 @@ import { useAtom, useAtomValue } from 'jotai/index';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Text, View } from 'react-native';
-import DraggableFlatList from 'react-native-draggable-flatlist';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { hasPermission, listFiles, readFile } from 'react-native-saf-x';
 import Toast from 'react-native-toast-message';
 
@@ -16,8 +13,7 @@ import { useTheme } from '@/theme';
 import PlaceholderImage from '@/theme/assets/images/placeholder_book_cover.png';
 import { Paths } from '@/navigation/paths';
 
-import ParallaxImage from '@/components/atoms/ParallaxImage/ParallaxImage';
-import ChapterCard from '@/components/molecules/ChapterCard/ChapterCard';
+import { ChaptersDynamicList } from '@/components/organisms/ChaptersDynamicList/ChaptersDynamicList';
 
 import {
   HomeFolderStateAtom,
@@ -32,7 +28,7 @@ import {
   getTitleFromChapterFile,
   updateChapterValue,
 } from '@/utils/chapterHelpers';
-import { createNewUUID, formatDateTime, formatTimestamp } from '@/utils/common';
+import { createNewUUID, formatTimestamp } from '@/utils/common';
 import { print } from '@/utils/logger';
 import { findProjectById } from '@/utils/projectHelpers';
 
@@ -49,7 +45,7 @@ function ChaptersView({
 
   const [allProjects, setAllProjects] = useAtom(ProjectsDataStateAtom);
   const [loadingChapters, setLoadingChapters] = useState<boolean>(true);
-  const [reorderingChapters, setReorderingChapters] = useState<boolean>(false);
+  const [reorderingChapter, setReorderingChapter] = useState<string>('');
   const [selectedBook, setSelectedBook] = useState<Project>();
   const [editingId, setEditingId] = useState<string>('');
   const [allChapters, setAllChapters] = useState<Chapter[]>([]);
@@ -214,68 +210,32 @@ function ChaptersView({
     ? formatTimestamp(selectedBook.lastUpdate, language)
     : '';
 
-  const chapterUpdatedOn = (dateInteger: number): string => {
-    const { content, isToday } = formatDateTime(dateInteger, language);
-    const moment = isToday ? 'today' : 'past';
-
-    return `${t(`screen_chapters.chapter_updated_at.${moment}`)} ${content}`
-  };
-
-  const renderItem = ({ drag, isActive, item }: RenderItemParams<Chapter>) => {
-    return selectedBook ? (
-      <ChapterCard
-        drag={drag}
-        editingId={editingId}
-        id={item.id}
-        isActive={isActive}
-        key={item.id}
-        lastUpdate={chapterUpdatedOn(item.lastUpdate)}
-        lastViewedId={selectedBook.chapterLastViewed}
-        onNavigate={onNavigate}
-        projectId={projectId}
-        setEditingId={setEditingId}
-        setReorderingChapters={setReorderingChapters}
-        status={item.status}
-        title={item.title}
-        updateChaptersStatus={updateChaptersStatus}
-        wordCount={item.wordCount}
-      />
-    ) : null;
-  };
-
-  const handleDragEnd = ({ data }: { data: Chapter[] }) => {
-    setAllChaptersSorted(data.map(item => ({ ...item })));
-  };
-
   return (
     <View>
       {selectedBook && (
-        <ParallaxImage
-          onNavigateBack={onNavigateBack}
-          parallaxImage={imageToLoad}
-          parallaxSubtitle={`${t('screen_chapters.updated_at')} ${projectUpdatedOn}`}
-          parallaxTitle={`${selectedBook.title}`}
-        >
-          <GestureHandlerRootView style={[gutters.marginTop_16]}>
-            <View>
-              {loadingChapters ? (
-                <Text>Loading...</Text>
-              ) : allChapters.length > 0 ? (
-                <DraggableFlatList
-                  activationDistance={reorderingChapters ? 0 : 100}
-                  data={allChaptersSorted}
-                  keyExtractor={(item) => item.id}
-                  onDragEnd={handleDragEnd}
-                  renderItem={renderItem}
-                  scrollEnabled={false}
-                  scrollEventThrottle={16}
-                />
-              ) : (
-                <Text>{t('screen_chapters.no_chapters')}</Text>
-              )}
-            </View>
-          </GestureHandlerRootView>
-        </ParallaxImage>
+        <View style={[gutters.marginTop_16]}>
+          {loadingChapters ? (
+            <Text>Loading...</Text>
+          ) : allChapters.length > 0 ? (
+            <ChaptersDynamicList
+              onNavigateBack={onNavigateBack}
+              editingId={editingId}
+              setAllChaptersSorted={setAllChaptersSorted}
+              selectedBook={selectedBook}
+              allChaptersSorted={allChaptersSorted}
+              onNavigate={onNavigate}
+              setEditingId={setEditingId}
+              updateChaptersStatus={updateChaptersStatus}
+              setReorderingChapter={setReorderingChapter}
+              projectId={projectId}
+              parallaxImage={imageToLoad}
+              parallaxSubtitle={`${t('screen_chapters.updated_at')} ${projectUpdatedOn}`}
+              parallaxTitle={`${selectedBook.title}`}
+            />
+          ) : (
+            <Text>{t('screen_chapters.no_chapters')}</Text>
+          )}
+        </View>
       )}
     </View>
   );

@@ -75,6 +75,7 @@
       "title": "$t(common_appName.full)",
       "view": "Chapters Screen",
       "word_count": "Words",
+      "total_word_count": "Total Words",
       "status_header": "Status for",
       "updated_at": "Last Updated on",
       "chapter_updated_at": {
