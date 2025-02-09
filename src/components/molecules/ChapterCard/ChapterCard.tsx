@@ -76,12 +76,16 @@ function ChapterCard({
   });
 
   useEffect(() => {
-    selectedChapterId.length === 0
-      ? setDynamicStyle(styles.sendToForeground)
-      : selectedChapterId === id
-        ? setDynamicStyle(styles.sendToForeground)
-        : setDynamicStyle(styles.sendToBackground);
-  }, [selectedChapterId]);
+    if (selectedChapterId.length === 0) {
+      setDynamicStyle(styles.sendToForeground);
+    } else {
+      if (selectedChapterId === id) {
+        setDynamicStyle(styles.sendToForeground);
+      } else {
+        setDynamicStyle(styles.sendToBackground);
+      }
+    }
+  }, [id, selectedChapterId, styles.sendToBackground, styles.sendToForeground]);
 
   const ICON_SIZE = 20;
   const menuItems: ContextMenuItem[] = [
@@ -249,8 +253,8 @@ function ChapterCard({
         </View>
         <View>
           <CustomContextMenu
-            id={id}
             backgroundColor={colors.full}
+            id={id}
             menuItems={menuItems}
             menuTitle={`${t('screen_chapters.status_header')} '${title}'`}
             menuTitleBackgroundColor={colors.purple100}
