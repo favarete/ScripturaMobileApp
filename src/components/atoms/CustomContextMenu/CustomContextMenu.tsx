@@ -1,9 +1,10 @@
 import type { GestureResponderEvent, LayoutChangeEvent } from 'react-native';
 
 import { useSetAtom } from 'jotai';
-import React, {
+import type {
   PropsWithChildren,
-  ReactElement,
+  ReactElement} from 'react';
+import React, {
   useEffect,
   useState,
 } from 'react';
@@ -28,8 +29,8 @@ export type ContextMenuItem = {
 
 type CustomContextMenuProps = PropsWithChildren<{
   backgroundColor: string;
-  menuItems: ContextMenuItem[];
   id: string;
+  menuItems: ContextMenuItem[];
   menuTitle: string;
   menuTitleBackgroundColor: string;
   onPress: () => void;
@@ -122,8 +123,12 @@ function CustomContextMenu({
   };
 
   useEffect(() => {
-    menuVisible ? setSelectedChapterId(id) : setSelectedChapterId('');
-  }, [menuVisible]);
+    if (menuVisible) {
+      setSelectedChapterId(id);
+    } else {
+      setSelectedChapterId('');
+    }
+  }, [id, menuVisible, setSelectedChapterId]);
 
   return (
     <View>
