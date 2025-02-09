@@ -216,16 +216,16 @@ function ChaptersView({
             <Text>Loading...</Text>
           ) : allChapters.length > 0 ? (
             <ChaptersDynamicList
-              onNavigateBack={onNavigateBack}
-              setAllChaptersSorted={setAllChaptersSorted}
-              selectedBook={selectedBook}
               allChaptersSorted={allChaptersSorted}
               onNavigate={onNavigate}
-              updateChaptersStatus={updateChaptersStatus}
-              projectId={projectId}
+              onNavigateBack={onNavigateBack}
               parallaxImage={imageToLoad}
               parallaxSubtitle={`${t('screen_chapters.updated_at')} ${projectUpdatedOn}`}
               parallaxTitle={`${selectedBook.title}`}
+              projectId={projectId}
+              selectedBook={selectedBook}
+              setAllChaptersSorted={setAllChaptersSorted}
+              updateChaptersStatus={updateChaptersStatus}
             />
           ) : (
             <Text>{t('screen_chapters.no_chapters')}</Text>

@@ -1,16 +1,16 @@
-import type { Chapter, Project } from '@/state/defaults';
-
-import { useAtomValue } from 'jotai/index';
-import React, { FC, memo, useRef } from 'react';
-import { useTranslation } from 'react-i18next';
-import {
+import type { FC } from 'react';
+import type {
   FlatList,
   ImageSourcePropType,
   ListRenderItemInfo,
-  StyleSheet,
-  Text,
-  View,
 } from 'react-native';
+import type { ReorderableListReorderEvent } from 'react-native-reorderable-list';
+import type { Chapter, Project } from '@/state/defaults';
+
+import { useAtomValue } from 'jotai/index';
+import React, { memo, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
+import { StyleSheet, Text, View } from 'react-native';
 import Animated, {
   interpolate,
   useAnimatedScrollHandler,
@@ -18,7 +18,6 @@ import Animated, {
   useSharedValue,
 } from 'react-native-reanimated';
 import ReorderableList, {
-  ReorderableListReorderEvent,
   reorderItems,
   useIsActive,
   useReorderableDrag,
@@ -36,33 +35,33 @@ import { formatDateTime } from '@/utils/common';
 const IMG_HEIGHT = 180;
 
 type ChaptersDynamicListType = {
+  allChaptersSorted: Chapter[];
+  onNavigate: (projectId: string, chapterId: string) => void;
   onNavigateBack: () => void;
   parallaxImage: ImageSourcePropType;
   parallaxSubtitle: string;
   parallaxTitle: string;
   projectId: string;
   selectedBook: Project;
-  allChaptersSorted: Chapter[];
-  onNavigate: (projectId: string, chapterId: string) => void;
+  setAllChaptersSorted: React.Dispatch<React.SetStateAction<Chapter[]>>;
   updateChaptersStatus: (
     projectId: string,
     chapterId: string,
     newStatus: string,
   ) => void;
-  setAllChaptersSorted: React.Dispatch<React.SetStateAction<Chapter[]>>;
 };
 
 export function ChaptersDynamicList({
-  onNavigateBack,
+  allChaptersSorted,
   onNavigate,
+  onNavigateBack,
   parallaxImage,
   parallaxSubtitle,
   parallaxTitle,
-  selectedBook,
-  updateChaptersStatus,
   projectId,
+  selectedBook,
   setAllChaptersSorted,
-  allChaptersSorted,
+  updateChaptersStatus,
 }: ChaptersDynamicListType) {
   const language = useAtomValue(LanguageStateAtom);
 
@@ -73,7 +72,7 @@ export function ChaptersDynamicList({
   const scrollY = useSharedValue(0);
 
   const ChapterCardInstance: FC<Chapter> = memo(
-    ({ id, title, lastUpdate, status, wordCount }) => {
+    ({ id, lastUpdate, status, title, wordCount }) => {
       const drag = useReorderableDrag();
       const isActive = useIsActive();
 
@@ -81,8 +80,8 @@ export function ChaptersDynamicList({
         <ChapterCard
           drag={drag}
           id={id}
-          key={id}
           isActive={isActive}
+          key={id}
           lastUpdate={chapterUpdatedOn(lastUpdate)}
           lastViewedId={selectedBook.chapterLastViewed}
           onNavigate={onNavigate}
@@ -108,13 +107,30 @@ export function ChaptersDynamicList({
   };
 
   const styles = StyleSheet.create({
-    header: {
-      position: 'absolute',
-      width: '100%',
-      top: -IMG_HEIGHT,
-    },
     childrenContainer: {
       backgroundColor: colors.full,
+    },
+    header: {
+      position: 'absolute',
+      top: -IMG_HEIGHT,
+      width: '100%',
+    },
+    image: {
+      filter: 'brightness(20%)',
+      height: IMG_HEIGHT,
+      resizeMode: 'cover',
+      width: '100%',
+    },
+    imageContainer: {
+      height: IMG_HEIGHT,
+      left: 0,
+      overflow: 'hidden',
+      position: 'absolute',
+      right: 0,
+      top: 0,
+    },
+    listContainer: {
+      paddingTop: IMG_HEIGHT,
     },
     overlay: {
       alignItems: 'flex-start',
@@ -127,23 +143,6 @@ export function ChaptersDynamicList({
     },
     overlayText: {
       color: colors.full,
-    },
-    image: {
-      height: IMG_HEIGHT,
-      filter: 'brightness(20%)',
-      resizeMode: 'cover',
-      width: '100%',
-    },
-    imageContainer: {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      height: IMG_HEIGHT,
-      overflow: 'hidden',
-    },
-    listContainer: {
-      paddingTop: IMG_HEIGHT,
     },
   });
 
@@ -220,7 +219,8 @@ export function ChaptersDynamicList({
       </View>
       <ReorderableList
         contentContainerStyle={styles.listContainer}
-        shouldUpdateActiveItem
+        data={allChaptersSorted}
+        keyExtractor={(item) => item.id}
         ListHeaderComponent={
           <View style={gutters.marginBottom_16}>
             <View style={styles.header}>
@@ -228,12 +228,11 @@ export function ChaptersDynamicList({
             </View>
           </View>
         }
-        ref={listRef}
-        onScroll={scrollHandler}
-        data={allChaptersSorted}
         onReorder={handleReorder}
+        onScroll={scrollHandler}
+        ref={listRef}
         renderItem={renderItem}
-        keyExtractor={(item) => item.id}
+        shouldUpdateActiveItem
       />
     </View>
   );
