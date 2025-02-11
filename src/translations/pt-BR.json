@@ -76,7 +76,12 @@
       "view": "Tela de Capítulos",
       "word_count": "Palavras",
       "status_header": "Status para",
-      "updated_at": "Atualizado por último em",
+      "total_word_count": "Palavras Totais",
+      "updated_at": "Última atualização em",
+      "chapter_updated_at": {
+        "today": "Atualizado às",
+        "past": "Atualizado em"
+      },
       "no_title": "Sem título! Use '# Título' no seu arquivo",
       "no_chapters": "Nenhum capítulo disponível",
       "status": {

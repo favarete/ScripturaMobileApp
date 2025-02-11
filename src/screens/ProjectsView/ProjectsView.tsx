@@ -39,9 +39,9 @@ import {
 } from '@/utils/projectHelpers';
 
 function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
-  const { t } = useTranslation();
   useAtom(SaveAtomEffect);
 
+  const { t } = useTranslation();
   const { fonts, gutters } = useTheme();
 
   const homeFolder = useAtomValue(HomeFolderStateAtom);

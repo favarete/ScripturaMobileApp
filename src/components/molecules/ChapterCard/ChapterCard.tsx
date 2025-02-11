@@ -3,7 +3,8 @@ import type { ChapterStatusType } from '@/state/defaults';
 
 import MaterialIcons from '@react-native-vector-icons/material-icons';
 import SimpleLineIcons from '@react-native-vector-icons/simple-line-icons';
-import React from 'react';
+import { useAtomValue } from 'jotai';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -11,14 +12,16 @@ import { useTheme } from '@/theme';
 
 import CustomContextMenu from '@/components/atoms/CustomContextMenu/CustomContextMenu';
 
-type ChapterProps = {
-  editingId: string;
+import { SelectedChapterStateAtom } from '@/state/atoms/temporaryContent';
+
+export type ChapterCardProps = {
+  drag: () => void;
   id: string;
-  lastUpdate: number;
+  isActive: boolean;
+  lastUpdate: string;
   lastViewedId: string;
   onNavigate: (id: string, chapterId: string) => void;
   projectId: string;
-  setEditingId: React.Dispatch<React.SetStateAction<string>>;
   status: ChapterStatusType;
   title: string;
   updateChaptersStatus: (
@@ -29,50 +32,61 @@ type ChapterProps = {
   wordCount: number;
 };
 
+type DynamicStyleType = { opacity?: number; zIndex: number } | undefined;
+
 function ChapterCard({
-  editingId,
+  drag,
   id,
+  isActive,
   lastUpdate,
   lastViewedId,
   onNavigate,
   projectId,
-  setEditingId,
   status,
   title,
   updateChaptersStatus,
   wordCount,
-}: ChapterProps) {
+}: ChapterCardProps) {
   const { colors, fonts, gutters, layout } = useTheme();
 
   const { t } = useTranslation();
 
-  const handleSort = () => {
-    setEditingId(id);
-  };
+  const selectedChapterId = useAtomValue(SelectedChapterStateAtom);
+  const [dynamicStyle, setDynamicStyle] = useState<DynamicStyleType>();
 
   const styles = StyleSheet.create({
     cardContent: {
       alignItems: 'center',
+      ...gutters.paddingVertical_4,
+    },
+    elevatedBox: {
+      backgroundColor: colors.purple100 + '4E',
+      borderRadius: 10,
     },
     hiddenIcon: {
       opacity: 0,
     },
-    sendToBackground: {
-      opacity: 0.3,
-      zIndex: 1,
-    },
-    sendToForeground: {
-      zIndex: 200,
-    },
   });
 
-  let editingStyle;
-  if (editingId.length > 0) {
-    editingStyle =
-      editingId === id ? styles.sendToForeground : styles.sendToBackground;
-  } else {
-    editingStyle = undefined;
-  }
+  const sendToBackground = useMemo(() => ({
+    opacity: 0.3,
+    zIndex: 1,
+  }), []);
+  const sendToForeground = useMemo(() => ({
+    zIndex: 200,
+  }), []);
+
+  useEffect(() => {
+    if (selectedChapterId.length === 0) {
+      setDynamicStyle(sendToForeground);
+    } else {
+      if (selectedChapterId === id) {
+        setDynamicStyle(sendToForeground);
+      } else {
+        setDynamicStyle(sendToBackground);
+      }
+    }
+  }, [id, selectedChapterId, sendToBackground, sendToForeground]);
 
   const ICON_SIZE = 20;
   const menuItems: ContextMenuItem[] = [
@@ -228,26 +242,20 @@ function ChapterCard({
         layout.row,
         layout.justifyBetween,
         gutters.marginHorizontal_32,
-        gutters.marginVertical_12,
         styles.cardContent,
-        editingStyle,
+        isActive && styles.elevatedBox,
       ]}
     >
-      <View style={[layout.row, styles.cardContent]}>
+      <View style={[layout.row, styles.cardContent, dynamicStyle]}>
         <View style={lastViewedId !== id && styles.hiddenIcon}>
-          <TouchableOpacity onPress={handleSort}>
-            <Text>
-              <SimpleLineIcons
-                color={colors.fullOpposite}
-                name="cup"
-                size={25}
-              />
-            </Text>
-          </TouchableOpacity>
+          <Text>
+            <SimpleLineIcons color={colors.fullOpposite} name="cup" size={25} />
+          </Text>
         </View>
         <View>
           <CustomContextMenu
             backgroundColor={colors.full}
+            id={id}
             menuItems={menuItems}
             menuTitle={`${t('screen_chapters.status_header')} '${title}'`}
             menuTitleBackgroundColor={colors.purple100}
@@ -271,25 +279,30 @@ function ChapterCard({
               >
                 {title}
               </Text>
+              <Text style={[fonts.size_12, styles.cardContent]}>
+                <Text style={[fonts.defaultFontFamilyBold, fonts.purple500]}>
+                  {t(`screen_chapters.status.${status}`)}
+                </Text>
+                <Text style={[fonts.defaultFontFamilyRegular, fonts.gray800]}>
+                  {` | ${t('screen_chapters.word_count')}: ${wordCount}`}
+                </Text>
+              </Text>
               <Text
                 style={[
                   fonts.defaultFontFamilyRegular,
-                  fonts.gray800,
+                  fonts.gray400,
                   fonts.size_12,
                   styles.cardContent,
                 ]}
               >
-                <Text style={[fonts.defaultFontFamilyBold, fonts.purple500]}>
-                  {t(`screen_chapters.status.${status}`)}
-                </Text>
-                <Text>{` | ${t('screen_chapters.word_count')}: ${wordCount}`}</Text>
+                <Text>{lastUpdate}</Text>
               </Text>
             </View>
           </CustomContextMenu>
         </View>
       </View>
       <View>
-        <TouchableOpacity onPress={handleSort}>
+        <TouchableOpacity onLongPress={drag}>
           <Text>
             <MaterialIcons color={colors.gray800} name="sort" size={30} />
           </Text>
