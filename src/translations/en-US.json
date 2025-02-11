@@ -42,6 +42,13 @@
       "view": "Projects",
       "placeholder": "Home Folder",
       "nothing_found": "No projects available",
+      "writing_streak": "Writing Streak",
+      "days": "Days",
+      "settings": "Settings",
+      "averages_title": "Average Words Written",
+      "daily": "Daily",
+      "monthly": "Monthly",
+      "weekly": "Weekly",
       "folder_renamed": {
         "text1": "Folder renamed!",
         "text2": "The project's folder was renamed."

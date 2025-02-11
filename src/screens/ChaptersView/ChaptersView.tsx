@@ -156,6 +156,7 @@ function ChaptersView({
           const allChaptersData: Chapter[] = [];
           let totalWordCount = 0;
           let latestUpdateInProject = 0;
+          let latestUpdateInProjectId = '';
           for (const chapter of allExternalStorageProjectFiles) {
             const chapterFileContent: string = await readFile(chapter.uri);
             const chapterFileContentTitle: string =
@@ -189,14 +190,22 @@ function ChaptersView({
                   wordCount: markdownWordCount,
                 };
             totalWordCount += markdownWordCount;
-            latestUpdateInProject = Math.max(latestUpdateInProject, __defineNewChapter.lastUpdate);
+            if (__defineNewChapter.lastUpdate > latestUpdateInProject) {
+              latestUpdateInProject = __defineNewChapter.lastUpdate;
+              latestUpdateInProjectId = __defineNewChapter.id;
+            }
             allChaptersData.push(__defineNewChapter);
           }
           setAllChapters(allChaptersData);
           setAllProjects((prevProjects) =>
             prevProjects.map((project) =>
               project.id === projectId
-                ? { ...project, lastUpdate: latestUpdateInProject, wordCount: totalWordCount }
+                ? {
+                    ...project,
+                    chapterLastViewed: latestUpdateInProjectId,
+                    lastUpdate: latestUpdateInProject,
+                    wordCount: totalWordCount,
+                  }
                 : project,
             ),
           );

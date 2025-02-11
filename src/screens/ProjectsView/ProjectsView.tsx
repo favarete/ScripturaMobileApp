@@ -18,7 +18,9 @@ import { useTheme } from '@/theme';
 import { Paths } from '@/navigation/paths';
 
 import { TitleBar } from '@/components/atoms';
+import MainHeader from '@/components/atoms/MainHeader/MainHeader';
 import { FolderSelector } from '@/components/molecules';
+import Averages from '@/components/molecules/Averages/Averages';
 import ProjectCard from '@/components/molecules/ProjectCard/ProjectCard';
 import { SafeScreen } from '@/components/templates';
 
@@ -53,7 +55,11 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
 
   const prevHomeFolderRef = useRef<null | string>(null);
 
+  const hasFetchedProjects = useRef(false);
   useEffect(() => {
+    if (hasFetchedProjects.current) {
+      return;
+    }
     const fetchAllProjects = async () => {
       try {
         if (homeFolder.length > 0 && prevHomeFolderRef.current !== homeFolder) {
@@ -149,10 +155,15 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
     };
 
     void fetchAllProjects();
+    hasFetchedProjects.current = true;
   }, [allProjects, homeFolder, language, loadingProjects, setAllProjects, t]);
 
   const onNavigate = (projectId: string) => {
     navigation.navigate(Paths.ChaptersView, { projectId });
+  };
+
+  const onNavigateSettings = () => {
+    navigation.navigate(Paths.SettingsView);
   };
 
   // Change the exhibition title and the folder name
@@ -261,12 +272,22 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
       <ScrollView>
         <View style={[gutters.paddingHorizontal_32]}>
           <View style={[gutters.marginTop_40]}>
-            <Text style={[fonts.size_24, fonts.gray800, fonts.bold]}>
+            <Text
+              style={[
+                fonts.size_24,
+                fonts.gray400,
+                fonts.defaultFontFamilyBold,
+              ]}
+            >
               {t('screen_projects.title')}
             </Text>
           </View>
+        </View>
+        <MainHeader onNavigateSettings={onNavigateSettings} streak={5} />
+        <View style={[gutters.paddingHorizontal_32]}>
           <FolderSelector />
         </View>
+        <Averages daily={10_215} monthly={100_211} weekly={20_564} />
         <View>
           <View style={[gutters.marginVertical_24]}>
             <TitleBar title={t('screen_projects.view')} />

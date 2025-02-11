@@ -5,6 +5,8 @@
 - [ ] Add feature to pin projects
 - [ ] Add marker to last position during revisions of a text
 - [ ] Add option to delete (with confirmation dialog) projects
+- [ ] Add placeholders to loading objects
+
 
 # Bugs to Fix
 - [ ] Changing the Home Folder don't update the projects unless you reopen the app

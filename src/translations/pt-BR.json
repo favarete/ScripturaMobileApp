@@ -42,6 +42,13 @@
       "view": "Projetos",
       "placeholder": "Pasta Principal",
       "nothing_found": "Nenhum projeto disponível",
+      "writing_streak": "Ofensiva de Escrita",
+      "days": "Dias",
+      "settings": "Configurações",
+      "averages_title": "Média de Palavras Escritas",
+      "daily": "Diárias",
+      "monthly": "Mensais",
+      "weekly": "Semanais",
       "folder_renamed": {
         "text1": "Pasta renomeada!",
         "text2": "A pasta do projeto foi renomeada."

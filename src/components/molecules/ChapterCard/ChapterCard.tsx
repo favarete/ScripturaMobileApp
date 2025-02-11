@@ -249,7 +249,7 @@ function ChapterCard({
       <View style={[layout.row, styles.cardContent, dynamicStyle]}>
         <View style={lastViewedId !== id && styles.hiddenIcon}>
           <Text>
-            <SimpleLineIcons color={colors.fullOpposite} name="cup" size={25} />
+            <SimpleLineIcons color={colors.gray400} name="cup" size={25} />
           </Text>
         </View>
         <View>
