@@ -3,7 +3,7 @@ import type { RootScreenProps } from '@/navigation/types';
 import type { Chapter, Project } from '@/state/defaults';
 
 import { useAtom, useAtomValue } from 'jotai/index';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Text, View } from 'react-native';
 import { hasPermission, listFiles, readFile } from 'react-native-saf-x';
@@ -19,6 +19,7 @@ import {
   HomeFolderStateAtom,
   LanguageStateAtom,
   ProjectsDataStateAtom,
+  SaveAtomEffect,
 } from '@/state/atoms/persistentContent';
 import { ChapterStatusType, getValidChapterEnum } from '@/state/defaults';
 import {
@@ -28,7 +29,11 @@ import {
   getTitleFromChapterFile,
   updateChapterValue,
 } from '@/utils/chapterHelpers';
-import { createNewUUID, formatTimestamp } from '@/utils/common';
+import {
+  arraysAreEqualAndNonEmpty,
+  createNewUUID,
+  formatTimestamp,
+} from '@/utils/common';
 import { print } from '@/utils/logger';
 import { findProjectById } from '@/utils/projectHelpers';
 
@@ -36,6 +41,8 @@ function ChaptersView({
   navigation,
   route,
 }: RootScreenProps<Paths.ChaptersView>) {
+  useAtom(SaveAtomEffect);
+
   const { t } = useTranslation();
   const { projectId } = route.params;
   const { gutters } = useTheme();
@@ -80,34 +87,61 @@ function ChaptersView({
     navigation.navigate(Paths.ContentView, { chapterId, projectId });
   };
 
-  useEffect(() => {
-    const book: Project | undefined = getProjectById(projectId, allProjects);
-    if (book) {
-      (async () => {
-        try {
-          const imageURI = `${homeFolder}/.scriptura/covers/${book.coverPath}`;
-          const __hasPermission = await hasPermission(imageURI);
-          if (__hasPermission) {
-            const base64String = await readFile(imageURI, {
-              encoding: 'base64',
-            });
+  const book: Project | undefined = getProjectById(projectId, allProjects);
+  if (book && !selectedBook) {
+    (async () => {
+      try {
+        const imageURI = `${homeFolder}/.scriptura/covers/${book.coverPath}`;
+        const __hasPermission = await hasPermission(imageURI);
+        if (__hasPermission) {
+          const base64String = await readFile(imageURI, {
+            encoding: 'base64',
+          });
 
-            setImageToLoad({ uri: `data:image/png;base64,${base64String}` });
-          }
-        } catch (error) {
-          print(error);
+          setImageToLoad({ uri: `data:image/png;base64,${base64String}` });
         }
-      })();
-      setSelectedBook(book);
-    }
-  }, [allProjects, homeFolder, projectId]);
+      } catch (error) {
+        print(error);
+      }
+    })();
+    setSelectedBook(book);
+  }
 
   useEffect(() => {
+    if (allChaptersSorted.length > 0) {
+      const orderedIds = allChaptersSorted.map((chapter) => chapter.id);
+      const actualProject = findProjectById(allProjects, projectId);
+      if (actualProject) {
+        const alreadyUpdated = arraysAreEqualAndNonEmpty(
+          actualProject.chapterSort,
+          orderedIds,
+        );
+        if (!alreadyUpdated) {
+          setAllProjects((prevProjects) =>
+            prevProjects.map((project) =>
+              project.id === projectId
+                ? { ...project, chapterSort: orderedIds }
+                : project,
+            ),
+          );
+        }
+      }
+    }
+  }, [allChaptersSorted, allProjects, projectId, setAllProjects]);
+
+  const hasSelectedBook = useRef(false);
+  useEffect(() => {
+    if (hasSelectedBook.current) {
+      return;
+    }
     if (selectedBook) {
       const fetchAllChapters = async () => {
         try {
           // Get all markdown files directly inside the project's directory
-          // TODO: Probably it's better if this function search recursively for any markdown in any nested directory
+          /*
+           * TODO: Probably it's better if this function search recursively for
+           * any markdown in any nested directory
+           * */
           const __allExternalStorageProjectFiles = await listFiles(
             selectedBook.androidFolderPath,
           );
@@ -120,6 +154,8 @@ function ChaptersView({
 
           // Get Data from all chapters
           const allChaptersData: Chapter[] = [];
+          let totalWordCount = 0;
+          let latestUpdateInProject = 0;
           for (const chapter of allExternalStorageProjectFiles) {
             const chapterFileContent: string = await readFile(chapter.uri);
             const chapterFileContentTitle: string =
@@ -152,26 +188,18 @@ function ChaptersView({
                   windowsFilePath: '',
                   wordCount: markdownWordCount,
                 };
+            totalWordCount += markdownWordCount;
+            latestUpdateInProject = Math.max(latestUpdateInProject, __defineNewChapter.lastUpdate);
             allChaptersData.push(__defineNewChapter);
           }
-
-          // const TestData: Chapter[] = [];
-          // for (let i = 0; i < 15; i++) {
-          //   TestData.push({
-          //     androidFilePath: `android/path/to/file/${i}`,
-          //     id: createNewUUID(),
-          //     iphoneFilePath: `iphone/path/to/file/${i}`,
-          //     lastUpdate: 1_000_000, // Random date within ~115 days
-          //     linuxFilePath: `linux/path/to/file/${i}`,
-          //     osxFilePath: `osx/path/to/file/${i}`,
-          //     revisionPosition: -1,
-          //     status: ChapterStatusType.Undefined,
-          //     title: `Chapter ${i + 1}: Random Title ${createNewUUID().slice(0, 4)}`,
-          //     windowsFilePath: `windows/path/to/file/${i}`,
-          //     wordCount: 1000,
-          //   });
-          // }
           setAllChapters(allChaptersData);
+          setAllProjects((prevProjects) =>
+            prevProjects.map((project) =>
+              project.id === projectId
+                ? { ...project, lastUpdate: latestUpdateInProject, wordCount: totalWordCount }
+                : project,
+            ),
+          );
         } catch (error) {
           Toast.show({
             text1: t('unknown_error.text1'),
@@ -184,10 +212,15 @@ function ChaptersView({
         }
       };
       void fetchAllChapters();
+      hasSelectedBook.current = true;
     }
-  }, [selectedBook, t]);
+  }, [projectId, selectedBook, setAllProjects, t]);
 
+  const hasInitialSortedChapters = useRef(false);
   useEffect(() => {
+    if (hasInitialSortedChapters.current) {
+      return;
+    }
     const selectedProject = findProjectById(allProjects, projectId);
     if (selectedProject) {
       let chapterSort = selectedProject.chapterSort;
@@ -200,9 +233,12 @@ function ChaptersView({
           (orderMap.get(a.id) ?? Infinity) - (orderMap.get(b.id) ?? Infinity)
         );
       });
-      setAllChaptersSorted(sortedArray);
+      if (allChaptersSorted.length === 0 && sortedArray.length !== 0) {
+        setAllChaptersSorted(sortedArray);
+        hasInitialSortedChapters.current = true;
+      }
     }
-  }, [allChapters, allProjects, projectId]);
+  }, [allChapters, allChaptersSorted, allProjects, projectId]);
 
   const projectUpdatedOn = selectedBook
     ? formatTimestamp(selectedBook.lastUpdate, language)

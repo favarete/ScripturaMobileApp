@@ -53,3 +53,10 @@ export const formatDateTime = (
         isToday: false,
       };
 };
+
+export const arraysAreEqualAndNonEmpty = (arr1: string[], arr2: string[]) => {
+  if (arr1.length === 0 || arr2.length === 0) {
+    return false;
+  }
+  return JSON.stringify(arr1) === JSON.stringify(arr2);
+};

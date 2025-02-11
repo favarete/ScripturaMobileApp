@@ -110,6 +110,9 @@ export function ChaptersDynamicList({
     childrenContainer: {
       backgroundColor: colors.full,
     },
+    flatList: {
+      height: '100%',
+    },
     header: {
       position: 'absolute',
       top: -IMG_HEIGHT,
@@ -153,34 +156,34 @@ export function ChaptersDynamicList({
   });
 
   const imageAnimatedStyle = useAnimatedStyle(() => {
+    const translateY = interpolate(
+      scrollY.value,
+      [0, IMG_HEIGHT],
+      [0, -IMG_HEIGHT * 0.5],
+    );
+
+    const scale = interpolate(
+      scrollY.value,
+      [-IMG_HEIGHT, 0, IMG_HEIGHT],
+      [1.2, 1, 1],
+    );
+
+    const opacity = interpolate(scrollY.value, [0, IMG_HEIGHT], [1, 0]);
+
     return {
-      transform: [
-        {
-          translateY: interpolate(
-            scrollY.value,
-            [0, IMG_HEIGHT],
-            [0, -IMG_HEIGHT * 0.5],
-          ),
-        },
-        {
-          scale: interpolate(
-            scrollY.value,
-            [-IMG_HEIGHT, 0, IMG_HEIGHT],
-            [1.2, 1, 1],
-          ),
-        },
-      ],
+      opacity,
+      transform: [{ translateY }, { scale }],
     };
   });
 
-  function handleReorder({ from, to }: ReorderableListReorderEvent) {
+  const handleReorder = ({ from, to }: ReorderableListReorderEvent) => {
     setAllChaptersSorted((value) => reorderItems(value, from, to));
-  }
+  };
 
-  const formatedWordCount = formatNumber(0, language);
+  const formatedWordCount = formatNumber(selectedBook.wordCount, language);
 
   return (
-    <View>
+    <View style={styles.flatList}>
       <View style={styles.imageContainer}>
         <Animated.Image
           source={parallaxImage}

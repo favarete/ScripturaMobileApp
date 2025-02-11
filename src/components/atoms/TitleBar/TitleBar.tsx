@@ -12,6 +12,12 @@ type Props = {
   viewMode?: boolean;
 };
 
+const getOnToggleViewHandler = (
+  onToggleView?: (() => void) | false,
+): (() => void) | undefined => {
+  return onToggleView || undefined;
+};
+
 function TitleBar({
   onNavigateBack = false,
   onToggleView = false,
@@ -30,12 +36,6 @@ function TitleBar({
       opacity: 0,
     }
   });
-
-  const getOnToggleViewHandler = (
-    onToggleView?: (() => void) | false,
-  ): (() => void) | undefined => {
-    return onToggleView || undefined;
-  };
 
   return (
     <View

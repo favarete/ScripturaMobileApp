@@ -67,7 +67,8 @@ export const findChapterByTitleAndPath = (
 };
 
 export const formatNumber = (value: number, locales: string): string => {
-  return new Intl.NumberFormat(locales).format(value);
+  const _value = value <= 0 ? 0 : value;
+  return new Intl.NumberFormat(locales).format(_value);
 };
 
 export const calculatePages = (

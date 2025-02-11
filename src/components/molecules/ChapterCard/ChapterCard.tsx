@@ -4,7 +4,7 @@ import type { ChapterStatusType } from '@/state/defaults';
 import MaterialIcons from '@react-native-vector-icons/material-icons';
 import SimpleLineIcons from '@react-native-vector-icons/simple-line-icons';
 import { useAtomValue } from 'jotai';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -66,26 +66,27 @@ function ChapterCard({
     hiddenIcon: {
       opacity: 0,
     },
-    sendToBackground: {
-      opacity: 0.3,
-      zIndex: 1,
-    },
-    sendToForeground: {
-      zIndex: 200,
-    },
   });
+
+  const sendToBackground = useMemo(() => ({
+    opacity: 0.3,
+    zIndex: 1,
+  }), []);
+  const sendToForeground = useMemo(() => ({
+    zIndex: 200,
+  }), []);
 
   useEffect(() => {
     if (selectedChapterId.length === 0) {
-      setDynamicStyle(styles.sendToForeground);
+      setDynamicStyle(sendToForeground);
     } else {
       if (selectedChapterId === id) {
-        setDynamicStyle(styles.sendToForeground);
+        setDynamicStyle(sendToForeground);
       } else {
-        setDynamicStyle(styles.sendToBackground);
+        setDynamicStyle(sendToBackground);
       }
     }
-  }, [id, selectedChapterId, styles.sendToBackground, styles.sendToForeground]);
+  }, [id, selectedChapterId, sendToBackground, sendToForeground]);
 
   const ICON_SIZE = 20;
   const menuItems: ContextMenuItem[] = [
