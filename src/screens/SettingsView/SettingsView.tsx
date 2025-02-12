@@ -1,51 +1,69 @@
 import type { Paths } from '@/navigation/paths';
 import type { RootScreenProps } from '@/navigation/types';
 
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, StyleSheet, Switch, Text, View } from 'react-native';
 
 import { useTheme } from '@/theme';
 
-import { IconByVariant } from '@/components/atoms';
+import { TitleBar } from '@/components/atoms';
+import InputSettingValue from '@/components/atoms/InputSettingValue/InputSettingValue';
+import ToggleSwitchEntry from '@/components/atoms/ToggleSwitchEntry/ToggleSwitchEntry';
 
 function SettingsView({ navigation }: RootScreenProps<Paths.SettingsView>) {
   const { t } = useTranslation();
 
   const { colors, components, fonts, gutters, layout } = useTheme();
 
-  const onNavigate = () => {
-    navigation.goBack();
-  };
-  return (
-    <ScrollView>
-      <View style={[gutters.paddingHorizontal_32, gutters.marginTop_40]}>
-        <View style={[gutters.marginTop_40]}>
-          <Text style={[fonts.size_40, fonts.gray800, fonts.bold]}>
-            {t('screen_settings.title')}
-          </Text>
-          <Text style={[fonts.size_16, fonts.gray200, gutters.marginBottom_40]}>
-            {t('screen_settings.view')}
-          </Text>
-        </View>
+  const [dailyWordGoal, setDailyWordGoal] = useState<boolean>(false);
+  const [wordCountTarget, setWordCountTarget] = useState<number>(100);
+  const [typewriterMode, setTypewriterMode] = useState<boolean>(false);
+  const [darkMode, setDarkMode] = useState<boolean>(false);
 
-        <View
-          style={[
-            layout.row,
-            layout.justifyBetween,
-            layout.fullWidth,
-            gutters.marginTop_16,
-          ]}
-        >
-          <TouchableOpacity
-            onPress={onNavigate}
-            style={[components.buttonCircle, gutters.marginBottom_16]}
-            testID="change-theme-button"
-          >
-            <IconByVariant path={'send'} stroke={colors.purple500} />
-          </TouchableOpacity>
+  const onNavigateBack = () => {
+    Alert.alert('onNavigateBack');
+    // updateChaptersById(projectId, allChapters);
+    // navigation.navigate(Paths.ProjectsView);
+  };
+
+  const styles = StyleSheet.create({
+    container: {
+      backgroundColor: colors.gray50 + '5F',
+    },
+  });
+
+  return (
+    <View style={[styles.container, layout.flex_1]}>
+      <View style={gutters.marginBottom_16}>
+        <View style={gutters.marginBottom_8}>
+          <TitleBar
+            onNavigateBack={onNavigateBack}
+            title={t('screen_settings.view_title')}
+          />
         </View>
+        <ToggleSwitchEntry
+          getter={dailyWordGoal}
+          setter={setDailyWordGoal}
+          title={t('screen_settings.daily_word_goal')}
+        />
+        <InputSettingValue
+          getter={wordCountTarget}
+          setter={setWordCountTarget}
+          title={t('screen_settings.word_count_target')}
+        />
+        <ToggleSwitchEntry
+          getter={typewriterMode}
+          setter={setTypewriterMode}
+          title={t('screen_settings.typewriter_mode')}
+        />
+        <ToggleSwitchEntry
+          getter={darkMode}
+          setter={setDarkMode}
+          title={t('screen_settings.dark_mode')}
+        />
       </View>
-    </ScrollView>
+    </View>
   );
 }
 

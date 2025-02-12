@@ -92,17 +92,17 @@
       "no_title": "No title! Use '# Some title' on your file",
       "no_chapters": "No chapters available",
       "status": {
-        "draft_ready":  "Draft Ready",
-        "first_revision_done":  "First Revision Done",
-        "in_first_revision":  "First Revision",
-        "in_progress":  "In Progress",
-        "in_second_revision":  "Second Revision",
-        "in_third_revision":  "Third Revision",
-        "manuscript_done":  "Manuscript Done",
-        "planning":  "In Planning",
-        "second_revision_done":  "Second Revision Done",
-        "third_revision_done":  "Third Revision Done",
-        "to_do":  "To Do",
+        "draft_ready": "Draft Ready",
+        "first_revision_done": "First Revision Done",
+        "in_first_revision": "First Revision",
+        "in_progress": "In Progress",
+        "in_second_revision": "Second Revision",
+        "in_third_revision": "Third Revision",
+        "manuscript_done": "Manuscript Done",
+        "planning": "In Planning",
+        "second_revision_done": "Second Revision Done",
+        "third_revision_done": "Third Revision Done",
+        "to_do": "To Do",
         "indeterminate": "Indeterminate"
       }
     },
@@ -120,7 +120,15 @@
     },
     "screen_settings": {
       "title": "$t(common_appName.full)",
-      "view": "Settings Screen"
+      "view_title": "Settings",
+      "daily_word_goal": "Daily Word Goal",
+      "word_count_target": "Word Count Target",
+      "typewriter_mode": "Typewriter Mode",
+      "dark_mode": "Dark Mode",
+      "donate": "Donate",
+      "share": "Share",
+      "contact_me": "Contact Me",
+      "version": "Version"
     },
     "screen_example": {
       "hello_user": "Hi, my name is {{name}}",

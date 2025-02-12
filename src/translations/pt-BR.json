@@ -92,17 +92,17 @@
       "no_title": "Sem título! Use '# Título' no seu arquivo",
       "no_chapters": "Nenhum capítulo disponível",
       "status": {
-        "draft_ready":  "Rascunho Pronto",
-        "first_revision_done":  "Primeira Revisão Feita",
-        "in_first_revision":  "Primeira Revisão",
-        "in_progress":  "Em Andamento",
-        "in_second_revision":  "Segunda Revisão",
-        "in_third_revision":  "Terceira Revisão",
-        "manuscript_done":  "Manuscrito Feito",
-        "planning":  "Em Planejamento",
-        "second_revision_done":  "Segunda Revisão Feita",
-        "third_revision_done":  "Terceira Revisão Feita",
-        "to_do":  "Pendente",
+        "draft_ready": "Rascunho Pronto",
+        "first_revision_done": "Primeira Revisão Feita",
+        "in_first_revision": "Primeira Revisão",
+        "in_progress": "Em Andamento",
+        "in_second_revision": "Segunda Revisão",
+        "in_third_revision": "Terceira Revisão",
+        "manuscript_done": "Manuscrito Feito",
+        "planning": "Em Planejamento",
+        "second_revision_done": "Segunda Revisão Feita",
+        "third_revision_done": "Terceira Revisão Feita",
+        "to_do": "Pendente",
         "indeterminate": "Indeterminado"
       }
     },
@@ -120,7 +120,15 @@
     },
     "screen_settings": {
       "title": "$t(common_appName.full)",
-      "view": "Tela de Configurações"
+      "view_title": "Configurações",
+      "daily_word_goal": "Meta de Palavras Diárias",
+      "word_count_target": "Meta de Palavras",
+      "typewriter_mode": "Modo Focado",
+      "dark_mode": "Modo Escuro",
+      "donate": "Doe",
+      "share": "Compartilhe",
+      "contact_me": "Fale Comigo",
+      "version": "Versão"
     },
     "screen_example": {
       "hello_user": "Oi, meu nome é {{name}}",
