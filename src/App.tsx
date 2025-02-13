@@ -13,6 +13,12 @@ import '@/translations';
 
 import type { JSX } from 'react';
 
+import i18n from 'i18next';
+import { useAtomValue } from 'jotai/index';
+import { useEffect } from 'react';
+
+import { LanguageStateAtom } from '@/state/atoms/persistentContent';
+
 export const queryClient = new QueryClient({
   defaultOptions: {
     mutations: {
@@ -25,6 +31,14 @@ export const queryClient = new QueryClient({
 });
 
 function App() {
+  const language = useAtomValue(LanguageStateAtom);
+
+  useEffect(() => {
+    if (language && i18n.language !== language) {
+      i18n.changeLanguage(language);
+    }
+  }, [language]);
+
   return (
     <GestureHandlerRootView>
       <QueryClientProvider client={queryClient}>

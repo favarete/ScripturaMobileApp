@@ -1,3 +1,4 @@
+import type { SupportedLanguages } from '@/hooks/language/schema';
 import type {
   DailyGoalMode,
   ElementUUID,
@@ -79,7 +80,7 @@ export const ThemeStateAtom = atomWithMMKV<Variant>(
   DeviceOnlyStorage,
 );
 
-export const LanguageStateAtom = atomWithMMKV<string>(
+export const LanguageStateAtom = atomWithMMKV<SupportedLanguages>(
   'language',
   DEFAULT_DATA.language,
   DeviceOnlyStorage,

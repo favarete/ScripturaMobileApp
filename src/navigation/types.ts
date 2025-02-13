@@ -7,7 +7,7 @@ export type RootStackParamList = {
   [Paths.Example]: undefined;
   [Paths.Home]: undefined;
   [Paths.ProjectsView]: undefined;
-  [Paths.SettingsView]: undefined;
+  [Paths.SettingsView]: {chapterId: string, projectId: string};
   [Paths.Startup]: undefined;
   [Paths.StatisticsView]: undefined;
 };

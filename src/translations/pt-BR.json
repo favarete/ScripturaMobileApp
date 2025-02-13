@@ -2,6 +2,8 @@
   "scripturaeditor": {
     "common_appName": {
       "full": "Scriptura",
+      "code": "Beta 1.0.0",
+      "version": "Versão $t(common_appName.code)",
       "initials": "SCR"
     },
     "components": {
@@ -125,10 +127,19 @@
       "word_count_target": "Meta de Palavras",
       "typewriter_mode": "Modo Focado",
       "dark_mode": "Modo Escuro",
+      "language": "Idioma",
+      "select_language": "Escolha um Idioma",
       "donate": "Doe",
       "share": "Compartilhe",
       "contact_me": "Fale Comigo",
-      "version": "Versão"
+      "version": "Versão",
+      "action_buttons": {
+        "main": "Algo deu Errado!",
+        "link": "Não foi possível abrir o link",
+        "share": "Não foi possível compartilhar",
+        "share_text": "$t(common_appName.full) é um aplicativo minimalista para escrever livros que você pode gostar!",
+        "mail": "Não foi possível abrir o app de email"
+      }
     },
     "screen_example": {
       "hello_user": "Oi, meu nome é {{name}}",

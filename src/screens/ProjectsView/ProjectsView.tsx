@@ -163,7 +163,7 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
   };
 
   const onNavigateSettings = () => {
-    navigation.navigate(Paths.SettingsView);
+    navigation.navigate(Paths.SettingsView, {chapterId: '', projectId: ''});
   };
 
   // Change the exhibition title and the folder name
@@ -262,10 +262,6 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
       }
     })();
   };
-
-  // changeLanguage(i18next.language === SupportedLanguages.EN_EN
-  //   ? SupportedLanguages.PT_BR
-  //   : SupportedLanguages.EN_EN,);
 
   return (
     <SafeScreen>

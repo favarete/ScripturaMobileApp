@@ -16,6 +16,7 @@ function InputSettingValue({ getter, setter, title }: Props) {
     input: {
       borderColor: colors.gray800,
       ...borders.rounded_4,
+      ...fonts.size_16,
       borderWidth: 1,
       ...gutters.padding_16,
       height: 54,
@@ -47,10 +48,12 @@ function InputSettingValue({ getter, setter, title }: Props) {
       <View style={[styles.itemContainer, gutters.padding_16, layout.flex_1]}>
         <Text style={styles.label}>{title}</Text>
       </View>
-      <View style={[styles.itemContainer, gutters.marginRight_16,]}>
+      <View style={[styles.itemContainer, gutters.marginRight_16]}>
         <TextInput
+          cursorColor={colors.purple500}
           keyboardType="numeric"
           onChangeText={(text) => setter(Number.parseInt(text, 10) || 0)}
+          selectionColor={colors.gray200}
           style={styles.input}
           value={getter.toString()}
         />

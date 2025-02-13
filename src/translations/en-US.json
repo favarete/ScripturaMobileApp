@@ -2,6 +2,8 @@
   "scripturaeditor": {
     "common_appName": {
       "full": "Scriptura",
+      "code": "Beta 1.0.0",
+      "version": "Version $t(common_appName.code)",
       "initials": "SCR"
     },
     "components": {
@@ -125,10 +127,19 @@
       "word_count_target": "Word Count Target",
       "typewriter_mode": "Typewriter Mode",
       "dark_mode": "Dark Mode",
+      "language": "Language",
+      "select_language": "Select a Language",
       "donate": "Donate",
       "share": "Share",
       "contact_me": "Contact Me",
-      "version": "Version"
+      "version": "Version",
+      "action_buttons": {
+        "main": "Something went wrong!",
+        "link": "Unable to open link",
+        "share": "Unable to share",
+        "share_text": "$t(common_appName.full) is a minimalist book writing app that you might like!",
+        "mail": "Unable to open email app"
+      }
     },
     "screen_example": {
       "hello_user": "Hi, my name is {{name}}",
