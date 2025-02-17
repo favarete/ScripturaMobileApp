@@ -4,15 +4,19 @@ import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { useTheme } from '@/theme';
 
 type Props = {
+  disabled?: boolean;
   getter: number;
-  setter: React.Dispatch<React.SetStateAction<number>>;
+  setter: (action: number) => void;
   title: string;
 };
 
-function InputSettingValue({ getter, setter, title }: Props) {
+function InputSettingValue({ disabled = false, getter, setter, title }: Props) {
   const { borders, colors, fonts, gutters, layout } = useTheme();
 
   const styles = StyleSheet.create({
+    disabled: {
+      opacity: disabled ? 0.5 : 1,
+    },
     input: {
       borderColor: colors.gray800,
       ...borders.rounded_4,
@@ -44,13 +48,14 @@ function InputSettingValue({ getter, setter, title }: Props) {
   });
 
   return (
-    <View style={styles.mainContainer}>
+    <View style={[styles.mainContainer, styles.disabled]}>
       <View style={[styles.itemContainer, gutters.padding_16, layout.flex_1]}>
         <Text style={styles.label}>{title}</Text>
       </View>
       <View style={[styles.itemContainer, gutters.marginRight_16]}>
         <TextInput
           cursorColor={colors.purple500}
+          editable={!disabled}
           keyboardType="numeric"
           onChangeText={(text) => setter(Number.parseInt(text, 10) || 0)}
           selectionColor={colors.gray200}

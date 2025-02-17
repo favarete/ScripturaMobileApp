@@ -1,12 +1,12 @@
+import type { SupportedLanguages } from '@/hooks/language/schema';
 import type { RootScreenProps } from '@/navigation/types';
 
 import { useAtom } from 'jotai';
-import React, { useState } from 'react';
+import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
 
 import { useTheme } from '@/theme';
-import type { SupportedLanguages } from '@/hooks/language/schema';
 import { languages } from '@/hooks/language/schema';
 import { Paths } from '@/navigation/paths';
 
@@ -17,7 +17,12 @@ import InputSettingValue from '@/components/atoms/InputSettingValue/InputSetting
 import SelectionList from '@/components/atoms/SelectionList/SelectionList';
 import ToggleSwitchEntry from '@/components/atoms/ToggleSwitchEntry/ToggleSwitchEntry';
 
-import { LanguageStateAtom } from '@/state/atoms/persistentContent';
+import {
+  DailyGoalModeStateAtom,
+  LanguageStateAtom,
+  ThemeStateAtom,
+  TypewriterModeStateAtom,
+} from '@/state/atoms/persistentContent';
 
 function SettingsView({
   navigation,
@@ -25,13 +30,12 @@ function SettingsView({
 }: RootScreenProps<Paths.SettingsView>) {
   const { t } = useTranslation();
   const { chapterId, projectId } = route.params;
-  const [selectedLanguage, setSelectedLanguage] = useAtom(LanguageStateAtom);
   const { colors, gutters, layout } = useTheme();
 
-  const [dailyWordGoal, setDailyWordGoal] = useState<boolean>(false);
-  const [wordCountTarget, setWordCountTarget] = useState<number>(100);
-  const [typewriterMode, setTypewriterMode] = useState<boolean>(false);
-  const [darkMode, setDarkMode] = useState<boolean>(false);
+  const [selectedLanguage, setSelectedLanguage] = useAtom(LanguageStateAtom);
+  const [dailyWordGoal, setDailyWordGoal] = useAtom(DailyGoalModeStateAtom);
+  const [typewriterMode, setTypewriterMode] = useAtom(TypewriterModeStateAtom);
+  const [variant, setVariant] = useAtom(ThemeStateAtom);
 
   const onNavigateBack = () => {
     if (chapterId.length + projectId.length === 0) {
@@ -40,7 +44,7 @@ function SettingsView({
   };
 
   const onChangeLanguage = (newLanguage: SupportedLanguages) => {
-    setSelectedLanguage(newLanguage)
+    setSelectedLanguage(newLanguage);
   };
 
   const styles = StyleSheet.create({
@@ -48,6 +52,27 @@ function SettingsView({
       backgroundColor: colors.gray50 + '5F',
     },
   });
+
+  const updateWordGoalModeInfo = (action: boolean | number) => {
+    if (typeof action === 'boolean') {
+      setDailyWordGoal((prevState) => ({
+        ...prevState,
+        enabled: action,
+      }));
+    } else {
+      setDailyWordGoal((prevState) => ({
+        ...prevState,
+        target: action,
+      }));
+    }
+  };
+
+  const changeTheme = useCallback(
+    (darkModeEnabled: boolean) => {
+      setVariant(darkModeEnabled ? 'dark' : 'default');
+    },
+    [setVariant],
+  );
 
   return (
     <View style={[styles.container, layout.flex_1]}>
@@ -59,13 +84,14 @@ function SettingsView({
           />
         </View>
         <ToggleSwitchEntry
-          getter={dailyWordGoal}
-          setter={setDailyWordGoal}
+          getter={dailyWordGoal.enabled}
+          setter={updateWordGoalModeInfo}
           title={t('screen_settings.daily_word_goal')}
         />
         <InputSettingValue
-          getter={wordCountTarget}
-          setter={setWordCountTarget}
+          disabled={!dailyWordGoal.enabled}
+          getter={dailyWordGoal.target}
+          setter={updateWordGoalModeInfo}
           title={t('screen_settings.word_count_target')}
         />
         <SelectionList
@@ -81,8 +107,8 @@ function SettingsView({
           title={t('screen_settings.typewriter_mode')}
         />
         <ToggleSwitchEntry
-          getter={darkMode}
-          setter={setDarkMode}
+          getter={variant === 'dark'}
+          setter={changeTheme}
           title={t('screen_settings.dark_mode')}
         />
         <ActionLongButton

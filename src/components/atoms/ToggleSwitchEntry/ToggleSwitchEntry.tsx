@@ -10,7 +10,7 @@ import { useTheme } from '@/theme';
 
 type Props = {
   getter: boolean;
-  setter: React.Dispatch<React.SetStateAction<boolean>>;
+  setter: (action: boolean) => void;
   title: string;
 };
 

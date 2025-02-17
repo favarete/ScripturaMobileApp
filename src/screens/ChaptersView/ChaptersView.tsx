@@ -89,22 +89,23 @@ function ChaptersView({
 
   const book: Project | undefined = getProjectById(projectId, allProjects);
   if (book && !selectedBook) {
-    (async () => {
-      try {
-        const imageURI = `${homeFolder}/.scriptura/covers/${book.coverPath}`;
-        const __hasPermission = await hasPermission(imageURI);
-        if (__hasPermission) {
-          const base64String = await readFile(imageURI, {
-            encoding: 'base64',
-          });
-
-          setImageToLoad({ uri: `data:image/png;base64,${base64String}` });
+      (async () => {
+        try {
+          const imageURI = `${homeFolder}/.scriptura/covers/${book.coverPath}`;
+          const __hasPermission = await hasPermission(imageURI);
+          if (__hasPermission) {
+            const base64String = await readFile(imageURI, {
+              encoding: 'base64',
+            });
+            if(base64String.trim().length > 0) {
+              setImageToLoad({ uri: `data:image/png;base64,${base64String}` });
+            }
+          }
+        } catch (error) {
+          print(error);
         }
-      } catch (error) {
-        print(error);
-      }
-    })();
-    setSelectedBook(book);
+      })();
+      setSelectedBook(book);
   }
 
   useEffect(() => {

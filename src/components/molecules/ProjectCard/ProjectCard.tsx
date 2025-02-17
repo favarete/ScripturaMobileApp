@@ -277,6 +277,7 @@ function ProjectCard({
     <View style={[gutters.marginBottom_12, editingStyle]}>
       <CustomContextMenu
         backgroundColor={colors.full}
+        id={title}
         menuItems={menuItems}
         menuTitle={title}
         menuTitleBackgroundColor={colors.purple100}

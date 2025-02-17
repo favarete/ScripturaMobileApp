@@ -142,20 +142,5 @@ export const ProjectsDataStateAtom = atomWithMMKV<Project[]>(
   CommonStorage,
 );
 
-// export const CommonStorageStateAtom = atom((get) => {
-//   const homeFolder = get(HomeFolderStateAtom);
-//   if (homeFolder.length === 0) {
-//     return `PASSO 1: ${homeFolder}`;
-//   }
-//   return `PASSO 2: ${homeFolder}`
-// });
 
-// export const DailyGoalModeStateAtom = atom(
-//   (get) => {
-//     return get(HomeFolderStateAtom);
-//   },
-//   (get, set, dailyGoalData: DailyGoalMode) => {
-//     const homeFolder = get(HomeFolderStateAtom);
-//     set(HomeFolderStateAtom, homeFolder);
-//   },
-// );
+

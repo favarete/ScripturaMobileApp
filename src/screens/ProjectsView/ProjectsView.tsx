@@ -57,6 +57,9 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
 
   const hasFetchedProjects = useRef(false);
   useEffect(() => {
+    console.log('hasFetchedProjects.current')
+    console.log(hasFetchedProjects.current)
+    console.log('hasFetchedProjects.current')
     if (hasFetchedProjects.current) {
       return;
     }
