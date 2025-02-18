@@ -53,21 +53,11 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
   const [loadingProjects, setLoadingProjects] = useState<boolean>(true);
   const [editingId, setEditingId] = useState<string>('');
 
-  const prevHomeFolderRef = useRef<null | string>(null);
-
   const hasFetchedProjects = useRef(false);
   useEffect(() => {
-    console.log('hasFetchedProjects.current')
-    console.log(hasFetchedProjects.current)
-    console.log('hasFetchedProjects.current')
-    if (hasFetchedProjects.current) {
-      return;
-    }
     const fetchAllProjects = async () => {
       try {
-        if (homeFolder.length > 0 && prevHomeFolderRef.current !== homeFolder) {
-          prevHomeFolderRef.current = homeFolder;
-
+        if (homeFolder.length > 0 ) {
           const permissionToHomeFolder = await hasPermission(homeFolder);
           if (!permissionToHomeFolder) {
             Toast.show({
@@ -90,6 +80,7 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
               allProjectsTemp,
               allProjects,
             );
+
             if (!alreadyLoadedProjects) {
               // List all files in "homeFolder" (selected by user)
               const __allExternalStorageFolders = await listFiles(homeFolder);
@@ -109,6 +100,7 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
                     project.name,
                     project.uri,
                   );
+
                 if (!persistedAndroidProjectContent) {
                   // It wasn't mapped before on an Android device
                   // Check if it was mapped before on any other device
@@ -116,6 +108,7 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
                     allProjectsTemp,
                     project.name,
                   );
+
                   if (persistedExternalProjectContent) {
                     // It was mapped before on other device
                     allProjectsTemp = allProjectsTemp.map((savedProject) =>
