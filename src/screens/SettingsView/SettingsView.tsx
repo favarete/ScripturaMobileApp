@@ -41,6 +41,9 @@ function SettingsView({
     if (chapterId.length + projectId.length === 0) {
       navigation.navigate(Paths.ProjectsView);
     }
+    else {
+      navigation.navigate(Paths.StatisticsView, { chapterId, projectId });
+    }
   };
 
   const onChangeLanguage = (newLanguage: SupportedLanguages) => {

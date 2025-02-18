@@ -119,7 +119,25 @@
     "screen_statistics": {
       "title": "$t(common_appName.full)",
       "view": "Tela de Estatísticas",
-      "view_title": "Estatísticas"
+      "view_title": "Estatísticas",
+      "most_prolific_days": "Dias mais Prolíficos",
+      "daily_word_goal": "Meta de Palavras Diárias",
+      "to_write_today": "Palavras para Escrever Hoje",
+      "edit": "Editar",
+      "chapter_data": "Dados do Capítulo",
+      "project_data": "Dados do Projeto",
+      "words": "Palavras",
+      "sentences": "Frases",
+      "pages": "Páginas",
+      "week": {
+        "sun": "DOM",
+        "mon": "SEG",
+        "tue": "TER",
+        "wed": "QUA",
+        "thu": "QUI",
+        "fri": "SEX",
+        "sat": "SAB"
+      }
     },
     "screen_settings": {
       "title": "$t(common_appName.full)",

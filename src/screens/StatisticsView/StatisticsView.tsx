@@ -1,13 +1,25 @@
 import type { RootScreenProps } from '@/navigation/types';
 
+import { useAtom, useAtomValue } from 'jotai/index';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import Svg, { Circle, G, Rect, Text as SvgText } from 'react-native-svg';
 
 import { useTheme } from '@/theme';
 import { Paths } from '@/navigation/paths';
 
 import { TitleBar } from '@/components/atoms';
+import CircleProgress from '@/components/atoms/CircleProgress/CircleProgress';
+import DataBox from '@/components/atoms/DataBox/DataBox';
+import { HorizontalProgressBar } from '@/components/atoms/HorizontalProgress/HorizontalProgress';
+
+import {
+  LanguageStateAtom,
+  ProjectsDataStateAtom,
+} from '@/state/atoms/persistentContent';
+import { formatNumber } from '@/utils/chapterHelpers';
+import { findProjectById } from '@/utils/projectHelpers';
 
 function StatisticsView({
   navigation,
@@ -15,28 +27,198 @@ function StatisticsView({
 }: RootScreenProps<Paths.StatisticsView>) {
   const { t } = useTranslation();
   const { chapterId, projectId } = route.params;
-  const { colors, gutters, layout } = useTheme();
+  const { colors, borders, fonts, gutters, layout } = useTheme();
 
-  const styles = StyleSheet.create({
-    container: {
-      backgroundColor: colors.full,
-    },
-  });
+  const language = useAtomValue(LanguageStateAtom);
+  const [allProjects, setAllProjects] = useAtom(ProjectsDataStateAtom);
+  const actualProject = findProjectById(allProjects, projectId);
 
   const onNavigateBack = () => {
     navigation.navigate(Paths.ContentView, { chapterId, projectId });
   };
 
+  const onNavigateSettings = () => {
+    navigation.navigate(Paths.SettingsView, {chapterId, projectId});
+  };
+
+  const styles = StyleSheet.create({
+    editButton: {
+      backgroundColor: colors.gray200,
+      ...borders.rounded_4,
+      ...gutters.paddingHorizontal_16,
+      ...gutters.padding_8,
+      ...gutters.marginTop_4,
+      width: 60,
+    },
+  });
+
+  console.log(actualProject);
+
   return (
-    <View style={[styles.container, layout.flex_1]}>
-      <View style={gutters.marginBottom_16}>
-        <View style={gutters.marginBottom_8}>
-          <TitleBar
-            onNavigateBack={onNavigateBack}
-            title={t('screen_statistics.view_title')}
-          />
-        </View>
+    <View style={layout.flex_1}>
+      <View style={gutters.marginBottom_24}>
+        <TitleBar
+          onNavigateBack={onNavigateBack}
+          title={t('screen_statistics.view_title')}
+        />
       </View>
+      {actualProject && (
+        <View>
+          <Text
+            style={[
+              fonts.defaultFontFamilyBold,
+              fonts.size_20,
+              fonts.fullOpposite,
+              fonts.alignCenter,
+              layout.itemsCenter,
+            ]}
+          >
+            {actualProject.title}
+          </Text>
+          <Text
+            style={[
+              fonts.alignCenter,
+              fonts.defaultFontFamilyBold,
+              fonts.size_16,
+              fonts.gray200,
+              fonts.alignCenter,
+              layout.itemsCenter,
+              gutters.marginVertical_16,
+            ]}
+          >
+            {t('screen_statistics.most_prolific_days')}
+          </Text>
+          <Text
+            style={[
+              fonts.alignCenter,
+              fonts.defaultFontFamilyBold,
+              fonts.size_16,
+              fonts.gray200,
+              fonts.alignCenter,
+              layout.itemsCenter,
+              gutters.marginVertical_16,
+            ]}
+          >
+            {t('screen_statistics.daily_word_goal')}
+          </Text>
+          <View style={[layout.row, gutters.marginHorizontal_40]}>
+            <CircleProgress
+              progress={0.25}
+              progressColor={colors.fullOpposite}
+              backgroundColor={colors.gray100}
+              textColor={colors.gray400}
+              textSize={18}
+            />
+            <View style={[layout.itemsCenter]}>
+              <Text
+                style={[
+                  gutters.marginVertical_4,
+                  fonts.defaultFontFamilySemibold,
+                  fonts.gray800,
+                  fonts.size_12,
+                ]}
+              >
+                {t('screen_statistics.to_write_today')}
+              </Text>
+              <HorizontalProgressBar
+                fillColor={colors.fullOpposite}
+                backgroundColor={colors.gray100}
+                progress={0.25}
+                width={180}
+                height={15}
+              />
+              <View
+                style={[
+                  layout.row,
+                  layout.justifyAround,
+                  layout.fullWidth,
+                  gutters.marginVertical_4,
+                ]}
+              >
+                <Text
+                  style={[
+                    fonts.defaultFontFamilySemibold,
+                    fonts.gray200,
+                    fonts.size_12,
+                  ]}
+                >
+                  {250}
+                </Text>
+                <Text
+                  style={[
+                    fonts.defaultFontFamilySemibold,
+                    fonts.gray200,
+                    fonts.size_12,
+                  ]}
+                >
+                  {formatNumber(1000, language)}
+                </Text>
+              </View>
+              <View
+                style={[
+                  layout.itemsEnd,
+                  layout.fullWidth,
+                  gutters.marginRight_80,
+                  gutters.marginTop_4,
+                ]}
+              >
+                <TouchableOpacity
+                  style={styles.editButton}
+                  onPress={onNavigateSettings}
+                >
+                  <Text
+                    style={[
+                      fonts.defaultFontFamilyExtraBold,
+                      fonts.uppercase,
+                      fonts.full,
+                      fonts.size_12,
+                      fonts.alignCenter,
+                    ]}
+                  >
+                    {t('screen_statistics.edit')}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+          <Text
+            style={[
+              fonts.alignCenter,
+              fonts.defaultFontFamilyBold,
+              fonts.size_16,
+              fonts.gray200,
+              fonts.alignCenter,
+              layout.itemsCenter,
+              gutters.marginVertical_16,
+            ]}
+          >
+            {t('screen_statistics.chapter_data')}
+          </Text>
+          <View style={[layout.row, layout.justifyCenter]}>
+            <DataBox title={t('screen_statistics.words')} value={1234} />
+            <DataBox title={t('screen_statistics.sentences')} value={1234} />
+            <DataBox title={t('screen_statistics.pages')} value={1234} />
+          </View>
+          <Text
+            style={[
+              fonts.alignCenter,
+              fonts.defaultFontFamilyBold,
+              fonts.size_16,
+              fonts.gray200,
+              fonts.alignCenter,
+              layout.itemsCenter,
+              gutters.marginVertical_16,
+            ]}
+          >
+            {t('screen_statistics.project_data')}
+          </Text>
+          <View style={[layout.row, layout.justifyCenter]}>
+            <DataBox title={t('screen_statistics.words')} value={1234} />
+            <DataBox title={t('screen_statistics.sentences')} value={1234} />
+            <DataBox title={t('screen_statistics.pages')} value={1234} />
+          </View>
+        </View>
+      )}
     </View>
   );
 }

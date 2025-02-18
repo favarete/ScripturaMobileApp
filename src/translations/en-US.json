@@ -119,7 +119,25 @@
     "screen_statistics": {
       "title": "$t(common_appName.full)",
       "view": "Statistics Screen",
-      "view_title": "Statistics"
+      "view_title": "Statistics",
+      "most_prolific_days": "Most Prolific Days",
+      "daily_word_goal": "Daily Word Goal",
+      "to_write_today": "Words to Write Today",
+      "edit": "Edit",
+      "chapter_data": "Chapter's Data",
+      "project_data": "Project's Data",
+      "words": "Words",
+      "sentences": "Sentences",
+      "pages": "Pages",
+      "week": {
+        "sun": "SUN",
+        "mon": "MON>",
+        "tue": "TUE",
+        "wed": "WED",
+        "thu": "THU",
+        "fri": "FRI",
+        "sat": "SAT"
+      }
     },
     "screen_settings": {
       "title": "$t(common_appName.full)",
