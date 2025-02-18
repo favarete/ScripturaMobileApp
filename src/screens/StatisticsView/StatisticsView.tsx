@@ -1,50 +1,43 @@
+import type { RootScreenProps } from '@/navigation/types';
+
+import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { useTheme } from '@/theme';
-
-import { IconByVariant } from '@/components/atoms';
-import type { RootScreenProps } from '@/navigation/types';
 import { Paths } from '@/navigation/paths';
 
-function StatisticsView({ navigation }: RootScreenProps<Paths.StatisticsView>) {
+import { TitleBar } from '@/components/atoms';
+
+function StatisticsView({
+  navigation,
+  route,
+}: RootScreenProps<Paths.StatisticsView>) {
   const { t } = useTranslation();
+  const { chapterId, projectId } = route.params;
+  const { colors, gutters, layout } = useTheme();
 
-  const { colors, components, fonts, gutters, layout } = useTheme();
+  const styles = StyleSheet.create({
+    container: {
+      backgroundColor: colors.full,
+    },
+  });
 
-  const onNavigate = () => {
-    navigation.navigate(Paths.SettingsView);
+  const onNavigateBack = () => {
+    navigation.navigate(Paths.ContentView, { chapterId, projectId });
   };
-  return (
-    <ScrollView>
-      <View style={[gutters.paddingHorizontal_32, gutters.marginTop_40]}>
-        <View style={[gutters.marginTop_40]}>
-          <Text style={[fonts.size_40, fonts.gray800, fonts.bold]}>
-            {t('screen_statistics.title')}
-          </Text>
-          <Text style={[fonts.size_16, fonts.gray200, gutters.marginBottom_40]}>
-            {t('screen_statistics.view')}
-          </Text>
-        </View>
 
-        <View
-          style={[
-            layout.row,
-            layout.justifyBetween,
-            layout.fullWidth,
-            gutters.marginTop_16,
-          ]}
-        >
-          <TouchableOpacity
-            onPress={onNavigate}
-            style={[components.buttonCircle, gutters.marginBottom_16]}
-            testID="change-theme-button"
-          >
-            <IconByVariant path={'send'} stroke={colors.purple500} />
-          </TouchableOpacity>
+  return (
+    <View style={[styles.container, layout.flex_1]}>
+      <View style={gutters.marginBottom_16}>
+        <View style={gutters.marginBottom_8}>
+          <TitleBar
+            onNavigateBack={onNavigateBack}
+            title={t('screen_statistics.view_title')}
+          />
         </View>
       </View>
-    </ScrollView>
+    </View>
   );
 }
 

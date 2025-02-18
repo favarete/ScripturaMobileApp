@@ -11,7 +11,6 @@ import { useAtom } from 'jotai/react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Alert,
   Keyboard,
   NativeModules,
   Platform,
@@ -108,7 +107,7 @@ function ContentView({
   };
 
   const onNavigateToStatistics = () => {
-    Alert.alert('onNavigateToStatistics');
+    navigation.navigate(Paths.StatisticsView, { chapterId, projectId });
   };
 
   useEffect(() => {
@@ -296,12 +295,14 @@ function ContentView({
                 <MarkdownTextInput
                   autoCapitalize="none"
                   autoFocus
+                  cursorColor={colors.purple500}
                   keyboardType="visible-password"
                   markdownStyle={markdownStylesEdit}
                   maxLength={30_000}
                   multiline
                   onChangeText={setMarkdownText}
                   parser={parseExpensiMark}
+                  selectionColor={colors.gray200}
                   showSoftInputOnFocus={!isPhysicalKeyboard}
                   style={[markdownEditStyles]}
                   value={markdownText}

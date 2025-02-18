@@ -118,7 +118,8 @@
     },
     "screen_statistics": {
       "title": "$t(common_appName.full)",
-      "view": "Tela de Estatísticas"
+      "view": "Tela de Estatísticas",
+      "view_title": "Estatísticas"
     },
     "screen_settings": {
       "title": "$t(common_appName.full)",

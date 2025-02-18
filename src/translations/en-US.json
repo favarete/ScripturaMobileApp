@@ -118,7 +118,8 @@
     },
     "screen_statistics": {
       "title": "$t(common_appName.full)",
-      "view": "Statistics Screen"
+      "view": "Statistics Screen",
+      "view_title": "Statistics"
     },
     "screen_settings": {
       "title": "$t(common_appName.full)",

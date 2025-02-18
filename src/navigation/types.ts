@@ -9,7 +9,7 @@ export type RootStackParamList = {
   [Paths.ProjectsView]: undefined;
   [Paths.SettingsView]: {chapterId: string, projectId: string};
   [Paths.Startup]: undefined;
-  [Paths.StatisticsView]: undefined;
+  [Paths.StatisticsView]: {chapterId: string, projectId: string};
 };
 
 export type RootScreenProps<

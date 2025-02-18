@@ -318,6 +318,7 @@ function ProjectCard({
                   keyboardType="visible-password"
                   maxLength={25}
                   onChangeText={setEditedTitle}
+                  selectionColor={colors.gray200}
                   showSoftInputOnFocus={!isPhysicalKeyboard}
                   style={[
                     fonts.defaultFontFamilyBold,
@@ -367,6 +368,7 @@ function ProjectCard({
                   maxLength={130}
                   multiline
                   onChangeText={setEditedDescription}
+                  selectionColor={colors.gray200}
                   showSoftInputOnFocus={!isPhysicalKeyboard}
                   style={[
                     styles.inputDescriptionContent,
