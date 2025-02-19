@@ -13,11 +13,11 @@ type CircleProgressProps = {
 };
 
 const CircleProgress: FC<CircleProgressProps> = ({
+  backgroundColor = '#a40d0d',
   progress,
+  progressColor = '#5ba65c',
   size = 110,
   strokeWidth = 15,
-  progressColor = '#5ba65c',
-  backgroundColor = '#a40d0d',
   textColor = '#050505',
   textSize = 14,
 }) => {

@@ -1,10 +1,15 @@
 import type { RootScreenProps } from '@/navigation/types';
 
-import { useAtom, useAtomValue } from 'jotai/index';
+import { useAtomValue } from 'jotai/index';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import Svg, { Circle, G, Rect, Text as SvgText } from 'react-native-svg';
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 import { useTheme } from '@/theme';
 import { Paths } from '@/navigation/paths';
@@ -13,6 +18,7 @@ import { TitleBar } from '@/components/atoms';
 import CircleProgress from '@/components/atoms/CircleProgress/CircleProgress';
 import DataBox from '@/components/atoms/DataBox/DataBox';
 import { HorizontalProgressBar } from '@/components/atoms/HorizontalProgress/HorizontalProgress';
+import BarChart from '@/components/molecules/BarChart/BarChart';
 
 import {
   LanguageStateAtom,
@@ -30,7 +36,7 @@ function StatisticsView({
   const { colors, borders, fonts, gutters, layout } = useTheme();
 
   const language = useAtomValue(LanguageStateAtom);
-  const [allProjects, setAllProjects] = useAtom(ProjectsDataStateAtom);
+  const allProjects = useAtomValue(ProjectsDataStateAtom);
   const actualProject = findProjectById(allProjects, projectId);
 
   const onNavigateBack = () => {
@@ -38,7 +44,7 @@ function StatisticsView({
   };
 
   const onNavigateSettings = () => {
-    navigation.navigate(Paths.SettingsView, {chapterId, projectId});
+    navigation.navigate(Paths.SettingsView, { chapterId, projectId });
   };
 
   const styles = StyleSheet.create({
@@ -54,8 +60,18 @@ function StatisticsView({
 
   console.log(actualProject);
 
+  const myData = [
+    { label: 'SUN', value: 500 },
+    { label: 'MON', value: 450 },
+    { label: 'TUE', value: 300 },
+    { label: 'WED', value: 280 },
+    { label: 'THU', value: 1000 },
+    { label: 'FRI', value: 150 },
+    { label: 'SAT', value: 100 },
+  ];
+
   return (
-    <View style={layout.flex_1}>
+    <ScrollView style={layout.flex_1}>
       <View style={gutters.marginBottom_24}>
         <TitleBar
           onNavigateBack={onNavigateBack}
@@ -63,7 +79,7 @@ function StatisticsView({
         />
       </View>
       {actualProject && (
-        <View>
+        <View style={gutters.marginBottom_40}>
           <Text
             style={[
               fonts.defaultFontFamilyBold,
@@ -81,13 +97,20 @@ function StatisticsView({
               fonts.defaultFontFamilyBold,
               fonts.size_16,
               fonts.gray200,
-              fonts.alignCenter,
               layout.itemsCenter,
               gutters.marginVertical_16,
             ]}
           >
             {t('screen_statistics.most_prolific_days')}
           </Text>
+          <View style={[layout.fullWidth, layout.itemsCenter]}>
+            <BarChart
+              data={myData}
+              width={350}
+              height={300}
+              numberOfTicks={5}
+            />
+          </View>
           <Text
             style={[
               fonts.alignCenter,
@@ -219,7 +242,7 @@ function StatisticsView({
           </View>
         </View>
       )}
-    </View>
+    </ScrollView>
   );
 }
 
