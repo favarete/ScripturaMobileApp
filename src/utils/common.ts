@@ -1,4 +1,5 @@
 import uuid from 'react-native-uuid';
+import { WritingStats } from '@/state/defaults';
 
 export const createNewUUID = (): string => {
   return uuid.v4();
@@ -60,3 +61,17 @@ export const arraysAreEqualAndNonEmpty = (arr1: string[], arr2: string[]) => {
   }
   return JSON.stringify(arr1) === JSON.stringify(arr2);
 };
+
+
+export const getWeekdayKey = (date: Date): keyof WritingStats => {
+  const weekdays: { [key: number]: keyof WritingStats } = {
+    0: 'sunday',
+    1: 'monday',
+    2: 'tuesday',
+    3: 'wednesday',
+    4: 'thursday',
+    5: 'friday',
+    6: 'saturday',
+  };
+  return weekdays[date.getDay()];
+}

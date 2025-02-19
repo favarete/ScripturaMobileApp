@@ -92,14 +92,14 @@ export const calculatePercentage = (
   return `${Math.ceil(percentage)}%`;
 };
 
-type UpdateChapterValue = (
+type UpdateChapterValueType = (
   setState: React.Dispatch<React.SetStateAction<Project[]>>,
   bookId: string,
   chapterId: string,
   newChapterValue: Partial<Chapter>,
 ) => void;
 
-export const updateChapterValue: UpdateChapterValue = (
+export const updateChapterValue: UpdateChapterValueType = (
   setState,
   bookId,
   chapterId,

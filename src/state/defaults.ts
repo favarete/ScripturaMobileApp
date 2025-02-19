@@ -30,8 +30,10 @@ export type ElementUUID = string;
 const DEFAULT_FAVORITE_PROJECTS: ElementUUID[] = [];
 
 type DailyStats = {
-  date: Date;
-  words: number;
+  date: number;
+  totalWords: number;
+  deletedWords: number;
+  writtenWords: number;
 };
 
 export type WritingStats = {

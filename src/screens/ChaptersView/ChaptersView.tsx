@@ -226,29 +226,25 @@ function ChaptersView({
     }
   }, [projectId, selectedBook, setAllProjects, t]);
 
-  const hasInitialSortedChapters = useRef(false);
   useEffect(() => {
-    if (hasInitialSortedChapters.current) {
-      return;
-    }
     const selectedProject = findProjectById(allProjects, projectId);
     if (selectedProject) {
+      const updatedChapters = selectedProject.chapters;
+
       let chapterSort = selectedProject.chapterSort;
       if (chapterSort.length === 0) {
-        chapterSort = allChapters.map((chapter) => chapter.id);
+        chapterSort = updatedChapters.map((chapter) => chapter.id);
       }
+
       const orderMap = new Map(chapterSort.map((id, index) => [id, index]));
-      const sortedArray = [...allChapters].sort((a, b) => {
+      const sortedArray = [...updatedChapters].sort((a, b) => {
         return (
           (orderMap.get(a.id) ?? Infinity) - (orderMap.get(b.id) ?? Infinity)
         );
       });
-      if (allChaptersSorted.length === 0 && sortedArray.length !== 0) {
-        setAllChaptersSorted(sortedArray);
-        hasInitialSortedChapters.current = true;
-      }
+      setAllChaptersSorted(sortedArray);
     }
-  }, [allChapters, allChaptersSorted, allProjects, projectId]);
+  }, [allChapters, allProjects, projectId]);
 
   const projectUpdatedOn = selectedBook
     ? formatTimestamp(selectedBook.lastUpdate, language)
