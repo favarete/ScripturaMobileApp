@@ -22,6 +22,11 @@ const DEFAULT_DAILY_GOAL_MODE: DailyGoalMode = {
   target: 500,
 };
 
+export type WordWrittenRaw = { text: string; timestamp: number };
+const DEFAULT_WRITING_STATS_RAW: WordWrittenRaw = {
+  timestamp: 0,
+  text: '',
+};
 const DEFAULT_MAX_STREAK: number = 0;
 const DEFAULT_CURRENT_STREAK: number = 0;
 const DEFAULT_WORDS_WRITTEN_TODAY: number = 0;
@@ -29,11 +34,12 @@ const DEFAULT_WORDS_WRITTEN_TODAY: number = 0;
 export type ElementUUID = string;
 const DEFAULT_FAVORITE_PROJECTS: ElementUUID[] = [];
 
-type DailyStats = {
+export type DailyStats = {
   date: number;
   totalWords: number;
   deletedWords: number;
   writtenWords: number;
+  __rawText: string;
 };
 
 export type WritingStats = {
@@ -154,5 +160,6 @@ export const DEFAULT_DATA = {
   theme: DEFAULT_THEME,
   typewriterMode: DEFAULT_TYPEWRITER_MODE,
   wordWrittenToday: DEFAULT_WORDS_WRITTEN_TODAY,
-  writingStats: DEFAULT_WRITING_STATS
+  writingStats: DEFAULT_WRITING_STATS,
+  writingStatsRaw: DEFAULT_WRITING_STATS_RAW
 }

@@ -5,7 +5,7 @@ import type {
   ListRenderItemInfo,
 } from 'react-native';
 import type { ReorderableListReorderEvent } from 'react-native-reorderable-list';
-import type { Chapter, Project } from '@/state/defaults';
+import type { Chapter } from '@/state/defaults';
 
 import { useAtomValue } from 'jotai/index';
 import React, { memo, useRef } from 'react';
@@ -36,13 +36,14 @@ const IMG_HEIGHT = 180;
 
 type ChaptersDynamicListType = {
   allChaptersSorted: Chapter[];
+  lastChapterViewed: string;
   onNavigate: (projectId: string, chapterId: string) => void;
   onNavigateBack: () => void;
   parallaxImage: ImageSourcePropType;
   parallaxSubtitle: string;
   parallaxTitle: string;
   projectId: string;
-  selectedBook: Project;
+  projectWordCount: number;
   setAllChaptersSorted: React.Dispatch<React.SetStateAction<Chapter[]>>;
   updateChaptersStatus: (
     projectId: string,
@@ -53,13 +54,14 @@ type ChaptersDynamicListType = {
 
 export function ChaptersDynamicList({
   allChaptersSorted,
+  lastChapterViewed,
   onNavigate,
   onNavigateBack,
   parallaxImage,
   parallaxSubtitle,
   parallaxTitle,
   projectId,
-  selectedBook,
+  projectWordCount,
   setAllChaptersSorted,
   updateChaptersStatus,
 }: ChaptersDynamicListType) {
@@ -83,7 +85,7 @@ export function ChaptersDynamicList({
           isActive={isActive}
           key={id}
           lastUpdate={chapterUpdatedOn(lastUpdate)}
-          lastViewedId={selectedBook.chapterLastViewed}
+          lastViewedId={lastChapterViewed}
           onNavigate={onNavigate}
           projectId={projectId}
           status={status}
@@ -180,7 +182,7 @@ export function ChaptersDynamicList({
     setAllChaptersSorted((value) => reorderItems(value, from, to));
   };
 
-  const formatedWordCount = formatNumber(selectedBook.wordCount, language);
+  const formatedWordCount = formatNumber(projectWordCount, language);
 
   return (
     <View style={styles.flatList}>

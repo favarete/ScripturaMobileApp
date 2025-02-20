@@ -57,7 +57,7 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
   useEffect(() => {
     const fetchAllProjects = async () => {
       try {
-        if (homeFolder.length > 0 ) {
+        if (homeFolder.length > 0) {
           const permissionToHomeFolder = await hasPermission(homeFolder);
           if (!permissionToHomeFolder) {
             Toast.show({
@@ -134,6 +134,9 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
                   }
                 }
               }
+              allProjectsTemp.sort((a, b) =>
+                a.title.toLowerCase().localeCompare(b.title.toLowerCase()),
+              );
               setAllProjects(allProjectsTemp);
             }
           }
@@ -159,7 +162,7 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
   };
 
   const onNavigateSettings = () => {
-    navigation.navigate(Paths.SettingsView, {chapterId: '', projectId: ''});
+    navigation.navigate(Paths.SettingsView, { chapterId: '', projectId: '' });
   };
 
   // Change the exhibition title and the folder name

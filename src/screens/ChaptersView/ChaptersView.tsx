@@ -3,11 +3,10 @@ import type { RootScreenProps } from '@/navigation/types';
 import type { Chapter, Project } from '@/state/defaults';
 
 import { useAtom, useAtomValue } from 'jotai/index';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Text, View } from 'react-native';
 import { hasPermission, listFiles, readFile } from 'react-native-saf-x';
-import Toast from 'react-native-toast-message';
 
 import { useTheme } from '@/theme';
 import PlaceholderImage from '@/theme/assets/images/placeholder_book_cover.png';
@@ -26,16 +25,17 @@ import {
   countWordsFromHTML,
   findChapterByTitleAndPath,
   getProjectById,
-  getTitleFromChapterFile,
   updateChapterValue,
 } from '@/utils/chapterHelpers';
 import {
   arraysAreEqualAndNonEmpty,
   createNewUUID,
   formatTimestamp,
+  removeFileExtension,
 } from '@/utils/common';
 import { print } from '@/utils/logger';
 import { findProjectById } from '@/utils/projectHelpers';
+import { useFocusEffect } from '@react-navigation/native';
 
 function ChaptersView({
   navigation,
@@ -52,16 +52,14 @@ function ChaptersView({
 
   const [allProjects, setAllProjects] = useAtom(ProjectsDataStateAtom);
   const [loadingChapters, setLoadingChapters] = useState<boolean>(true);
-  const [selectedBook, setSelectedBook] = useState<Project>();
-  const [allChapters, setAllChapters] = useState<Chapter[]>([]);
   const [allChaptersSorted, setAllChaptersSorted] = useState<Chapter[]>([]);
   const [imageToLoad, setImageToLoad] =
     useState<ImageURISource>(PlaceholderImage);
 
-  const onNavigateBack = () => {
-    updateChaptersById(projectId, allChapters);
-    navigation.navigate(Paths.ProjectsView);
-  };
+  const [lastChapterViewed, setLastChapterViewed] = useState<string>('');
+  const [projectWordCount, setProjectWordCount] = useState<number>(0);
+  const [projectTitle, setProjectTitle] = useState<string>('');
+  const [projectUpdatedOn, setProjectUpdatedOn] = useState<string>('');
 
   const updateChaptersById = (id: string, newChapters: Chapter[]) => {
     setAllProjects((prevProjects) =>
@@ -69,6 +67,16 @@ function ChaptersView({
         project.id === id ? { ...project, chapters: newChapters } : project,
       ),
     );
+  };
+
+  const onNavigateBack = () => {
+    updateChaptersById(projectId, allChaptersSorted);
+    navigation.navigate(Paths.ProjectsView);
+  };
+
+  const onNavigate = (projectId: string, chapterId: string) => {
+    updateChaptersById(projectId, allChaptersSorted);
+    navigation.navigate(Paths.ContentView, { chapterId, projectId });
   };
 
   const updateChaptersStatus = (
@@ -82,31 +90,104 @@ function ChaptersView({
     });
   };
 
-  const onNavigate = (projectId: string, chapterId: string) => {
-    updateChaptersById(projectId, allChapters);
-    navigation.navigate(Paths.ContentView, { chapterId, projectId });
-  };
-
-  const book: Project | undefined = getProjectById(projectId, allProjects);
-  if (book && !selectedBook) {
-      (async () => {
-        try {
-          const imageURI = `${homeFolder}/.scriptura/covers/${book.coverPath}`;
-          const __hasPermission = await hasPermission(imageURI);
-          if (__hasPermission) {
-            const base64String = await readFile(imageURI, {
-              encoding: 'base64',
-            });
-            if(base64String.trim().length > 0) {
-              setImageToLoad({ uri: `data:image/png;base64,${base64String}` });
+  useFocusEffect(
+    useCallback(() => {
+      const selectedProject: Project | undefined = getProjectById(
+        projectId,
+        allProjects,
+      );
+      console.log('-------------')
+      console.log(selectedProject)
+      if (selectedProject) {
+        (async () => {
+          try {
+            const imageURI = `${homeFolder}/.scriptura/covers/${selectedProject.coverPath}`;
+            const __hasPermission = await hasPermission(imageURI);
+            if (__hasPermission) {
+              const base64String = await readFile(imageURI, {
+                encoding: 'base64',
+              });
+              if (base64String.trim().length > 0) {
+                setImageToLoad({ uri: `data:image/png;base64,${base64String}` });
+              }
             }
+            const __allExternalStorageProjectFiles = await listFiles(
+              selectedProject.androidFolderPath,
+            );
+            // Remove everything that's not a markdown
+            const allExternalStorageProjectFiles =
+              __allExternalStorageProjectFiles.filter(
+                (item) => item.mime === 'text/markdown',
+              );
+            // Get Data from all chapters
+            const allChaptersData: Chapter[] = [];
+            let totalWordCount = 0;
+            let latestUpdateInProject = 0;
+            let latestUpdateInProjectId = '';
+            for (const chapter of allExternalStorageProjectFiles) {
+              const chapterFileContent: string = await readFile(chapter.uri);
+              const chapterFileTitle: string =
+                removeFileExtension(chapter.name) ??
+                t('screen_chapters.no_title');
+
+              const markdownWordCount = countWordsFromHTML(chapterFileContent);
+
+              const savedChapter = findChapterByTitleAndPath(
+                selectedProject.chapters,
+                chapterFileTitle,
+                chapter.uri,
+              );
+
+              const __defineNewChapter: Chapter = savedChapter
+                ? {
+                  ...savedChapter,
+                  lastUpdate: chapter.lastModified,
+                  wordCount: markdownWordCount,
+                }
+                : {
+                  androidFilePath: chapter.uri,
+                  id: createNewUUID(),
+                  iphoneFilePath: '',
+                  lastUpdate: chapter.lastModified,
+                  linuxFilePath: '',
+                  osxFilePath: '',
+                  revisionPosition: -1,
+                  status: ChapterStatusType.Undefined,
+                  title: chapterFileTitle,
+                  windowsFilePath: '',
+                  wordCount: markdownWordCount,
+                };
+              totalWordCount += markdownWordCount;
+              if (__defineNewChapter.lastUpdate > latestUpdateInProject) {
+                latestUpdateInProject = __defineNewChapter.lastUpdate;
+                latestUpdateInProjectId = __defineNewChapter.id;
+              }
+              allChaptersData.push(__defineNewChapter);
+            }
+            setAllProjects((prevProjects) =>
+              prevProjects.map((project) =>
+                project.id === projectId
+                  ? {
+                    ...project,
+                    chapters: allChaptersData,
+                    chapterLastViewed: latestUpdateInProjectId,
+                    lastUpdate: latestUpdateInProject,
+                    wordCount: totalWordCount,
+                  }
+                  : project,
+              ),
+            );
+            setLastChapterViewed(latestUpdateInProjectId)
+            setProjectWordCount(totalWordCount)
+            setProjectTitle(selectedProject.title)
+            setProjectUpdatedOn(formatTimestamp(latestUpdateInProject, language))
+          } catch (error) {
+            print(error);
           }
-        } catch (error) {
-          print(error);
-        }
-      })();
-      setSelectedBook(book);
-  }
+        })();
+      }
+    }, [])
+  );
 
   useEffect(() => {
     if (allChaptersSorted.length > 0) {
@@ -128,103 +209,7 @@ function ChaptersView({
         }
       }
     }
-  }, [allChaptersSorted, allProjects, projectId, setAllProjects]);
-
-  const hasSelectedBook = useRef(false);
-  useEffect(() => {
-    if (hasSelectedBook.current) {
-      return;
-    }
-    if (selectedBook) {
-      const fetchAllChapters = async () => {
-        try {
-          // Get all markdown files directly inside the project's directory
-          /*
-           * TODO: Probably it's better if this function search recursively for
-           * any markdown in any nested directory
-           * */
-          const __allExternalStorageProjectFiles = await listFiles(
-            selectedBook.androidFolderPath,
-          );
-
-          // Remove everything that's not a markdown
-          const allExternalStorageProjectFiles =
-            __allExternalStorageProjectFiles.filter(
-              (item) => item.mime === 'text/markdown',
-            );
-
-          // Get Data from all chapters
-          const allChaptersData: Chapter[] = [];
-          let totalWordCount = 0;
-          let latestUpdateInProject = 0;
-          let latestUpdateInProjectId = '';
-          for (const chapter of allExternalStorageProjectFiles) {
-            const chapterFileContent: string = await readFile(chapter.uri);
-            const chapterFileContentTitle: string =
-              getTitleFromChapterFile(chapterFileContent) ??
-              t('screen_chapters.no_title');
-
-            const markdownWordCount = countWordsFromHTML(chapterFileContent);
-
-            const savedChapter = findChapterByTitleAndPath(
-              selectedBook.chapters,
-              chapterFileContentTitle,
-              chapter.uri,
-            );
-
-            const __defineNewChapter: Chapter = savedChapter
-              ? {
-                  ...savedChapter,
-                  wordCount: markdownWordCount,
-                }
-              : {
-                  androidFilePath: chapter.uri,
-                  id: createNewUUID(),
-                  iphoneFilePath: '',
-                  lastUpdate: chapter.lastModified,
-                  linuxFilePath: '',
-                  osxFilePath: '',
-                  revisionPosition: -1,
-                  status: ChapterStatusType.Undefined,
-                  title: chapterFileContentTitle,
-                  windowsFilePath: '',
-                  wordCount: markdownWordCount,
-                };
-            totalWordCount += markdownWordCount;
-            if (__defineNewChapter.lastUpdate > latestUpdateInProject) {
-              latestUpdateInProject = __defineNewChapter.lastUpdate;
-              latestUpdateInProjectId = __defineNewChapter.id;
-            }
-            allChaptersData.push(__defineNewChapter);
-          }
-          setAllChapters(allChaptersData);
-          setAllProjects((prevProjects) =>
-            prevProjects.map((project) =>
-              project.id === projectId
-                ? {
-                    ...project,
-                    chapterLastViewed: latestUpdateInProjectId,
-                    lastUpdate: latestUpdateInProject,
-                    wordCount: totalWordCount,
-                  }
-                : project,
-            ),
-          );
-        } catch (error) {
-          Toast.show({
-            text1: t('unknown_error.text1'),
-            text2: t('unknown_error.text2'),
-            type: 'error',
-          });
-          print(error);
-        } finally {
-          setLoadingChapters(false);
-        }
-      };
-      void fetchAllChapters();
-      hasSelectedBook.current = true;
-    }
-  }, [projectId, selectedBook, setAllProjects, t]);
+  }, [allChaptersSorted]);
 
   useEffect(() => {
     const selectedProject = findProjectById(allProjects, projectId);
@@ -243,36 +228,30 @@ function ChaptersView({
         );
       });
       setAllChaptersSorted(sortedArray);
+      setLoadingChapters(false);
     }
-  }, [allChapters, allProjects, projectId]);
-
-  const projectUpdatedOn = selectedBook
-    ? formatTimestamp(selectedBook.lastUpdate, language)
-    : '';
+  }, [allProjects, projectId]);
 
   return (
-    <View>
-      {selectedBook && (
-        <View style={[gutters.marginTop_16]}>
-          {loadingChapters ? (
-            <Text>Loading...</Text>
-          ) : allChapters.length > 0 ? (
-            <ChaptersDynamicList
-              allChaptersSorted={allChaptersSorted}
-              onNavigate={onNavigate}
-              onNavigateBack={onNavigateBack}
-              parallaxImage={imageToLoad}
-              parallaxSubtitle={`${t('screen_chapters.updated_at')} ${projectUpdatedOn}`}
-              parallaxTitle={`${selectedBook.title}`}
-              projectId={projectId}
-              selectedBook={selectedBook}
-              setAllChaptersSorted={setAllChaptersSorted}
-              updateChaptersStatus={updateChaptersStatus}
-            />
-          ) : (
-            <Text>{t('screen_chapters.no_chapters')}</Text>
-          )}
-        </View>
+    <View style={[gutters.marginTop_16]}>
+      {loadingChapters ? (
+        <Text>Loading...</Text>
+      ) : allChaptersSorted.length > 0 ? (
+        <ChaptersDynamicList
+          allChaptersSorted={allChaptersSorted}
+          onNavigate={onNavigate}
+          onNavigateBack={onNavigateBack}
+          parallaxImage={imageToLoad}
+          parallaxSubtitle={`${t('screen_chapters.updated_at')} ${projectUpdatedOn}`}
+          parallaxTitle={projectTitle}
+          projectId={projectId}
+          projectWordCount={projectWordCount}
+          lastChapterViewed={lastChapterViewed}
+          setAllChaptersSorted={setAllChaptersSorted}
+          updateChaptersStatus={updateChaptersStatus}
+        />
+      ) : (
+        <Text>{t('screen_chapters.no_chapters')}</Text>
       )}
     </View>
   );

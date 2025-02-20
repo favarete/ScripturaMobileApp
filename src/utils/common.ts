@@ -62,8 +62,12 @@ export const arraysAreEqualAndNonEmpty = (arr1: string[], arr2: string[]) => {
   return JSON.stringify(arr1) === JSON.stringify(arr2);
 };
 
+export const removeFileExtension = (fileName: string) => {
+  const dotIndex = fileName.lastIndexOf('.');
+  return dotIndex !== -1 ? fileName.substring(0, dotIndex) : fileName;
+}
 
-export const getWeekdayKey = (date: Date): keyof WritingStats => {
+export const getWeekdayKey = (timestamp: number): keyof WritingStats => {
   const weekdays: { [key: number]: keyof WritingStats } = {
     0: 'sunday',
     1: 'monday',
@@ -73,5 +77,38 @@ export const getWeekdayKey = (date: Date): keyof WritingStats => {
     5: 'friday',
     6: 'saturday',
   };
+
+  const date = new Date(timestamp);
   return weekdays[date.getDay()];
+}
+
+export const getLastInsertedChar = (oldText: string, newText: string) => {
+  if (newText.length <= oldText.length) {
+    return null;
+  }
+  let start = 0;
+  const minLen = Math.min(oldText.length, newText.length);
+
+  while (start < minLen && oldText[start] === newText[start]) {
+    start++;
+  }
+  let endOld = oldText.length - 1;
+  let endNew = newText.length - 1;
+
+  while (endOld >= start && endNew >= start && oldText[endOld] === newText[endNew]) {
+    endOld--;
+    endNew--;
+  }
+
+  const inserted = newText.slice(start, endNew + 1);
+  if (inserted.length > 0) {
+    return inserted[inserted.length - 1];
+  }
+  return null;
+}
+
+export const getDateOnlyFromTimestamp = (timestamp: number): number => {
+  const date = new Date(timestamp);
+  date.setHours(0, 0, 0, 0);
+  return date.getTime();
 }

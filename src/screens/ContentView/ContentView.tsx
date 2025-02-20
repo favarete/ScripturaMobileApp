@@ -1,6 +1,6 @@
 import type { MarkdownStyle } from '@expensify/react-native-live-markdown';
 import type { RootScreenProps } from '@/navigation/types';
-import type { Chapter } from '@/state/defaults';
+import { Chapter } from '@/state/defaults';
 
 import {
   MarkdownTextInput,
@@ -31,15 +31,16 @@ import MarkdownRenderer from '@/components/molecules/MarkdownRenderer/MarkdownRe
 import {
   AutosaveModeStateAtom,
   ProjectsDataStateAtom,
-  SaveAtomEffect,
+  SaveAtomEffect, WritingStatsRawStateAtom, WritingStatsStateAtom
 } from '@/state/atoms/persistentContent';
-import {
-  countWordsFromHTML,
-  getChapterById,
-  getTitleFromChapterFile,
-  updateChapterValue,
-} from '@/utils/chapterHelpers';
+import { countWordsFromHTML, getChapterById } from '@/utils/chapterHelpers';
 import { print } from '@/utils/logger';
+import {
+  getDateOnlyFromTimestamp,
+  getLastInsertedChar,
+  getWeekdayKey,
+} from '@/utils/common';
+import { useFocusEffect } from '@react-navigation/native';
 
 const { KeyboardModule } = NativeModules;
 
@@ -54,39 +55,84 @@ function ContentView({
   const { chapterId, projectId } = route.params;
 
   const [allProjects, setAllProjects] = useAtom(ProjectsDataStateAtom);
+  const [writingStatsRaw, setWritingStatsRaw] = useAtom(WritingStatsRawStateAtom);
+
   const autosaveMode = useAtomValue(AutosaveModeStateAtom);
 
   const [viewMode, setViewMode] = useState<boolean>(true);
   const [isPhysicalKeyboard, setIsPhysicalKeyboard] = useState<boolean>(false);
 
-  const [chapterTitle, setChapterTitle] = useState<string>();
+  const [chapterTitle, setChapterTitle] = useState<string>(
+    t('screen_chapters.no_title'),
+  );
   const [selectedChapter, setSelectedChapter] = useState<Chapter>();
   const [markdownText, setMarkdownText] = useState<string>('');
 
   const [contentCount, setContentCount] = useState<number>(0);
 
   const prevMarkdownTextRef = useRef<null | string>(null);
+  const startAutosave = useRef<boolean>(false);
   const lastSaveRef = useRef<number>(0);
 
-  const onSave = useCallback(() => {
-    const now = Date.now();
+  useFocusEffect(
+    useCallback(() => {
+      const chapter = getChapterById(projectId, chapterId, allProjects);
+      if (chapter) {
+        setSelectedChapter(chapter);
+        (async () => {
+          try {
+            setChapterTitle(chapter.title);
+            const markdownTextContent: string = await readFile(
+              chapter.androidFilePath,
+            );
 
-    if (now - lastSaveRef.current < 5000) {
-      return;
-    }
+            const dateOnlyTimestamp = getDateOnlyFromTimestamp(Date.now());
+            if(writingStatsRaw.timestamp === 0 || dateOnlyTimestamp !== writingStatsRaw.timestamp) {
+              setWritingStatsRaw({
+                text: '',
+                timestamp: dateOnlyTimestamp
+              });
+            }
+            setMarkdownText(markdownTextContent);
+          } catch (error) {
+            Toast.show({
+              text1: t('saving_error.text1'),
+              text2: t('saving_error.text2'),
+              type: 'error',
+            });
+            print(error);
+          }
+        })();
+      }
+    }, [])
+  );
 
-    lastSaveRef.current = now;
-
-    if (selectedChapter) {
-      const saveFileContent = async () => {
+  const saveAndUpdate = () => {
+    (async () => {
+      if (selectedChapter && startAutosave.current) {
         try {
           await writeFile(selectedChapter.androidFilePath, markdownText);
-          updateChapterValue(setAllProjects, projectId, chapterId, {
-            title:
-              getTitleFromChapterFile(markdownText) ??
-              t('screen_chapters.no_title'),
-            wordCount: countWordsFromHTML(markdownText),
-          });
+
+          const now = Date.now();
+          setAllProjects((prevProjects) =>
+            prevProjects.map((project) => {
+              if (project.id !== projectId) return project;
+              return {
+                ...project,
+                chapterLastViewed: chapterId,
+                lastUpdate: now,
+                chapters: project.chapters.map((chapter) =>
+                  chapter.id === chapterId
+                    ? {
+                        ...chapter,
+                        wordCount: countWordsFromHTML(markdownText),
+                        lastUpdate: now,
+                      }
+                    : chapter,
+                ),
+              };
+            }),
+          );
           prevMarkdownTextRef.current = markdownText;
         } catch (error) {
           Toast.show({
@@ -96,34 +142,87 @@ function ContentView({
           });
           print(error);
         }
-      };
-      void saveFileContent();
-    }
-  }, [selectedChapter, markdownText, setAllProjects, projectId, chapterId, t]);
+      }
+    })();
+  };
 
   const onNavigateBack = () => {
-    onSave();
+    saveAndUpdate();
     navigation.navigate(Paths.ChaptersView, { projectId });
   };
 
   const onNavigateToStatistics = () => {
+    saveAndUpdate();
     navigation.navigate(Paths.StatisticsView, { chapterId, projectId });
   };
 
-  useEffect(() => {
-    if (contentCount > 0 && contentCount % 3 === 0) {
-      onSave();
+  const [writingStats, setWritingStats] = useAtom(WritingStatsStateAtom);
+
+  const lastPressedCharacterRef = useRef<string>('');
+  const handleTextChange = (newText: string) => {
+    if(!startAutosave.current){
+      startAutosave.current = true;
     }
-  }, [
-    chapterId,
-    contentCount,
-    projectId,
-    markdownText,
-    onSave,
-    selectedChapter,
-    setAllProjects,
-    t,
-  ]);
+    const lastChar = getLastInsertedChar(markdownText, newText);
+    if (lastChar) {
+      if(lastChar === ' ' && lastPressedCharacterRef.current !== ' ') {
+
+        const timestampNow = Date.now()
+        const weekday = getWeekdayKey(timestampNow)
+        const dateOnlyTimestamp = getDateOnlyFromTimestamp(timestampNow);
+
+        // const updateLastObject = (updates: Partial<Item>) => {
+        //   setState((prevState) => {
+        //     // Copy all elements except the last
+        //     const newArray = [...prevState];
+        //     // Update the last object without mutating the original one
+        //     newArray[newArray.length - 1] = {
+        //       ...newArray[newArray.length - 1],
+        //       ...updates,
+        //     };
+        //
+        //     return newArray; // Return the updated array
+        //   });
+        // };
+
+
+        const statsVault = writingStats[weekday];
+        if(statsVault.length > 0) {
+          console.log('Atualiza')
+          const updateStats = statsVault[statsVault.length - 1]
+          updateStats.totalWords = writingStatsRaw.text.length;
+          updateStats.writtenWords += 1;
+          updateStats.deletedWords = updateStats.writtenWords - updateStats.totalWords;
+          updateStats.__rawText = writingStatsRaw.text;
+          console.log(updateStats)
+        }
+        else {
+          console.log('Cria')
+          const initialStats = {
+            date: dateOnlyTimestamp,
+            totalWords: 1,
+            deletedWords: 0,
+            writtenWords: 1,
+            __rawText: writingStatsRaw.text,
+          }
+          console.log(initialStats)
+        }
+      }
+      lastPressedCharacterRef.current = lastChar;
+    }
+    setMarkdownText(newText);
+  };
+
+  useEffect(() => {
+    if (contentCount > 0 && contentCount % 1 === 0) {
+      const now = Date.now();
+      if (now - lastSaveRef.current < 1500) {
+        return;
+      }
+      lastSaveRef.current = now;
+      saveAndUpdate();
+    }
+  }, [contentCount]);
 
   useEffect(() => {
     setContentCount(0);
@@ -131,16 +230,16 @@ function ContentView({
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (autosaveMode && !viewMode) {
+      if (autosaveMode) {
         setContentCount(
           prevMarkdownTextRef.current === markdownText
             ? 0
             : (count) => count + 1,
         );
       }
-    }, 1000);
+    }, 500);
     return () => clearInterval(interval);
-  }, [autosaveMode, markdownText, viewMode]);
+  }, [autosaveMode, markdownText]);
 
   useEffect(() => {
     const checkKeyboard = async () => {
@@ -159,7 +258,7 @@ function ContentView({
   }, []);
 
   const onToggleView = () => {
-    onSave();
+    saveAndUpdate();
     setContentCount(0);
     setViewMode(!viewMode);
   };
@@ -174,27 +273,6 @@ function ContentView({
       marginBottom: 32,
     },
   });
-
-  useEffect(() => {
-    const chapter = getChapterById(projectId, chapterId, allProjects);
-    if (chapter) {
-      setSelectedChapter(chapter);
-    }
-  }, [allProjects, chapterId, projectId]);
-
-  useEffect(() => {
-    if (selectedChapter) {
-      setChapterTitle(selectedChapter.title);
-
-      const fetchFileContent = async () => {
-        const markdownTextContent: string = await readFile(
-          selectedChapter.androidFilePath,
-        );
-        setMarkdownText(markdownTextContent);
-      };
-      void fetchFileContent();
-    }
-  }, [selectedChapter]);
 
   const markdownEditStyles = {
     ...fonts.size_16,
@@ -250,21 +328,6 @@ function ContentView({
     },
   };
 
-  let titleToRender: string;
-  if (chapterTitle) {
-    titleToRender =
-      prevMarkdownTextRef.current &&
-      prevMarkdownTextRef.current.length > 0 &&
-      markdownText &&
-      markdownText.length > 0 &&
-      prevMarkdownTextRef.current !== markdownText &&
-      !viewMode
-        ? `${chapterTitle}*`
-        : chapterTitle;
-  } else {
-    titleToRender = t('screen_content.view');
-  }
-
   return (
     <View style={layout.flex_1}>
       {selectedChapter && (
@@ -272,7 +335,7 @@ function ContentView({
           <TitleBar
             onNavigateBack={onNavigateBack}
             onToggleView={onToggleView}
-            title={titleToRender}
+            title={chapterTitle}
             viewMode={viewMode}
           />
           <ScrollView
@@ -300,7 +363,7 @@ function ContentView({
                   markdownStyle={markdownStylesEdit}
                   maxLength={30_000}
                   multiline
-                  onChangeText={setMarkdownText}
+                  onChangeText={handleTextChange}
                   parser={parseExpensiMark}
                   selectionColor={colors.gray200}
                   showSoftInputOnFocus={!isPhysicalKeyboard}
