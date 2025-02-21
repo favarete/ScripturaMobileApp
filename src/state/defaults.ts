@@ -22,11 +22,6 @@ const DEFAULT_DAILY_GOAL_MODE: DailyGoalMode = {
   target: 500,
 };
 
-export type WordWrittenRaw = { text: string; timestamp: number };
-const DEFAULT_WRITING_STATS_RAW: WordWrittenRaw = {
-  timestamp: 0,
-  text: '',
-};
 const DEFAULT_MAX_STREAK: number = 0;
 const DEFAULT_CURRENT_STREAK: number = 0;
 const DEFAULT_WORDS_WRITTEN_TODAY: number = 0;
@@ -161,5 +156,4 @@ export const DEFAULT_DATA = {
   typewriterMode: DEFAULT_TYPEWRITER_MODE,
   wordWrittenToday: DEFAULT_WORDS_WRITTEN_TODAY,
   writingStats: DEFAULT_WRITING_STATS,
-  writingStatsRaw: DEFAULT_WRITING_STATS_RAW
 }

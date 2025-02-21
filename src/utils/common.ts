@@ -64,7 +64,7 @@ export const arraysAreEqualAndNonEmpty = (arr1: string[], arr2: string[]) => {
 
 export const removeFileExtension = (fileName: string) => {
   const dotIndex = fileName.lastIndexOf('.');
-  return dotIndex !== -1 ? fileName.substring(0, dotIndex) : fileName;
+  return dotIndex !== -1 ? fileName.slice(0, Math.max(0, dotIndex)) : fileName;
 }
 
 export const getWeekdayKey = (timestamp: number): keyof WritingStats => {
@@ -82,33 +82,28 @@ export const getWeekdayKey = (timestamp: number): keyof WritingStats => {
   return weekdays[date.getDay()];
 }
 
-export const getLastInsertedChar = (oldText: string, newText: string) => {
-  if (newText.length <= oldText.length) {
-    return null;
-  }
-  let start = 0;
-  const minLen = Math.min(oldText.length, newText.length);
-
-  while (start < minLen && oldText[start] === newText[start]) {
-    start++;
-  }
-  let endOld = oldText.length - 1;
-  let endNew = newText.length - 1;
-
-  while (endOld >= start && endNew >= start && oldText[endOld] === newText[endNew]) {
-    endOld--;
-    endNew--;
-  }
-
-  const inserted = newText.slice(start, endNew + 1);
-  if (inserted.length > 0) {
-    return inserted[inserted.length - 1];
-  }
-  return null;
-}
-
 export const getDateOnlyFromTimestamp = (timestamp: number): number => {
   const date = new Date(timestamp);
   date.setHours(0, 0, 0, 0);
   return date.getTime();
+}
+
+export const countOccurrences = (words: string[]): Record<string, number> => {
+  return words.reduce((acc, word) => {
+    acc[word] = (acc[word] ?? 0) + 1;
+    return acc;
+  }, {} as Record<string, number> );
+}
+
+export const extractCompleteWords = (text: string): string[] => {
+  const trimmed = text.trimEnd();
+  const tokens = trimmed.match(/\S+/g) || [];
+
+  const endsWithSpace = text.endsWith(' ');
+
+  if (!endsWithSpace && tokens.length > 0) {
+    tokens.pop();
+  }
+
+  return tokens;
 }

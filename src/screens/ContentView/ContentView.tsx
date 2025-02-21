@@ -1,23 +1,13 @@
 import type { MarkdownStyle } from '@expensify/react-native-live-markdown';
 import type { RootScreenProps } from '@/navigation/types';
-import { Chapter } from '@/state/defaults';
 
-import {
-  MarkdownTextInput,
-  parseExpensiMark,
-} from '@expensify/react-native-live-markdown';
+import { MarkdownTextInput, parseExpensiMark } from '@expensify/react-native-live-markdown';
+import { useFocusEffect } from '@react-navigation/native';
 import { useAtomValue } from 'jotai/index';
 import { useAtom } from 'jotai/react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  Keyboard,
-  NativeModules,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { Keyboard, NativeModules, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { readFile, writeFile } from 'react-native-saf-x';
 import Toast from 'react-native-toast-message';
 
@@ -28,19 +18,11 @@ import { TitleBar } from '@/components/atoms';
 import StatisticsBar from '@/components/atoms/StatisticsBar/StatisticsBar';
 import MarkdownRenderer from '@/components/molecules/MarkdownRenderer/MarkdownRenderer';
 
-import {
-  AutosaveModeStateAtom,
-  ProjectsDataStateAtom,
-  SaveAtomEffect, WritingStatsRawStateAtom, WritingStatsStateAtom
-} from '@/state/atoms/persistentContent';
+import { AutosaveModeStateAtom, ProjectsDataStateAtom, SaveAtomEffect, WritingStatsStateAtom } from '@/state/atoms/persistentContent';
+import { Chapter } from '@/state/defaults';
 import { countWordsFromHTML, getChapterById } from '@/utils/chapterHelpers';
+import { countOccurrences, getDateOnlyFromTimestamp } from '@/utils/common';
 import { print } from '@/utils/logger';
-import {
-  getDateOnlyFromTimestamp,
-  getLastInsertedChar,
-  getWeekdayKey,
-} from '@/utils/common';
-import { useFocusEffect } from '@react-navigation/native';
 
 const { KeyboardModule } = NativeModules;
 
@@ -55,7 +37,6 @@ function ContentView({
   const { chapterId, projectId } = route.params;
 
   const [allProjects, setAllProjects] = useAtom(ProjectsDataStateAtom);
-  const [writingStatsRaw, setWritingStatsRaw] = useAtom(WritingStatsRawStateAtom);
 
   const autosaveMode = useAtomValue(AutosaveModeStateAtom);
 
@@ -66,10 +47,12 @@ function ContentView({
     t('screen_chapters.no_title'),
   );
   const [selectedChapter, setSelectedChapter] = useState<Chapter>();
+
+  const dayRef = useRef<number>(getDateOnlyFromTimestamp(Date.now()));
+  const [localCountOccurrences, setLocalCountOccurrences] = useState<Record<string, number>>({});
   const [markdownText, setMarkdownText] = useState<string>('');
 
   const [contentCount, setContentCount] = useState<number>(0);
-
   const prevMarkdownTextRef = useRef<null | string>(null);
   const startAutosave = useRef<boolean>(false);
   const lastSaveRef = useRef<number>(0);
@@ -85,14 +68,8 @@ function ContentView({
             const markdownTextContent: string = await readFile(
               chapter.androidFilePath,
             );
-
-            const dateOnlyTimestamp = getDateOnlyFromTimestamp(Date.now());
-            if(writingStatsRaw.timestamp === 0 || dateOnlyTimestamp !== writingStatsRaw.timestamp) {
-              setWritingStatsRaw({
-                text: '',
-                timestamp: dateOnlyTimestamp
-              });
-            }
+            const completeWords = extractCompleteWords(markdownTextContent);
+            setLocalCountOccurrences(buildFrequencies(completeWords));
             setMarkdownText(markdownTextContent);
           } catch (error) {
             Toast.show({
@@ -104,7 +81,7 @@ function ContentView({
           }
         })();
       }
-    }, [])
+    }, []),
   );
 
   const saveAndUpdate = () => {
@@ -158,58 +135,79 @@ function ContentView({
 
   const [writingStats, setWritingStats] = useAtom(WritingStatsStateAtom);
 
-  const lastPressedCharacterRef = useRef<string>('');
+  const [selection, setSelection] = useState({ start: 0, end: 0 });
+  const [addedWords, setAddedWords] = useState(0);
+  const [removedWords, setRemovedWords] = useState(0);
+
+  function extractCompleteWords(text: string): string[] {
+    // Remove espaços extras no final
+    const trimmed = text.trimEnd();
+
+    // Separa tudo que for não-vazio (sequências de caracteres sem espaço)
+    const tokens = trimmed.match(/\S+/g) || [];
+
+    // Verifica se a string original (antes do trimEnd) terminava com espaço
+    // - Se NÃO terminar com espaço (ex: "Olá mund"), então a última palavra é parcial
+    // - Se terminar (ex: "Olá mund "), então a última palavra é completa
+    const endsWithSpace = text.endsWith(' ');
+
+    if (!endsWithSpace && tokens.length > 0) {
+      // Remove a última palavra, pois ela está "aberta"
+      tokens.pop();
+    }
+
+    return tokens;
+  }
+
+  type Frequencies = Record<string, number>;
+
+  function buildFrequencies(completeWords: string[]): Frequencies {
+    return completeWords.reduce((acc, word) => {
+      acc[word] = (acc[word] ?? 0) + 1;
+      return acc;
+    }, {} as Frequencies);
+  }
+
+  // const lastPressedCharacterRef = useRef<string>('');
   const handleTextChange = (newText: string) => {
-    if(!startAutosave.current){
+    if (!startAutosave.current) {
       startAutosave.current = true;
     }
-    const lastChar = getLastInsertedChar(markdownText, newText);
-    if (lastChar) {
-      if(lastChar === ' ' && lastPressedCharacterRef.current !== ' ') {
 
-        const timestampNow = Date.now()
-        const weekday = getWeekdayKey(timestampNow)
-        const dateOnlyTimestamp = getDateOnlyFromTimestamp(timestampNow);
+    if (markdownText.trimEnd() !== newText.trimEnd()) {
+      // 1. Extrai as palavras completas
+      const completeWords = extractCompleteWords(newText);
 
-        // const updateLastObject = (updates: Partial<Item>) => {
-        //   setState((prevState) => {
-        //     // Copy all elements except the last
-        //     const newArray = [...prevState];
-        //     // Update the last object without mutating the original one
-        //     newArray[newArray.length - 1] = {
-        //       ...newArray[newArray.length - 1],
-        //       ...updates,
-        //     };
-        //
-        //     return newArray; // Return the updated array
-        //   });
-        // };
+      // 2. Monta o novo objeto de frequência
+      const newFrequencies = buildFrequencies(completeWords);
 
+      // 3. Compara com o oldFrequencies
+      let added = 0;
+      let removed = 0;
 
-        const statsVault = writingStats[weekday];
-        if(statsVault.length > 0) {
-          console.log('Atualiza')
-          const updateStats = statsVault[statsVault.length - 1]
-          updateStats.totalWords = writingStatsRaw.text.length;
-          updateStats.writtenWords += 1;
-          updateStats.deletedWords = updateStats.writtenWords - updateStats.totalWords;
-          updateStats.__rawText = writingStatsRaw.text;
-          console.log(updateStats)
+      // Conjunto de todas as palavras que aparecem em qualquer um dos dois objetos
+      const allWords = new Set([
+        ...Object.keys(localCountOccurrences),
+        ...Object.keys(newFrequencies)
+      ]);
+
+      allWords.forEach(word => {
+        const oldCount = localCountOccurrences[word] ?? 0;
+        const newCount = newFrequencies[word] ?? 0;
+
+        if (newCount > oldCount) {
+          added += newCount - oldCount;
+        } else if (oldCount > newCount) {
+          removed += oldCount - newCount;
         }
-        else {
-          console.log('Cria')
-          const initialStats = {
-            date: dateOnlyTimestamp,
-            totalWords: 1,
-            deletedWords: 0,
-            writtenWords: 1,
-            __rawText: writingStatsRaw.text,
-          }
-          console.log(initialStats)
-        }
-      }
-      lastPressedCharacterRef.current = lastChar;
+      });
+
+      setAddedWords(prev => prev + added)
+      setRemovedWords(prev => prev + removed)
+
+      setLocalCountOccurrences(newFrequencies)
     }
+
     setMarkdownText(newText);
   };
 
@@ -338,6 +336,8 @@ function ContentView({
             title={chapterTitle}
             viewMode={viewMode}
           />
+          <Text>Added {addedWords}</Text>
+          <Text>Removed {removedWords}</Text>
           <ScrollView
             style={
               viewMode ? styles.markdownContent : styles.markdownContentEdit
