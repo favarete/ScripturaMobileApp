@@ -1,6 +1,7 @@
-import uuid from 'react-native-uuid';
-import { WritingStats } from '@/state/defaults';
 import markdownit from 'markdown-it';
+import uuid from 'react-native-uuid';
+
+import { WritingStats } from '@/state/defaults';
 
 export const createNewUUID = (): string => {
   return uuid.v4();
@@ -66,7 +67,7 @@ export const arraysAreEqualAndNonEmpty = (arr1: string[], arr2: string[]) => {
 export const removeFileExtension = (fileName: string) => {
   const dotIndex = fileName.lastIndexOf('.');
   return dotIndex !== -1 ? fileName.slice(0, Math.max(0, dotIndex)) : fileName;
-}
+};
 
 export const getWeekdayKey = (timestamp: number): keyof WritingStats => {
   const weekdays: { [key: number]: keyof WritingStats } = {
@@ -81,31 +82,37 @@ export const getWeekdayKey = (timestamp: number): keyof WritingStats => {
 
   const date = new Date(timestamp);
   return weekdays[date.getDay()];
-}
+};
 
 export const getDateOnlyFromTimestamp = (timestamp: number): number => {
   const date = new Date(timestamp);
   date.setHours(0, 0, 0, 0);
   return date.getTime();
-}
+};
 
 export const countOccurrences = (text: string): Record<string, number> => {
   const words = text.split(/\s+/).filter(Boolean);
-  return words.reduce((acc, word) => {
-    acc[word] = (acc[word] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number> );
-}
+  return words.reduce(
+    (acc, word) => {
+      acc[word] = (acc[word] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
+};
 
 export const compareWordFrequencies = (
   oldFrequencies: Record<string, number>,
-  newFrequencies: Record<string, number>
+  newFrequencies: Record<string, number>,
 ): { totalAdded: number; totalRemoved: number } => {
   let totalAdded = 0;
   let totalRemoved = 0;
-  const allWords = new Set([...Object.keys(oldFrequencies), ...Object.keys(newFrequencies)]);
+  const allWords = new Set([
+    ...Object.keys(oldFrequencies),
+    ...Object.keys(newFrequencies),
+  ]);
 
-  allWords.forEach(word => {
+  allWords.forEach((word) => {
     const oldCount = oldFrequencies[word] || 0;
     const newCount = newFrequencies[word] || 0;
 
@@ -117,22 +124,37 @@ export const compareWordFrequencies = (
   });
 
   return { totalAdded, totalRemoved };
-}
-
-export const isPunctuationOrSpaceOrLineBreak = (char: string): boolean => {
-  const punctuationMarks = new Set([',', ';', ':', '!', '?', '.', '\'', '"']);
-  const lineBreaks = new Set(['\n', '\r']);
-  const spaces = new Set([' ', '\t']);
-
-  return punctuationMarks.has(char) || lineBreaks.has(char) || spaces.has(char);
 };
 
-// export const settledForWordEvaluation = (text: string, cursorPos: number) => {
-//   const charBefore = isPunctuationOrSpaceOrLineBreak(text[cursorPos - 1] ?? '');
-//   const charAfter = isPunctuationOrSpaceOrLineBreak(text[cursorPos] ?? '');
-//
-//   return true
-// }
+const isPunctuation = (char: string): boolean => {
+  const punctuationMarks = new Set([',', ';', ':', '!', '?', '.', "'", '"']);
+  return punctuationMarks.has(char);
+};
+
+const isSpace = (char: string): boolean => {
+  const spaces = new Set([' ', '\t']);
+  return spaces.has(char);
+};
+
+const isLineBreak = (char: string): boolean => {
+  const lineBreaks = new Set(['\n', '\r']);
+  return lineBreaks.has(char);
+};
+
+const isLetterOrNumber = (char: string): boolean => {
+  const codePoint = char.codePointAt(0); // Get the Unicode code point
+  if (!codePoint) {
+    return false; // Invalid character
+  }
+  // Check if it's a number (0-9)
+  if (codePoint >= 48 && codePoint <= 57) {
+    return true;
+  }
+  // Check if it's a letter in the Unicode range
+  const letterRegex = /^\p{L}$/u;
+  return letterRegex.test(char);
+};
+
 
 export const minimizeMarkdownText = (markdownText: string): string => {
   const md = markdownit();
@@ -143,12 +165,12 @@ export const minimizeMarkdownText = (markdownText: string): string => {
     return '';
   }
 
-  let wordsOnlyText = plainText.replace(/[^\p{L}\p{N}\s]/gu, '');
+  let wordsOnlyText = plainText.replaceAll(/[^\p{L}\p{N}\s]/gu, '');
   wordsOnlyText = wordsOnlyText.replace(/\s+/g, ' ');
   return wordsOnlyText.trim();
-}
+};
 
 export const minimizeMarkdownTextLength = (markdownText: string): number => {
   const wordsOnlyText = minimizeMarkdownText(markdownText);
-  return wordsOnlyText.split(/\s+/).filter(word => word.length > 0).length;
-}
+  return wordsOnlyText.split(/\s+/).filter((word) => word.length > 0).length;
+};

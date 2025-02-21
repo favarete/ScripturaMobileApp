@@ -22,7 +22,6 @@ import {
 } from '@/state/atoms/persistentContent';
 import { ChapterStatusType, getValidChapterEnum } from '@/state/defaults';
 import {
-  countWordsFromHTML,
   findChapterByTitleAndPath,
   getProjectById,
   updateChapterValue,
@@ -30,8 +29,8 @@ import {
 import {
   arraysAreEqualAndNonEmpty,
   createNewUUID,
-  formatTimestamp,
-  removeFileExtension,
+  formatTimestamp, minimizeMarkdownTextLength,
+  removeFileExtension
 } from '@/utils/common';
 import { print } from '@/utils/logger';
 import { findProjectById } from '@/utils/projectHelpers';
@@ -130,7 +129,7 @@ function ChaptersView({
                 removeFileExtension(chapter.name) ??
                 t('screen_chapters.no_title');
 
-              const markdownWordCount = countWordsFromHTML(chapterFileContent);
+              const markdownWordCount = minimizeMarkdownTextLength(chapterFileContent);
 
               const savedChapter = findChapterByTitleAndPath(
                 selectedProject.chapters,

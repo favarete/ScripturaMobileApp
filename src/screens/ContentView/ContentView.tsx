@@ -25,7 +25,8 @@ import {
   compareWordFrequencies,
   countOccurrences,
   getDateOnlyFromTimestamp,
-  minimizeMarkdownText, minimizeMarkdownTextLength
+  minimizeMarkdownText,
+  minimizeMarkdownTextLength,
 } from '@/utils/common';
 import { print } from '@/utils/logger';
 
@@ -116,8 +117,10 @@ function ContentView({
           const { totalAdded, totalRemoved } = compareWordFrequencies(localCountOccurrences, dynamicOccurrences)
           setLocalCountOccurrences(dynamicOccurrences)
 
-          setTotalAdded(prevState => prevState + totalAdded);
-          setTotalRemoved(prevState => prevState + totalRemoved);
+          if(!(totalAdded === 1 && totalRemoved ===1)) {
+            setTotalAdded(prevState => prevState + totalAdded);
+            setTotalRemoved(prevState => prevState + totalRemoved);
+          }
 
           await writeFile(selectedChapter.androidFilePath, markdownText);
 
