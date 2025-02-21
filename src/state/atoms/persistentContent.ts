@@ -3,7 +3,6 @@ import type {
   DailyGoalMode,
   ElementUUID,
   Project,
-  WordWrittenRaw,
   WritingStats,
 } from '@/state/defaults';
 import type { Variant } from '@/theme/types/config';
@@ -134,12 +133,6 @@ export const FavoriteProjectsStateAtom = atomWithMMKV<ElementUUID[]>(
 export const WritingStatsStateAtom = atomWithMMKV<WritingStats>(
   'writing_stats',
   DEFAULT_DATA.writingStats,
-  CommonStorage,
-);
-
-export const WritingStatsRawStateAtom = atomWithMMKV<WordWrittenRaw>(
-  'writing_stats_raw',
-  DEFAULT_DATA.writingStatsRaw,
   CommonStorage,
 );
 

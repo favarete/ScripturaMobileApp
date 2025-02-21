@@ -21,7 +21,12 @@ import MarkdownRenderer from '@/components/molecules/MarkdownRenderer/MarkdownRe
 import { AutosaveModeStateAtom, ProjectsDataStateAtom, SaveAtomEffect, WritingStatsStateAtom } from '@/state/atoms/persistentContent';
 import { Chapter } from '@/state/defaults';
 import { countWordsFromHTML, getChapterById } from '@/utils/chapterHelpers';
-import { countOccurrences, getDateOnlyFromTimestamp } from '@/utils/common';
+import {
+  compareWordFrequencies,
+  countOccurrences,
+  getDateOnlyFromTimestamp,
+  isPunctuationOrSpaceOrLineBreak
+} from '@/utils/common';
 import { print } from '@/utils/logger';
 
 const { KeyboardModule } = NativeModules;
@@ -50,12 +55,27 @@ function ContentView({
 
   const dayRef = useRef<number>(getDateOnlyFromTimestamp(Date.now()));
   const [localCountOccurrences, setLocalCountOccurrences] = useState<Record<string, number>>({});
+
+  const [totalAdded, setTotalAdded] = useState(0);
+  const [totalRemoved, setTotalRemoved] = useState(0);
+
   const [markdownText, setMarkdownText] = useState<string>('');
 
   const [contentCount, setContentCount] = useState<number>(0);
   const prevMarkdownTextRef = useRef<null | string>(null);
   const startAutosave = useRef<boolean>(false);
   const lastSaveRef = useRef<number>(0);
+
+  const [selection, setSelection] = useState({ start: 0, end: 0 });
+
+  const handleSelectionChange = (event: any) => {
+    const { selection } = event.nativeEvent;
+    setSelection(selection);
+  };
+
+  const moveCursorToPosition = (pos: number) => {
+    setSelection({ start: pos, end: pos });
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -68,8 +88,7 @@ function ContentView({
             const markdownTextContent: string = await readFile(
               chapter.androidFilePath,
             );
-            const completeWords = extractCompleteWords(markdownTextContent);
-            setLocalCountOccurrences(buildFrequencies(completeWords));
+            setLocalCountOccurrences(countOccurrences(markdownTextContent));
             setMarkdownText(markdownTextContent);
           } catch (error) {
             Toast.show({
@@ -84,10 +103,20 @@ function ContentView({
     }, []),
   );
 
+  const [writingStats, setWritingStats] = useAtom(WritingStatsStateAtom);
+
   const saveAndUpdate = () => {
     (async () => {
       if (selectedChapter && startAutosave.current) {
         try {
+          const dynamicOccurrences = countOccurrences(markdownText);
+          const { totalAdded, totalRemoved } = compareWordFrequencies(localCountOccurrences, dynamicOccurrences)
+          setLocalCountOccurrences(dynamicOccurrences)
+
+          if(totalAdded !== 1 && totalRemoved !== 1) {
+            setTotalAdded(prevState => prevState + totalAdded);
+            setTotalRemoved(prevState => prevState + totalRemoved);
+          }
           await writeFile(selectedChapter.androidFilePath, markdownText);
 
           const now = Date.now();
@@ -133,81 +162,10 @@ function ContentView({
     navigation.navigate(Paths.StatisticsView, { chapterId, projectId });
   };
 
-  const [writingStats, setWritingStats] = useAtom(WritingStatsStateAtom);
-
-  const [selection, setSelection] = useState({ start: 0, end: 0 });
-  const [addedWords, setAddedWords] = useState(0);
-  const [removedWords, setRemovedWords] = useState(0);
-
-  function extractCompleteWords(text: string): string[] {
-    // Remove espaços extras no final
-    const trimmed = text.trimEnd();
-
-    // Separa tudo que for não-vazio (sequências de caracteres sem espaço)
-    const tokens = trimmed.match(/\S+/g) || [];
-
-    // Verifica se a string original (antes do trimEnd) terminava com espaço
-    // - Se NÃO terminar com espaço (ex: "Olá mund"), então a última palavra é parcial
-    // - Se terminar (ex: "Olá mund "), então a última palavra é completa
-    const endsWithSpace = text.endsWith(' ');
-
-    if (!endsWithSpace && tokens.length > 0) {
-      // Remove a última palavra, pois ela está "aberta"
-      tokens.pop();
-    }
-
-    return tokens;
-  }
-
-  type Frequencies = Record<string, number>;
-
-  function buildFrequencies(completeWords: string[]): Frequencies {
-    return completeWords.reduce((acc, word) => {
-      acc[word] = (acc[word] ?? 0) + 1;
-      return acc;
-    }, {} as Frequencies);
-  }
-
-  // const lastPressedCharacterRef = useRef<string>('');
   const handleTextChange = (newText: string) => {
     if (!startAutosave.current) {
       startAutosave.current = true;
     }
-
-    if (markdownText.trimEnd() !== newText.trimEnd()) {
-      // 1. Extrai as palavras completas
-      const completeWords = extractCompleteWords(newText);
-
-      // 2. Monta o novo objeto de frequência
-      const newFrequencies = buildFrequencies(completeWords);
-
-      // 3. Compara com o oldFrequencies
-      let added = 0;
-      let removed = 0;
-
-      // Conjunto de todas as palavras que aparecem em qualquer um dos dois objetos
-      const allWords = new Set([
-        ...Object.keys(localCountOccurrences),
-        ...Object.keys(newFrequencies)
-      ]);
-
-      allWords.forEach(word => {
-        const oldCount = localCountOccurrences[word] ?? 0;
-        const newCount = newFrequencies[word] ?? 0;
-
-        if (newCount > oldCount) {
-          added += newCount - oldCount;
-        } else if (oldCount > newCount) {
-          removed += oldCount - newCount;
-        }
-      });
-
-      setAddedWords(prev => prev + added)
-      setRemovedWords(prev => prev + removed)
-
-      setLocalCountOccurrences(newFrequencies)
-    }
-
     setMarkdownText(newText);
   };
 
@@ -218,6 +176,11 @@ function ContentView({
         return;
       }
       lastSaveRef.current = now;
+
+      //const cursorPos = selection.start;
+      //const charBefore = isPunctuationOrSpaceOrLineBreak(markdownText[cursorPos - 1] ?? '');
+      //const charAfter = isPunctuationOrSpaceOrLineBreak(markdownText[cursorPos] ?? '');
+
       saveAndUpdate();
     }
   }, [contentCount]);
@@ -336,8 +299,8 @@ function ContentView({
             title={chapterTitle}
             viewMode={viewMode}
           />
-          <Text>Added {addedWords}</Text>
-          <Text>Removed {removedWords}</Text>
+          <Text>Added {totalAdded}</Text>
+          <Text>Removed {totalRemoved}</Text>
           <ScrollView
             style={
               viewMode ? styles.markdownContent : styles.markdownContentEdit
@@ -364,7 +327,9 @@ function ContentView({
                   maxLength={30_000}
                   multiline
                   onChangeText={handleTextChange}
+                  onSelectionChange={handleSelectionChange}
                   parser={parseExpensiMark}
+                  selection={selection}
                   selectionColor={colors.gray200}
                   showSoftInputOnFocus={!isPhysicalKeyboard}
                   style={[markdownEditStyles]}
@@ -376,7 +341,7 @@ function ContentView({
           <StatisticsBar
             onNavigateToStatistics={onNavigateToStatistics}
             viewMode={viewMode}
-            wordCount={selectedChapter.wordCount}
+            wordCount={countWordsFromHTML(markdownText)}
             wordGoal={1000}
             wordsWrittenToday={357}
           />

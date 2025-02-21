@@ -88,22 +88,40 @@ export const getDateOnlyFromTimestamp = (timestamp: number): number => {
   return date.getTime();
 }
 
-export const countOccurrences = (words: string[]): Record<string, number> => {
+export const countOccurrences = (text: string): Record<string, number> => {
+  const words = text.split(/\s+/).filter(Boolean);
   return words.reduce((acc, word) => {
-    acc[word] = (acc[word] ?? 0) + 1;
+    acc[word] = (acc[word] || 0) + 1;
     return acc;
   }, {} as Record<string, number> );
 }
 
-export const extractCompleteWords = (text: string): string[] => {
-  const trimmed = text.trimEnd();
-  const tokens = trimmed.match(/\S+/g) || [];
+export const compareWordFrequencies = (
+  oldFrequencies: Record<string, number>,
+  newFrequencies: Record<string, number>
+): { totalAdded: number; totalRemoved: number } => {
+  let totalAdded = 0;
+  let totalRemoved = 0;
+  const allWords = new Set([...Object.keys(oldFrequencies), ...Object.keys(newFrequencies)]);
 
-  const endsWithSpace = text.endsWith(' ');
+  allWords.forEach(word => {
+    const oldCount = oldFrequencies[word] || 0;
+    const newCount = newFrequencies[word] || 0;
 
-  if (!endsWithSpace && tokens.length > 0) {
-    tokens.pop();
-  }
+    if (newCount > oldCount) {
+      totalAdded += newCount - oldCount;
+    } else if (oldCount > newCount) {
+      totalRemoved += oldCount - newCount;
+    }
+  });
 
-  return tokens;
+  return { totalAdded, totalRemoved };
 }
+
+export const isPunctuationOrSpaceOrLineBreak = (char: string): boolean => {
+  const punctuationMarks = new Set(['.', ',', '!', '?', ';', ':', '\'', '"']);
+  const lineBreaks = new Set(['\n', '\r']);
+  const spaces = new Set([' ', '\t']);
+
+  return punctuationMarks.has(char) || lineBreaks.has(char) || spaces.has(char);
+};
