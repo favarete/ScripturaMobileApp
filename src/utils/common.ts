@@ -1,5 +1,6 @@
 import uuid from 'react-native-uuid';
 import { WritingStats } from '@/state/defaults';
+import markdownit from 'markdown-it';
 
 export const createNewUUID = (): string => {
   return uuid.v4();
@@ -119,9 +120,35 @@ export const compareWordFrequencies = (
 }
 
 export const isPunctuationOrSpaceOrLineBreak = (char: string): boolean => {
-  const punctuationMarks = new Set(['.', ',', '!', '?', ';', ':', '\'', '"']);
+  const punctuationMarks = new Set([',', ';', ':', '!', '?', '.', '\'', '"']);
   const lineBreaks = new Set(['\n', '\r']);
   const spaces = new Set([' ', '\t']);
 
   return punctuationMarks.has(char) || lineBreaks.has(char) || spaces.has(char);
 };
+
+// export const settledForWordEvaluation = (text: string, cursorPos: number) => {
+//   const charBefore = isPunctuationOrSpaceOrLineBreak(text[cursorPos - 1] ?? '');
+//   const charAfter = isPunctuationOrSpaceOrLineBreak(text[cursorPos] ?? '');
+//
+//   return true
+// }
+
+export const minimizeMarkdownText = (markdownText: string): string => {
+  const md = markdownit();
+  const renderedMarkDown = md.render(markdownText);
+
+  const plainText = renderedMarkDown.replaceAll(/<[^>]*>/g, '');
+  if (!plainText.trim()) {
+    return '';
+  }
+
+  let wordsOnlyText = plainText.replace(/[^\p{L}\p{N}\s]/gu, '');
+  wordsOnlyText = wordsOnlyText.replace(/\s+/g, ' ');
+  return wordsOnlyText.trim();
+}
+
+export const minimizeMarkdownTextLength = (markdownText: string): number => {
+  const wordsOnlyText = minimizeMarkdownText(markdownText);
+  return wordsOnlyText.split(/\s+/).filter(word => word.length > 0).length;
+}

@@ -19,13 +19,13 @@ import StatisticsBar from '@/components/atoms/StatisticsBar/StatisticsBar';
 import MarkdownRenderer from '@/components/molecules/MarkdownRenderer/MarkdownRenderer';
 
 import { AutosaveModeStateAtom, ProjectsDataStateAtom, SaveAtomEffect, WritingStatsStateAtom } from '@/state/atoms/persistentContent';
-import { Chapter } from '@/state/defaults';
+import type { Chapter } from '@/state/defaults';
 import { countWordsFromHTML, getChapterById } from '@/utils/chapterHelpers';
 import {
   compareWordFrequencies,
   countOccurrences,
   getDateOnlyFromTimestamp,
-  isPunctuationOrSpaceOrLineBreak
+  minimizeMarkdownText, minimizeMarkdownTextLength
 } from '@/utils/common';
 import { print } from '@/utils/logger';
 
@@ -66,7 +66,7 @@ function ContentView({
   const startAutosave = useRef<boolean>(false);
   const lastSaveRef = useRef<number>(0);
 
-  const [selection, setSelection] = useState({ start: 0, end: 0 });
+  const [selection, setSelection] = useState({ end: 0, start: 0 });
 
   const handleSelectionChange = (event: any) => {
     const { selection } = event.nativeEvent;
@@ -74,7 +74,7 @@ function ContentView({
   };
 
   const moveCursorToPosition = (pos: number) => {
-    setSelection({ start: pos, end: pos });
+    setSelection({ end: pos, start: pos });
   };
 
   useFocusEffect(
@@ -109,33 +109,35 @@ function ContentView({
     (async () => {
       if (selectedChapter && startAutosave.current) {
         try {
-          const dynamicOccurrences = countOccurrences(markdownText);
+          const minimizedMarkdownText = minimizeMarkdownText(markdownText);
+          const dynamicOccurrences = countOccurrences(minimizedMarkdownText);
+          const cursorPos = selection.start;
+
           const { totalAdded, totalRemoved } = compareWordFrequencies(localCountOccurrences, dynamicOccurrences)
           setLocalCountOccurrences(dynamicOccurrences)
 
-          if(totalAdded !== 1 && totalRemoved !== 1) {
-            setTotalAdded(prevState => prevState + totalAdded);
-            setTotalRemoved(prevState => prevState + totalRemoved);
-          }
+          setTotalAdded(prevState => prevState + totalAdded);
+          setTotalRemoved(prevState => prevState + totalRemoved);
+
           await writeFile(selectedChapter.androidFilePath, markdownText);
 
           const now = Date.now();
           setAllProjects((prevProjects) =>
             prevProjects.map((project) => {
-              if (project.id !== projectId) return project;
+              if (project.id !== projectId) {return project;}
               return {
                 ...project,
                 chapterLastViewed: chapterId,
-                lastUpdate: now,
                 chapters: project.chapters.map((chapter) =>
                   chapter.id === chapterId
                     ? {
                         ...chapter,
-                        wordCount: countWordsFromHTML(markdownText),
                         lastUpdate: now,
+                        wordCount: countWordsFromHTML(markdownText),
                       }
                     : chapter,
                 ),
+                lastUpdate: now,
               };
             }),
           );
@@ -176,11 +178,6 @@ function ContentView({
         return;
       }
       lastSaveRef.current = now;
-
-      //const cursorPos = selection.start;
-      //const charBefore = isPunctuationOrSpaceOrLineBreak(markdownText[cursorPos - 1] ?? '');
-      //const charAfter = isPunctuationOrSpaceOrLineBreak(markdownText[cursorPos] ?? '');
-
       saveAndUpdate();
     }
   }, [contentCount]);
@@ -341,7 +338,7 @@ function ContentView({
           <StatisticsBar
             onNavigateToStatistics={onNavigateToStatistics}
             viewMode={viewMode}
-            wordCount={countWordsFromHTML(markdownText)}
+            wordCount={minimizeMarkdownTextLength(markdownText)}
             wordGoal={1000}
             wordsWrittenToday={357}
           />
