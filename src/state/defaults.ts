@@ -31,10 +31,9 @@ const DEFAULT_FAVORITE_PROJECTS: ElementUUID[] = [];
 
 export type DailyStats = {
   date: number;
-  totalWords: number;
   deletedWords: number;
+  totalWords: number;
   writtenWords: number;
-  __rawText: string;
 };
 
 export type WritingStats = {
@@ -114,6 +113,7 @@ export type Project = {
   chapters: Chapter[];
   chapterSort: ElementUUID[];
   coverPath: string;
+  cursorLastPosition: number;
   id: ElementUUID;
   iphoneFolderPath: string;
   lastUpdate: number;
@@ -131,6 +131,7 @@ export const initialProjectContent: Project = {
   chapters: [],
   chapterSort: [],
   coverPath: '',
+  cursorLastPosition: 0,
   id: '',
   iphoneFolderPath: '',
   lastUpdate: -1,

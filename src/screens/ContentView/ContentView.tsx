@@ -1,13 +1,27 @@
 import type { MarkdownStyle } from '@expensify/react-native-live-markdown';
 import type { RootScreenProps } from '@/navigation/types';
+import type { Chapter, DailyStats, Project } from '@/state/defaults';
 
-import { MarkdownTextInput, parseExpensiMark } from '@expensify/react-native-live-markdown';
+import {
+  MarkdownTextInput,
+  parseExpensiMark,
+} from '@expensify/react-native-live-markdown';
 import { useFocusEffect } from '@react-navigation/native';
 import { useAtomValue } from 'jotai/index';
 import { useAtom } from 'jotai/react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Keyboard, NativeModules, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import type {
+  NativeSyntheticEvent,
+  TextInputSelectionChangeEventData} from 'react-native';
+import {
+  Keyboard,
+  NativeModules,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
 import { readFile, writeFile } from 'react-native-saf-x';
 import Toast from 'react-native-toast-message';
 
@@ -18,13 +32,22 @@ import { TitleBar } from '@/components/atoms';
 import StatisticsBar from '@/components/atoms/StatisticsBar/StatisticsBar';
 import MarkdownRenderer from '@/components/molecules/MarkdownRenderer/MarkdownRenderer';
 
-import { AutosaveModeStateAtom, ProjectsDataStateAtom, SaveAtomEffect, WritingStatsStateAtom } from '@/state/atoms/persistentContent';
-import type { Chapter } from '@/state/defaults';
-import { countWordsFromHTML, getChapterById } from '@/utils/chapterHelpers';
+import {
+  AutosaveModeStateAtom,
+  ProjectsDataStateAtom,
+  SaveAtomEffect,
+  WritingStatsStateAtom,
+} from '@/state/atoms/persistentContent';
+import {
+  countWordsFromHTML,
+  getChapterById,
+  getProjectById,
+} from '@/utils/chapterHelpers';
 import {
   compareWordFrequencies,
   countOccurrences,
   getDateOnlyFromTimestamp,
+  getWeekdayKey,
   minimizeMarkdownText,
   minimizeMarkdownTextLength,
 } from '@/utils/common';
@@ -55,10 +78,9 @@ function ContentView({
   const [selectedChapter, setSelectedChapter] = useState<Chapter>();
 
   const dayRef = useRef<number>(getDateOnlyFromTimestamp(Date.now()));
-  const [localCountOccurrences, setLocalCountOccurrences] = useState<Record<string, number>>({});
-
-  const [totalAdded, setTotalAdded] = useState(0);
-  const [totalRemoved, setTotalRemoved] = useState(0);
+  const [localCountOccurrences, setLocalCountOccurrences] = useState<
+    Record<string, number>
+  >({});
 
   const [markdownText, setMarkdownText] = useState<string>('');
 
@@ -69,13 +91,11 @@ function ContentView({
 
   const [selection, setSelection] = useState({ end: 0, start: 0 });
 
-  const handleSelectionChange = (event: any) => {
+  const handleSelectionChange = (
+    event: NativeSyntheticEvent<TextInputSelectionChangeEventData>,
+  ) => {
     const { selection } = event.nativeEvent;
     setSelection(selection);
-  };
-
-  const moveCursorToPosition = (pos: number) => {
-    setSelection({ end: pos, start: pos });
   };
 
   useFocusEffect(
@@ -91,6 +111,18 @@ function ContentView({
             );
             setLocalCountOccurrences(countOccurrences(markdownTextContent));
             setMarkdownText(markdownTextContent);
+
+            const selectedProject: Project | undefined = getProjectById(
+              projectId,
+              allProjects,
+            );
+
+            if (selectedProject?.chapterLastViewed === chapterId) {
+              setSelection({
+                end: selectedProject.cursorLastPosition,
+                start: selectedProject.cursorLastPosition,
+              });
+            }
           } catch (error) {
             Toast.show({
               text1: t('saving_error.text1'),
@@ -112,14 +144,54 @@ function ContentView({
         try {
           const minimizedMarkdownText = minimizeMarkdownText(markdownText);
           const dynamicOccurrences = countOccurrences(minimizedMarkdownText);
-          const cursorPos = selection.start;
 
-          const { totalAdded, totalRemoved } = compareWordFrequencies(localCountOccurrences, dynamicOccurrences)
-          setLocalCountOccurrences(dynamicOccurrences)
+          const { totalAdded, totalRemoved } = compareWordFrequencies(
+            localCountOccurrences,
+            dynamicOccurrences,
+          );
+          setLocalCountOccurrences(dynamicOccurrences);
 
-          if(!(totalAdded === 1 && totalRemoved ===1)) {
-            setTotalAdded(prevState => prevState + totalAdded);
-            setTotalRemoved(prevState => prevState + totalRemoved);
+          // This check ignores words that are being changed
+          if (!(totalAdded === 1 && totalRemoved === 1)) {
+            const weekdayKey = getWeekdayKey(dayRef.current);
+            const lastEntry = writingStats[weekdayKey].at(-1);
+
+            if (lastEntry?.date === dayRef.current) {
+              setWritingStats((prevStats) => {
+                const newLastEntry = [...prevStats[weekdayKey]];
+                const lastIndex = newLastEntry.length - 1;
+
+                const currentAdded = newLastEntry[lastIndex].writtenWords;
+                const currentRemoved = newLastEntry[lastIndex].deletedWords;
+                const currentTotal = newLastEntry[lastIndex].totalWords;
+
+                if (lastIndex >= 0) {
+                  newLastEntry[lastIndex] = {
+                    ...newLastEntry[lastIndex],
+                    deletedWords: currentRemoved + totalRemoved,
+                    totalWords: currentTotal + (totalAdded - totalRemoved),
+                    writtenWords: currentAdded + totalAdded,
+                  };
+                }
+                return {
+                  ...prevStats,
+                  [weekdayKey]: newLastEntry,
+                };
+              });
+            } else {
+              setWritingStats((prevStats) => {
+                const newDailyStats: DailyStats = {
+                  date: dayRef.current,
+                  deletedWords: totalRemoved,
+                  totalWords: totalAdded - totalRemoved,
+                  writtenWords: totalAdded,
+                };
+                return {
+                  ...prevStats,
+                  [weekdayKey]: [...prevStats[weekdayKey], newDailyStats],
+                };
+              });
+            }
           }
 
           await writeFile(selectedChapter.androidFilePath, markdownText);
@@ -127,7 +199,9 @@ function ContentView({
           const now = Date.now();
           setAllProjects((prevProjects) =>
             prevProjects.map((project) => {
-              if (project.id !== projectId) {return project;}
+              if (project.id !== projectId) {
+                return project;
+              }
               return {
                 ...project,
                 chapterLastViewed: chapterId,
@@ -140,6 +214,7 @@ function ContentView({
                       }
                     : chapter,
                 ),
+                cursorLastPosition: selection.start,
                 lastUpdate: now,
               };
             }),
@@ -299,8 +374,6 @@ function ContentView({
             title={chapterTitle}
             viewMode={viewMode}
           />
-          <Text>Added {totalAdded}</Text>
-          <Text>Removed {totalRemoved}</Text>
           <ScrollView
             style={
               viewMode ? styles.markdownContent : styles.markdownContentEdit

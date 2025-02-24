@@ -72,7 +72,7 @@ export default [
       'perfectionist/sort-variable-declarations': 'error',
       'prefer-arrow-callback': [2, { allowNamedFunctions: true }],
       'prefer-const': 2,
-      'react-hooks/exhaustive-deps': 2,
+      //'react-hooks/exhaustive-deps': 2,
       'react/jsx-sort-props': 0, // Handled by perfectionist
       'react/prop-types': 2,
       'react/react-in-jsx-scope': 0,

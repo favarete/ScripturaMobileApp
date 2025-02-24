@@ -1,7 +1,7 @@
 import markdownit from 'markdown-it';
 import uuid from 'react-native-uuid';
 
-import { WritingStats } from '@/state/defaults';
+import type { WritingStats } from '@/state/defaults';
 
 export const createNewUUID = (): string => {
   return uuid.v4();
@@ -108,8 +108,8 @@ export const compareWordFrequencies = (
   let totalAdded = 0;
   let totalRemoved = 0;
   const allWords = new Set([
-    ...Object.keys(oldFrequencies),
     ...Object.keys(newFrequencies),
+    ...Object.keys(oldFrequencies),
   ]);
 
   allWords.forEach((word) => {
@@ -126,34 +126,34 @@ export const compareWordFrequencies = (
   return { totalAdded, totalRemoved };
 };
 
-const isPunctuation = (char: string): boolean => {
-  const punctuationMarks = new Set([',', ';', ':', '!', '?', '.', "'", '"']);
-  return punctuationMarks.has(char);
-};
-
-const isSpace = (char: string): boolean => {
-  const spaces = new Set([' ', '\t']);
-  return spaces.has(char);
-};
-
-const isLineBreak = (char: string): boolean => {
-  const lineBreaks = new Set(['\n', '\r']);
-  return lineBreaks.has(char);
-};
-
-const isLetterOrNumber = (char: string): boolean => {
-  const codePoint = char.codePointAt(0); // Get the Unicode code point
-  if (!codePoint) {
-    return false; // Invalid character
-  }
-  // Check if it's a number (0-9)
-  if (codePoint >= 48 && codePoint <= 57) {
-    return true;
-  }
-  // Check if it's a letter in the Unicode range
-  const letterRegex = /^\p{L}$/u;
-  return letterRegex.test(char);
-};
+// const isPunctuation = (char: string): boolean => {
+//   const punctuationMarks = new Set([',', ';', ':', '!', '?', '.', "'", '"']);
+//   return punctuationMarks.has(char);
+// };
+//
+// const isSpace = (char: string): boolean => {
+//   const spaces = new Set([' ', '\t']);
+//   return spaces.has(char);
+// };
+//
+// const isLineBreak = (char: string): boolean => {
+//   const lineBreaks = new Set(['\n', '\r']);
+//   return lineBreaks.has(char);
+// };
+//
+// const isLetterOrNumber = (char: string): boolean => {
+//   const codePoint = char.codePointAt(0); // Get the Unicode code point
+//   if (!codePoint) {
+//     return false; // Invalid character
+//   }
+//   // Check if it's a number (0-9)
+//   if (codePoint >= 48 && codePoint <= 57) {
+//     return true;
+//   }
+//   // Check if it's a letter in the Unicode range
+//   const letterRegex = /^\p{L}$/u;
+//   return letterRegex.test(char);
+// };
 
 
 export const minimizeMarkdownText = (markdownText: string): string => {
@@ -166,7 +166,7 @@ export const minimizeMarkdownText = (markdownText: string): string => {
   }
 
   let wordsOnlyText = plainText.replaceAll(/[^\p{L}\p{N}\s]/gu, '');
-  wordsOnlyText = wordsOnlyText.replace(/\s+/g, ' ');
+  wordsOnlyText = wordsOnlyText.replaceAll(/\s+/g, ' ');
   return wordsOnlyText.trim();
 };
 
