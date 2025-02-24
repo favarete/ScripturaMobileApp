@@ -18,18 +18,18 @@ type DataItem = {
 
 type BarChartProps = {
   data: DataItem[];
-  width?: number;
   height?: number;
   numberOfTicks?: number;
   valueOnTop?: boolean;
+  width?: number;
 };
 
 const BarChart: React.FC<BarChartProps> = ({
   data,
-  width = 300,
   height = 300,
   numberOfTicks = 5,
   valueOnTop = false,
+  width = 300,
 }) => {
   const { colors } = useTheme();
   const maxValue = Math.max(...data.map((item) => item.value));
@@ -44,10 +44,10 @@ const BarChart: React.FC<BarChartProps> = ({
   const stepValue = maxValue / numberOfTicks;
 
   return (
-    <View style={{ width, height }}>
-      <Svg width={width} height={height}>
+    <View style={{ height, width }}>
+      <Svg height={height} width={width}>
         <Defs>
-          <LinearGradient id="barGradient" x1="0" y1="1" x2="0" y2="0">
+          <LinearGradient id="barGradient" x1="0" x2="0" y1="1" y2="0">
             <Stop
               offset="0"
               stopColor={colors.fullOpposite}
@@ -65,20 +65,20 @@ const BarChart: React.FC<BarChartProps> = ({
           return (
             <React.Fragment key={`grid-${i}`}>
               <Line
+                stroke={colors.gray100}
+                strokeWidth={1}
                 x1={margin - lineOffset}
                 x2={margin + chartWidth + lineOffset}
                 y1={y}
                 y2={y}
-                stroke={colors.gray100}
-                strokeWidth={1}
               />
 
               <SvgText
+                fill={colors.gray400}
+                fontSize={10}
+                textAnchor="end"
                 x={margin - 10}
                 y={y - 10}
-                fontSize={10}
-                fill={colors.gray400}
-                textAnchor="end"
               >
                 {Math.round(yValue)}
               </SvgText>
@@ -94,29 +94,29 @@ const BarChart: React.FC<BarChartProps> = ({
           return (
             <React.Fragment key={`bar-${index}`}>
               <Rect
+                fill="url(#barGradient)"
+                height={barHeight}
+                width={barWidth}
                 x={barX}
                 y={barY}
-                width={barWidth}
-                height={barHeight}
-                fill="url(#barGradient)"
               />
               <SvgText
+                fill={colors.fullOpposite}
+                fontSize={10}
+                textAnchor="middle"
                 x={barX + barWidth / 2}
                 y={margin + chartHeight + 15}
-                fontSize={10}
-                fill={colors.fullOpposite}
-                textAnchor="middle"
               >
                 {item.label}
               </SvgText>
 
               {valueOnTop && (
                 <SvgText
+                  fill={colors.fullOpposite}
+                  fontSize={10}
+                  textAnchor="middle"
                   x={barX + barWidth / 2}
                   y={barY - 5}
-                  fontSize={10}
-                  fill={colors.fullOpposite}
-                  textAnchor="middle"
                 >
                   {item.value}
                 </SvgText>

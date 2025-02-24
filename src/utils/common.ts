@@ -1,7 +1,7 @@
 import markdownit from 'markdown-it';
 import uuid from 'react-native-uuid';
 
-import type { WritingStats } from '@/state/defaults';
+import type { DailyStats, WritingStats } from '@/state/defaults';
 
 export const createNewUUID = (): string => {
   return uuid.v4();
@@ -124,6 +124,21 @@ export const compareWordFrequencies = (
   });
 
   return { totalAdded, totalRemoved };
+};
+
+export const calculatePercentageGoal = (
+  currentValue: number,
+  targetValue: number,
+): number => {
+
+  const progress = Math.min(1, Math.max(0, currentValue / targetValue));
+  return Number.parseFloat(progress.toFixed(2));
+}
+
+export const getAverageWrittenWords = (stats: DailyStats[]): number => {
+  if (stats.length === 0) {return 0;}
+  const total = stats.reduce((sum, stat) => sum + stat.writtenWords, 0);
+  return total / stats.length;
 };
 
 // const isPunctuation = (char: string): boolean => {

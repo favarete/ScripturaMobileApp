@@ -122,6 +122,7 @@
       "view_title": "Statistics",
       "most_prolific_days": "Most Prolific Days",
       "daily_word_goal": "Daily Word Goal",
+      "daily_word_goal_disabled": "(Disabled)",
       "to_write_today": "Words to Write Today",
       "edit": "Edit",
       "chapter_data": "Chapter's Data",
@@ -131,7 +132,7 @@
       "pages": "Pages",
       "week": {
         "sun": "SUN",
-        "mon": "MON>",
+        "mon": "MON",
         "tue": "TUE",
         "wed": "WED",
         "thu": "THU",

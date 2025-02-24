@@ -21,10 +21,14 @@ import { HorizontalProgressBar } from '@/components/atoms/HorizontalProgress/Hor
 import BarChart from '@/components/molecules/BarChart/BarChart';
 
 import {
+  DailyGoalModeStateAtom,
   LanguageStateAtom,
   ProjectsDataStateAtom,
+  WordsWrittenTodayStateAtom,
+  WritingStatsStateAtom,
 } from '@/state/atoms/persistentContent';
 import { formatNumber } from '@/utils/chapterHelpers';
+import { calculatePercentageGoal, getAverageWrittenWords } from '@/utils/common';
 import { findProjectById } from '@/utils/projectHelpers';
 
 function StatisticsView({
@@ -33,10 +37,14 @@ function StatisticsView({
 }: RootScreenProps<Paths.StatisticsView>) {
   const { t } = useTranslation();
   const { chapterId, projectId } = route.params;
-  const { colors, borders, fonts, gutters, layout } = useTheme();
+  const { borders, colors, fonts, gutters, layout } = useTheme();
 
   const language = useAtomValue(LanguageStateAtom);
   const allProjects = useAtomValue(ProjectsDataStateAtom);
+  const wordWrittenToday = useAtomValue(WordsWrittenTodayStateAtom);
+  const writingStats = useAtomValue(WritingStatsStateAtom);
+  const dailyGoalMode = useAtomValue(DailyGoalModeStateAtom);
+
   const actualProject = findProjectById(allProjects, projectId);
 
   const onNavigateBack = () => {
@@ -56,18 +64,21 @@ function StatisticsView({
       ...gutters.marginTop_4,
       width: 60,
     },
+    hide: {
+      opacity: 0.4,
+    },
   });
 
-  console.log(actualProject);
+  console.log(writingStats);
 
-  const myData = [
-    { label: 'SUN', value: 500 },
-    { label: 'MON', value: 450 },
-    { label: 'TUE', value: 300 },
-    { label: 'WED', value: 280 },
-    { label: 'THU', value: 1000 },
-    { label: 'FRI', value: 150 },
-    { label: 'SAT', value: 100 },
+  const barChartData = [
+    { label: t('screen_statistics.week.sun'), value: getAverageWrittenWords(writingStats.sunday) },
+    { label: t('screen_statistics.week.mon'), value: getAverageWrittenWords(writingStats.monday) },
+    { label: t('screen_statistics.week.tue'), value: getAverageWrittenWords(writingStats.tuesday) },
+    { label: t('screen_statistics.week.wed'), value: getAverageWrittenWords(writingStats.wednesday) },
+    { label: t('screen_statistics.week.thu'), value: getAverageWrittenWords(writingStats.thursday) },
+    { label: t('screen_statistics.week.fri'), value: getAverageWrittenWords(writingStats.friday) },
+    { label: t('screen_statistics.week.sat'), value: getAverageWrittenWords(writingStats.saturday) },
   ];
 
   return (
@@ -105,10 +116,10 @@ function StatisticsView({
           </Text>
           <View style={[layout.fullWidth, layout.itemsCenter]}>
             <BarChart
-              data={myData}
-              width={350}
+              data={barChartData}
               height={300}
               numberOfTicks={5}
+              width={350}
             />
           </View>
           <Text
@@ -122,16 +133,28 @@ function StatisticsView({
               gutters.marginVertical_16,
             ]}
           >
-            {t('screen_statistics.daily_word_goal')}
+            {`${t('screen_statistics.daily_word_goal')} ${
+              !dailyGoalMode.enabled ?
+              t('screen_statistics.daily_word_goal_disabled') : ''
+            }`}
           </Text>
           <View style={[layout.row, gutters.marginHorizontal_40]}>
-            <CircleProgress
-              progress={0.25}
-              progressColor={colors.fullOpposite}
-              backgroundColor={colors.gray100}
-              textColor={colors.gray400}
-              textSize={18}
-            />
+            <View style={!dailyGoalMode.enabled && styles.hide}>
+              <CircleProgress
+                backgroundColor={colors.gray100}
+                progress={
+                  !dailyGoalMode.enabled
+                    ? 1
+                    : calculatePercentageGoal(
+                        wordWrittenToday,
+                        dailyGoalMode.target,
+                      )
+                }
+                progressColor={colors.fullOpposite}
+                textColor={colors.gray400}
+                textSize={18}
+              />
+            </View>
             <View style={[layout.itemsCenter]}>
               <Text
                 style={[
@@ -139,23 +162,34 @@ function StatisticsView({
                   fonts.defaultFontFamilySemibold,
                   fonts.gray800,
                   fonts.size_12,
+                  !dailyGoalMode.enabled && styles.hide,
                 ]}
               >
                 {t('screen_statistics.to_write_today')}
               </Text>
-              <HorizontalProgressBar
-                fillColor={colors.fullOpposite}
-                backgroundColor={colors.gray100}
-                progress={0.25}
-                width={180}
-                height={15}
-              />
+              <View style={!dailyGoalMode.enabled && styles.hide}>
+                <HorizontalProgressBar
+                  backgroundColor={colors.gray100}
+                  fillColor={colors.fullOpposite}
+                  height={15}
+                  progress={
+                    !dailyGoalMode.enabled
+                      ? 1
+                      : calculatePercentageGoal(
+                        wordWrittenToday,
+                        dailyGoalMode.target,
+                      )
+                  }
+                  width={180}
+                />
+              </View>
               <View
                 style={[
                   layout.row,
                   layout.justifyAround,
                   layout.fullWidth,
                   gutters.marginVertical_4,
+                  !dailyGoalMode.enabled && styles.hide,
                 ]}
               >
                 <Text
@@ -165,7 +199,9 @@ function StatisticsView({
                     fonts.size_12,
                   ]}
                 >
-                  {250}
+                  {
+                    !dailyGoalMode.enabled ? 0 : wordWrittenToday
+                  }
                 </Text>
                 <Text
                   style={[
@@ -174,7 +210,7 @@ function StatisticsView({
                     fonts.size_12,
                   ]}
                 >
-                  {formatNumber(1000, language)}
+                  {!dailyGoalMode.enabled ? 0 : formatNumber(dailyGoalMode.target, language)}
                 </Text>
               </View>
               <View
@@ -186,8 +222,8 @@ function StatisticsView({
                 ]}
               >
                 <TouchableOpacity
-                  style={styles.editButton}
                   onPress={onNavigateSettings}
+                  style={styles.editButton}
                 >
                   <Text
                     style={[
