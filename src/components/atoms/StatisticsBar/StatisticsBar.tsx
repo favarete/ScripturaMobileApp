@@ -35,6 +35,9 @@ function StatisticsBar({
 
   const language = useAtomValue(LanguageStateAtom);
   const styles = StyleSheet.create({
+    hide: {
+      opacity: 0,
+    },
     saveButton: {
       bottom: 40,
       position: 'absolute',
@@ -112,7 +115,9 @@ function StatisticsBar({
               </Text>
             )}
           </View>
-          <View style={[layout.col, layout.itemsEnd]}>
+          <View
+            style={[layout.col, layout.itemsEnd, wordGoal < 0 && styles.hide]}
+          >
             <Text
               style={[
                 fonts.defaultFontFamilyBold,

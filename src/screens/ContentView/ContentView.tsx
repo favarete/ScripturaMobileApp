@@ -33,10 +33,10 @@ import StatisticsBar from '@/components/atoms/StatisticsBar/StatisticsBar';
 import MarkdownRenderer from '@/components/molecules/MarkdownRenderer/MarkdownRenderer';
 
 import {
-  AutosaveModeStateAtom,
+  AutosaveModeStateAtom, DailyGoalModeStateAtom,
   ProjectsDataStateAtom,
-  SaveAtomEffect,
-  WritingStatsStateAtom,
+  SaveAtomEffect, WordsWrittenTodayStateAtom,
+  WritingStatsStateAtom
 } from '@/state/atoms/persistentContent';
 import {
   countWordsFromHTML,
@@ -66,6 +66,7 @@ function ContentView({
   const { chapterId, projectId } = route.params;
 
   const [allProjects, setAllProjects] = useAtom(ProjectsDataStateAtom);
+  const [wordWrittenToday, setWordsWrittenToday] = useAtom(WordsWrittenTodayStateAtom);
 
   const autosaveMode = useAtomValue(AutosaveModeStateAtom);
 
@@ -137,6 +138,7 @@ function ContentView({
   );
 
   const [writingStats, setWritingStats] = useAtom(WritingStatsStateAtom);
+  const dailyGoalMode = useAtomValue(DailyGoalModeStateAtom);
 
   const saveAndUpdate = () => {
     (async () => {
@@ -165,6 +167,8 @@ function ContentView({
                 const currentRemoved = newLastEntry[lastIndex].deletedWords;
                 const currentTotal = newLastEntry[lastIndex].totalWords;
 
+                setWordsWrittenToday(currentAdded + totalAdded)
+
                 if (lastIndex >= 0) {
                   newLastEntry[lastIndex] = {
                     ...newLastEntry[lastIndex],
@@ -179,6 +183,7 @@ function ContentView({
                 };
               });
             } else {
+              setWordsWrittenToday(totalAdded)
               setWritingStats((prevStats) => {
                 const newDailyStats: DailyStats = {
                   date: dayRef.current,
@@ -415,8 +420,8 @@ function ContentView({
             onNavigateToStatistics={onNavigateToStatistics}
             viewMode={viewMode}
             wordCount={minimizeMarkdownTextLength(markdownText)}
-            wordGoal={1000}
-            wordsWrittenToday={357}
+            wordGoal={dailyGoalMode.enabled ? dailyGoalMode.target : -1}
+            wordsWrittenToday={wordWrittenToday}
           />
         </View>
       )}
