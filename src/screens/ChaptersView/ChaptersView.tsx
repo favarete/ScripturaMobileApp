@@ -95,8 +95,6 @@ function ChaptersView({
         projectId,
         allProjects,
       );
-      console.log('-------------')
-      console.log(selectedProject)
       if (selectedProject) {
         (async () => {
           try {
@@ -168,8 +166,8 @@ function ChaptersView({
                 project.id === projectId
                   ? {
                     ...project,
-                    chapters: allChaptersData,
                     chapterLastViewed: latestUpdateInProjectId,
+                    chapters: allChaptersData,
                     lastUpdate: latestUpdateInProject,
                     wordCount: totalWordCount,
                   }
@@ -238,6 +236,7 @@ function ChaptersView({
       ) : allChaptersSorted.length > 0 ? (
         <ChaptersDynamicList
           allChaptersSorted={allChaptersSorted}
+          lastChapterViewed={lastChapterViewed}
           onNavigate={onNavigate}
           onNavigateBack={onNavigateBack}
           parallaxImage={imageToLoad}
@@ -245,7 +244,6 @@ function ChaptersView({
           parallaxTitle={projectTitle}
           projectId={projectId}
           projectWordCount={projectWordCount}
-          lastChapterViewed={lastChapterViewed}
           setAllChaptersSorted={setAllChaptersSorted}
           updateChaptersStatus={updateChaptersStatus}
         />
