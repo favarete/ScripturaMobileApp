@@ -2,6 +2,7 @@ import type { ImageURISource } from 'react-native';
 import type { RootScreenProps } from '@/navigation/types';
 import type { Chapter, Project } from '@/state/defaults';
 
+import { useFocusEffect } from '@react-navigation/native';
 import { useAtom, useAtomValue } from 'jotai/index';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -28,13 +29,14 @@ import {
 } from '@/utils/chapterHelpers';
 import {
   arraysAreEqualAndNonEmpty,
+  countParagraphs,
   createNewUUID,
-  formatTimestamp, minimizeMarkdownTextLength,
-  removeFileExtension
+  formatTimestamp,
+  minimizeMarkdownTextLength,
+  removeFileExtension,
 } from '@/utils/common';
 import { print } from '@/utils/logger';
 import { findProjectById } from '@/utils/projectHelpers';
-import { useFocusEffect } from '@react-navigation/native';
 
 function ChaptersView({
   navigation,
@@ -105,7 +107,9 @@ function ChaptersView({
                 encoding: 'base64',
               });
               if (base64String.trim().length > 0) {
-                setImageToLoad({ uri: `data:image/png;base64,${base64String}` });
+                setImageToLoad({
+                  uri: `data:image/png;base64,${base64String}`,
+                });
               }
             }
             const __allExternalStorageProjectFiles = await listFiles(
@@ -119,6 +123,7 @@ function ChaptersView({
             // Get Data from all chapters
             const allChaptersData: Chapter[] = [];
             let totalWordCount = 0;
+            let totalSentencesCount = 0;
             let latestUpdateInProject = 0;
             let latestUpdateInProjectId = '';
             for (const chapter of allExternalStorageProjectFiles) {
@@ -127,7 +132,9 @@ function ChaptersView({
                 removeFileExtension(chapter.name) ??
                 t('screen_chapters.no_title');
 
-              const markdownWordCount = minimizeMarkdownTextLength(chapterFileContent);
+              const markdownWordCount =
+                minimizeMarkdownTextLength(chapterFileContent);
+              const markdownSentenceCount = countParagraphs(chapterFileContent);
 
               const savedChapter = findChapterByTitleAndPath(
                 selectedProject.chapters,
@@ -137,24 +144,27 @@ function ChaptersView({
 
               const __defineNewChapter: Chapter = savedChapter
                 ? {
-                  ...savedChapter,
-                  lastUpdate: chapter.lastModified,
-                  wordCount: markdownWordCount,
-                }
+                    ...savedChapter,
+                    lastUpdate: chapter.lastModified,
+                    sentencesCount: markdownSentenceCount,
+                    wordCount: markdownWordCount,
+                  }
                 : {
-                  androidFilePath: chapter.uri,
-                  id: createNewUUID(),
-                  iphoneFilePath: '',
-                  lastUpdate: chapter.lastModified,
-                  linuxFilePath: '',
-                  osxFilePath: '',
-                  revisionPosition: -1,
-                  status: ChapterStatusType.Undefined,
-                  title: chapterFileTitle,
-                  windowsFilePath: '',
-                  wordCount: markdownWordCount,
-                };
+                    androidFilePath: chapter.uri,
+                    id: createNewUUID(),
+                    iphoneFilePath: '',
+                    lastUpdate: chapter.lastModified,
+                    linuxFilePath: '',
+                    osxFilePath: '',
+                    revisionPosition: -1,
+                    sentencesCount: markdownSentenceCount,
+                    status: ChapterStatusType.Undefined,
+                    title: chapterFileTitle,
+                    windowsFilePath: '',
+                    wordCount: markdownWordCount,
+                  };
               totalWordCount += markdownWordCount;
+              totalSentencesCount += markdownSentenceCount;
               if (__defineNewChapter.lastUpdate > latestUpdateInProject) {
                 latestUpdateInProject = __defineNewChapter.lastUpdate;
                 latestUpdateInProjectId = __defineNewChapter.id;
@@ -165,25 +175,28 @@ function ChaptersView({
               prevProjects.map((project) =>
                 project.id === projectId
                   ? {
-                    ...project,
-                    chapterLastViewed: latestUpdateInProjectId,
-                    chapters: allChaptersData,
-                    lastUpdate: latestUpdateInProject,
-                    wordCount: totalWordCount,
-                  }
+                      ...project,
+                      chapterLastViewed: latestUpdateInProjectId,
+                      chapters: allChaptersData,
+                      lastUpdate: latestUpdateInProject,
+                      sentencesCount: totalSentencesCount,
+                      wordCount: totalWordCount,
+                    }
                   : project,
               ),
             );
-            setLastChapterViewed(latestUpdateInProjectId)
-            setProjectWordCount(totalWordCount)
-            setProjectTitle(selectedProject.title)
-            setProjectUpdatedOn(formatTimestamp(latestUpdateInProject, language))
+            setLastChapterViewed(latestUpdateInProjectId);
+            setProjectWordCount(totalWordCount);
+            setProjectTitle(selectedProject.title);
+            setProjectUpdatedOn(
+              formatTimestamp(latestUpdateInProject, language),
+            );
           } catch (error) {
             print(error);
           }
         })();
       }
-    }, [])
+    }, []),
   );
 
   useEffect(() => {

@@ -27,8 +27,15 @@ import {
   WordsWrittenTodayStateAtom,
   WritingStatsStateAtom,
 } from '@/state/atoms/persistentContent';
-import { formatNumber } from '@/utils/chapterHelpers';
-import { calculatePercentageGoal, getAverageWrittenWords } from '@/utils/common';
+import {
+  calculatePages,
+  formatNumber,
+  getChapterById,
+} from '@/utils/chapterHelpers';
+import {
+  calculatePercentageGoal,
+  getAverageWrittenWords,
+} from '@/utils/common';
 import { findProjectById } from '@/utils/projectHelpers';
 
 function StatisticsView({
@@ -46,6 +53,7 @@ function StatisticsView({
   const dailyGoalMode = useAtomValue(DailyGoalModeStateAtom);
 
   const actualProject = findProjectById(allProjects, projectId);
+  const actualChapter = getChapterById(projectId, chapterId, allProjects);
 
   const onNavigateBack = () => {
     navigation.navigate(Paths.ContentView, { chapterId, projectId });
@@ -69,17 +77,46 @@ function StatisticsView({
     },
   });
 
-  console.log(writingStats);
-
   const barChartData = [
-    { label: t('screen_statistics.week.sun'), value: getAverageWrittenWords(writingStats.sunday) },
-    { label: t('screen_statistics.week.mon'), value: getAverageWrittenWords(writingStats.monday) },
-    { label: t('screen_statistics.week.tue'), value: getAverageWrittenWords(writingStats.tuesday) },
-    { label: t('screen_statistics.week.wed'), value: getAverageWrittenWords(writingStats.wednesday) },
-    { label: t('screen_statistics.week.thu'), value: getAverageWrittenWords(writingStats.thursday) },
-    { label: t('screen_statistics.week.fri'), value: getAverageWrittenWords(writingStats.friday) },
-    { label: t('screen_statistics.week.sat'), value: getAverageWrittenWords(writingStats.saturday) },
+    {
+      label: t('screen_statistics.week.sun'),
+      value: getAverageWrittenWords(writingStats.sunday),
+    },
+    {
+      label: t('screen_statistics.week.mon'),
+      value: getAverageWrittenWords(writingStats.monday),
+    },
+    {
+      label: t('screen_statistics.week.tue'),
+      value: getAverageWrittenWords(writingStats.tuesday),
+    },
+    {
+      label: t('screen_statistics.week.wed'),
+      value: getAverageWrittenWords(writingStats.wednesday),
+    },
+    {
+      label: t('screen_statistics.week.thu'),
+      value: getAverageWrittenWords(writingStats.thursday),
+    },
+    {
+      label: t('screen_statistics.week.fri'),
+      value: getAverageWrittenWords(writingStats.friday),
+    },
+    {
+      label: t('screen_statistics.week.sat'),
+      value: getAverageWrittenWords(writingStats.saturday),
+    },
   ];
+
+  const wordsToGo = (wordsValue: number) => {
+    let wordToGo = dailyGoalMode.target - wordsValue
+    if(wordToGo < 0) {
+      wordToGo = 0;
+    }
+    return language === 'en-US'
+      ? ` ${wordToGo} ${t('screen_statistics.toGo')}`
+      : `${t('screen_statistics.toGo')} ${wordToGo}`;
+  };
 
   return (
     <ScrollView style={layout.flex_1}>
@@ -134,8 +171,9 @@ function StatisticsView({
             ]}
           >
             {`${t('screen_statistics.daily_word_goal')} ${
-              !dailyGoalMode.enabled ?
-              t('screen_statistics.daily_word_goal_disabled') : ''
+              !dailyGoalMode.enabled
+                ? t('screen_statistics.daily_word_goal_disabled')
+                : ''
             }`}
           </Text>
           <View style={[layout.row, gutters.marginHorizontal_40]}>
@@ -146,7 +184,7 @@ function StatisticsView({
                   !dailyGoalMode.enabled
                     ? 1
                     : calculatePercentageGoal(
-                        wordWrittenToday,
+                        wordWrittenToday.value,
                         dailyGoalMode.target,
                       )
                 }
@@ -176,9 +214,9 @@ function StatisticsView({
                     !dailyGoalMode.enabled
                       ? 1
                       : calculatePercentageGoal(
-                        wordWrittenToday,
-                        dailyGoalMode.target,
-                      )
+                          wordWrittenToday.value,
+                          dailyGoalMode.target,
+                        )
                   }
                   width={180}
                 />
@@ -199,9 +237,9 @@ function StatisticsView({
                     fonts.size_12,
                   ]}
                 >
-                  {
-                    !dailyGoalMode.enabled ? 0 : wordWrittenToday
-                  }
+                  {!dailyGoalMode.enabled
+                    ? 0
+                    : wordsToGo(wordWrittenToday.value)}
                 </Text>
                 <Text
                   style={[
@@ -210,7 +248,9 @@ function StatisticsView({
                     fonts.size_12,
                   ]}
                 >
-                  {!dailyGoalMode.enabled ? 0 : formatNumber(dailyGoalMode.target, language)}
+                  {!dailyGoalMode.enabled
+                    ? 0
+                    : formatNumber(dailyGoalMode.target, language)}
                 </Text>
               </View>
               <View
@@ -254,9 +294,18 @@ function StatisticsView({
             {t('screen_statistics.chapter_data')}
           </Text>
           <View style={[layout.row, layout.justifyCenter]}>
-            <DataBox title={t('screen_statistics.words')} value={1234} />
-            <DataBox title={t('screen_statistics.sentences')} value={1234} />
-            <DataBox title={t('screen_statistics.pages')} value={1234} />
+            <DataBox
+              title={t('screen_statistics.words')}
+              value={actualChapter?.wordCount ?? 0}
+            />
+            <DataBox
+              title={t('screen_statistics.sentences')}
+              value={actualChapter?.sentencesCount ?? 0}
+            />
+            <DataBox
+              title={t('screen_statistics.pages')}
+              value={calculatePages(actualChapter?.wordCount ?? 0)}
+            />
           </View>
           <Text
             style={[
@@ -272,9 +321,18 @@ function StatisticsView({
             {t('screen_statistics.project_data')}
           </Text>
           <View style={[layout.row, layout.justifyCenter]}>
-            <DataBox title={t('screen_statistics.words')} value={1234} />
-            <DataBox title={t('screen_statistics.sentences')} value={1234} />
-            <DataBox title={t('screen_statistics.pages')} value={1234} />
+            <DataBox
+              title={t('screen_statistics.words')}
+              value={actualProject?.wordCount ?? 0}
+            />
+            <DataBox
+              title={t('screen_statistics.sentences')}
+              value={actualProject?.sentencesCount ?? 0}
+            />
+            <DataBox
+              title={t('screen_statistics.pages')}
+              value={calculatePages(actualProject?.wordCount ?? 0)}
+            />
           </View>
         </View>
       )}

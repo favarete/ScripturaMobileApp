@@ -1,4 +1,8 @@
 import type { MarkdownStyle } from '@expensify/react-native-live-markdown';
+import type {
+  NativeSyntheticEvent,
+  TextInputSelectionChangeEventData,
+} from 'react-native';
 import type { RootScreenProps } from '@/navigation/types';
 import type { Chapter, DailyStats, Project } from '@/state/defaults';
 
@@ -11,9 +15,6 @@ import { useAtomValue } from 'jotai/index';
 import { useAtom } from 'jotai/react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type {
-  NativeSyntheticEvent,
-  TextInputSelectionChangeEventData} from 'react-native';
 import {
   Keyboard,
   NativeModules,
@@ -33,10 +34,12 @@ import StatisticsBar from '@/components/atoms/StatisticsBar/StatisticsBar';
 import MarkdownRenderer from '@/components/molecules/MarkdownRenderer/MarkdownRenderer';
 
 import {
-  AutosaveModeStateAtom, DailyGoalModeStateAtom,
+  AutosaveModeStateAtom,
+  DailyGoalModeStateAtom,
   ProjectsDataStateAtom,
-  SaveAtomEffect, WordsWrittenTodayStateAtom,
-  WritingStatsStateAtom
+  SaveAtomEffect,
+  WordsWrittenTodayStateAtom,
+  WritingStatsStateAtom,
 } from '@/state/atoms/persistentContent';
 import {
   countWordsFromHTML,
@@ -66,7 +69,9 @@ function ContentView({
   const { chapterId, projectId } = route.params;
 
   const [allProjects, setAllProjects] = useAtom(ProjectsDataStateAtom);
-  const [wordWrittenToday, setWordsWrittenToday] = useAtom(WordsWrittenTodayStateAtom);
+  const [wordWrittenToday, setWordsWrittenToday] = useAtom(
+    WordsWrittenTodayStateAtom,
+  );
 
   const autosaveMode = useAtomValue(AutosaveModeStateAtom);
 
@@ -78,7 +83,6 @@ function ContentView({
   );
   const [selectedChapter, setSelectedChapter] = useState<Chapter>();
 
-  const dayRef = useRef<number>(getDateOnlyFromTimestamp(Date.now()));
   const [localCountOccurrences, setLocalCountOccurrences] = useState<
     Record<string, number>
   >({});
@@ -99,11 +103,21 @@ function ContentView({
     setSelection(selection);
   };
 
+  const dayRef = useRef<number>(getDateOnlyFromTimestamp(Date.now()));
+
   useFocusEffect(
     useCallback(() => {
       const chapter = getChapterById(projectId, chapterId, allProjects);
       if (chapter) {
         setSelectedChapter(chapter);
+
+        if (wordWrittenToday.date !== dayRef.current) {
+          setWordsWrittenToday({
+            date: dayRef.current,
+            value: 0,
+          });
+        }
+
         (async () => {
           try {
             setChapterTitle(chapter.title);
@@ -120,8 +134,8 @@ function ContentView({
 
             if (selectedProject?.chapterLastViewed === chapterId) {
               setSelection({
-                end: selectedProject.cursorLastPosition,
-                start: selectedProject.cursorLastPosition,
+                end: chapter.revisionPosition,
+                start: chapter.revisionPosition,
               });
             }
           } catch (error) {
@@ -154,11 +168,15 @@ function ContentView({
           setLocalCountOccurrences(dynamicOccurrences);
 
           // This check ignores words that are being changed
-          if (!(totalAdded === 1 && totalRemoved === 1)) {
+          if (totalAdded !== totalRemoved) {
             const weekdayKey = getWeekdayKey(dayRef.current);
             const lastEntry = writingStats[weekdayKey].at(-1);
 
-            if (lastEntry?.date === dayRef.current) {
+            if (
+              lastEntry &&
+              dayRef.current &&
+              lastEntry.date === dayRef.current
+            ) {
               setWritingStats((prevStats) => {
                 const newLastEntry = [...prevStats[weekdayKey]];
                 const lastIndex = newLastEntry.length - 1;
@@ -167,7 +185,10 @@ function ContentView({
                 const currentRemoved = newLastEntry[lastIndex].deletedWords;
                 const currentTotal = newLastEntry[lastIndex].totalWords;
 
-                setWordsWrittenToday(currentAdded + totalAdded)
+                setWordsWrittenToday((prevState) => ({
+                  ...prevState,
+                  value: prevState.value + totalAdded,
+                }));
 
                 if (lastIndex >= 0) {
                   newLastEntry[lastIndex] = {
@@ -183,7 +204,10 @@ function ContentView({
                 };
               });
             } else {
-              setWordsWrittenToday(totalAdded)
+              setWordsWrittenToday((prevState) => ({
+                ...prevState,
+                value: totalAdded,
+              }));
               setWritingStats((prevStats) => {
                 const newDailyStats: DailyStats = {
                   date: dayRef.current,
@@ -207,20 +231,35 @@ function ContentView({
               if (project.id !== projectId) {
                 return project;
               }
+
+              const updatedChapters = project.chapters.map((chapter) =>
+                chapter.id === chapterId
+                  ? {
+                      ...chapter,
+                      lastUpdate: now,
+                      revisionPosition: selection.start,
+                      wordCount: countWordsFromHTML(markdownText),
+                    }
+                  : chapter,
+              );
+
+              const totalWordCount = updatedChapters.reduce(
+                (acc, chap) => acc + (chap.wordCount ?? 0),
+                0,
+              );
+
+              const totalSentenceCount = updatedChapters.reduce(
+                (acc, chap) => acc + (chap.sentencesCount ?? 0),
+                0,
+              );
+
               return {
                 ...project,
                 chapterLastViewed: chapterId,
-                chapters: project.chapters.map((chapter) =>
-                  chapter.id === chapterId
-                    ? {
-                        ...chapter,
-                        lastUpdate: now,
-                        wordCount: countWordsFromHTML(markdownText),
-                      }
-                    : chapter,
-                ),
-                cursorLastPosition: selection.start,
+                chapters: updatedChapters,
                 lastUpdate: now,
+                sentencesCount: totalSentenceCount,
+                wordCount: totalWordCount,
               };
             }),
           );
@@ -421,7 +460,7 @@ function ContentView({
             viewMode={viewMode}
             wordCount={minimizeMarkdownTextLength(markdownText)}
             wordGoal={dailyGoalMode.enabled ? dailyGoalMode.target : -1}
-            wordsWrittenToday={wordWrittenToday}
+            wordsWrittenToday={wordWrittenToday.value}
           />
         </View>
       )}

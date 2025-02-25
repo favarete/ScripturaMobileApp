@@ -101,15 +101,23 @@ export const countOccurrences = (text: string): Record<string, number> => {
   );
 };
 
+const sanitizeWord = (word: string): string => {
+  return word
+    .replaceAll(/[!#$%&()*,./:;=^_`{}~\-]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
 export const compareWordFrequencies = (
   oldFrequencies: Record<string, number>,
   newFrequencies: Record<string, number>,
 ): { totalAdded: number; totalRemoved: number } => {
   let totalAdded = 0;
   let totalRemoved = 0;
+
   const allWords = new Set([
-    ...Object.keys(newFrequencies),
-    ...Object.keys(oldFrequencies),
+    ...Object.keys(newFrequencies).map(sanitizeWord),
+    ...Object.keys(oldFrequencies).map(sanitizeWord),
   ]);
 
   allWords.forEach((word) => {
@@ -141,51 +149,60 @@ export const getAverageWrittenWords = (stats: DailyStats[]): number => {
   return total / stats.length;
 };
 
-// const isPunctuation = (char: string): boolean => {
-//   const punctuationMarks = new Set([',', ';', ':', '!', '?', '.', "'", '"']);
-//   return punctuationMarks.has(char);
-// };
-//
-// const isSpace = (char: string): boolean => {
-//   const spaces = new Set([' ', '\t']);
-//   return spaces.has(char);
-// };
-//
-// const isLineBreak = (char: string): boolean => {
-//   const lineBreaks = new Set(['\n', '\r']);
-//   return lineBreaks.has(char);
-// };
-//
-// const isLetterOrNumber = (char: string): boolean => {
-//   const codePoint = char.codePointAt(0); // Get the Unicode code point
-//   if (!codePoint) {
-//     return false; // Invalid character
-//   }
-//   // Check if it's a number (0-9)
-//   if (codePoint >= 48 && codePoint <= 57) {
-//     return true;
-//   }
-//   // Check if it's a letter in the Unicode range
-//   const letterRegex = /^\p{L}$/u;
-//   return letterRegex.test(char);
-// };
+export const isPunctuation = (char: string): boolean => {
+  const punctuationMarks = new Set([',', ';', ':', '!', '?', '.', "'", '"']);
+  return punctuationMarks.has(char);
+};
+
+export const isSpace = (char: string): boolean => {
+  const spaces = new Set([' ', '\t']);
+  return spaces.has(char);
+};
+
+export const isLineBreak = (char: string): boolean => {
+  const lineBreaks = new Set(['\n', '\r']);
+  return lineBreaks.has(char);
+};
+
+export const isLetterOrNumber = (char: string): boolean => {
+  const codePoint = char.codePointAt(0); // Get the Unicode code point
+  if (!codePoint) {
+    return false; // Invalid character
+  }
+  // Check if it's a number (0-9)
+  if (codePoint >= 48 && codePoint <= 57) {
+    return true;
+  }
+  // Check if it's a letter in the Unicode range
+  const letterRegex = /^\p{L}$/u;
+  return letterRegex.test(char);
+};
 
 
 export const minimizeMarkdownText = (markdownText: string): string => {
   const md = markdownit();
-  const renderedMarkDown = md.render(markdownText);
+  const renderedHtml = md.render(markdownText);
 
-  const plainText = renderedMarkDown.replaceAll(/<[^>]*>/g, '');
-  if (!plainText.trim()) {
+  const withoutHtmlTags = renderedHtml.replaceAll(/<[^>]*>/g, '');
+
+  if (!withoutHtmlTags.trim()) {
     return '';
   }
 
-  let wordsOnlyText = plainText.replaceAll(/[^\p{L}\p{N}\s]/gu, '');
-  wordsOnlyText = wordsOnlyText.replaceAll(/\s+/g, ' ');
-  return wordsOnlyText.trim();
+  let wordsOnly = withoutHtmlTags.replaceAll(/[^\p{L}\p{N}\s]/gu, '');
+  wordsOnly = wordsOnly.replaceAll(/\s+/g, ' ');
+
+  return wordsOnly.trim();
 };
 
 export const minimizeMarkdownTextLength = (markdownText: string): number => {
   const wordsOnlyText = minimizeMarkdownText(markdownText);
   return wordsOnlyText.split(/\s+/).filter((word) => word.length > 0).length;
+};
+
+export const countParagraphs = (markdownText: string): number => {
+  const md = markdownit();
+  const renderedMarkDown = md.render(markdownText);
+  const paragraphs = renderedMarkDown.match(/<p>[\S\s]*?<\/p>/g);
+  return paragraphs ? paragraphs.length : 0;
 };

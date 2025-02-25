@@ -2,8 +2,8 @@ import type { SupportedLanguages } from '@/hooks/language/schema';
 import type {
   DailyGoalMode,
   ElementUUID,
-  Project,
-  WritingStats,
+  Project, WordsWrittenTodayType,
+  WritingStats
 } from '@/state/defaults';
 import type { Variant } from '@/theme/types/config';
 
@@ -118,7 +118,7 @@ export const CurrentStreakStateAtom = atomWithMMKV<number>(
   CommonStorage,
 );
 
-export const WordsWrittenTodayStateAtom = atomWithMMKV<number>(
+export const WordsWrittenTodayStateAtom = atomWithMMKV<WordsWrittenTodayType>(
   'words_written_today',
   DEFAULT_DATA.wordWrittenToday,
   CommonStorage,

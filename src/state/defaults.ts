@@ -8,7 +8,7 @@ const COMMON_STORAGE: string = 'common-information';
 export const DEFAULT_STORAGE_VALUES = {
   commonStorage: COMMON_STORAGE,
   deviceOnlyStorage: DEVICE_ONLY_STORAGE,
-}
+};
 
 const DEFAULT_THEME: Variant = 'default';
 const DEFAULT_HOME_FOLDER: string = '';
@@ -24,7 +24,12 @@ const DEFAULT_DAILY_GOAL_MODE: DailyGoalMode = {
 
 const DEFAULT_MAX_STREAK: number = 0;
 const DEFAULT_CURRENT_STREAK: number = 0;
-const DEFAULT_WORDS_WRITTEN_TODAY: number = 0;
+
+export type WordsWrittenTodayType = { date: number; value: number };
+const DEFAULT_WORDS_WRITTEN_TODAY: WordsWrittenTodayType = {
+  date: -1,
+  value: 0,
+};
 
 export type ElementUUID = string;
 const DEFAULT_FAVORITE_PROJECTS: ElementUUID[] = [];
@@ -90,7 +95,7 @@ export const getValidChapterEnum = (value: string): ChapterStatusType => {
     return value as ChapterStatusType;
   }
   return ChapterStatusType.Undefined;
-}
+};
 
 export type Chapter = {
   androidFilePath: string;
@@ -100,6 +105,7 @@ export type Chapter = {
   linuxFilePath: string;
   osxFilePath: string;
   revisionPosition: number;
+  sentencesCount: number;
   status: ChapterStatusType;
   title: string;
   windowsFilePath: string;
@@ -113,12 +119,12 @@ export type Project = {
   chapters: Chapter[];
   chapterSort: ElementUUID[];
   coverPath: string;
-  cursorLastPosition: number;
   id: ElementUUID;
   iphoneFolderPath: string;
   lastUpdate: number;
   linuxFolderPath: string;
   osxFolderPath: string;
+  sentencesCount: number;
   title: string;
   windowsFolderPath: string;
   wordCount: number;
@@ -131,16 +137,16 @@ export const initialProjectContent: Project = {
   chapters: [],
   chapterSort: [],
   coverPath: '',
-  cursorLastPosition: 0,
   id: '',
   iphoneFolderPath: '',
   lastUpdate: -1,
   linuxFolderPath: '',
   osxFolderPath: '',
+  sentencesCount: -1,
   title: '',
   windowsFolderPath: '',
   wordCount: -1,
-}
+};
 
 const DEFAULT_PROJECTS_DATA: Project[] = [];
 
@@ -157,4 +163,4 @@ export const DEFAULT_DATA = {
   typewriterMode: DEFAULT_TYPEWRITER_MODE,
   wordWrittenToday: DEFAULT_WORDS_WRITTEN_TODAY,
   writingStats: DEFAULT_WRITING_STATS,
-}
+};

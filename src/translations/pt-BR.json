@@ -130,6 +130,7 @@
       "words": "Palavras",
       "sentences": "Frases",
       "pages": "Páginas",
+      "toGo": "Faltam",
       "week": {
         "sun": "DOM",
         "mon": "SEG",
