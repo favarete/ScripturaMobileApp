@@ -25,10 +25,11 @@ import ProjectCard from '@/components/molecules/ProjectCard/ProjectCard';
 import { SafeScreen } from '@/components/templates';
 
 import {
+  DailyWordsStatsStateAtom,
   HomeFolderStateAtom,
   LanguageStateAtom,
   ProjectsDataStateAtom,
-  SaveAtomEffect,
+  SaveAtomEffect
 } from '@/state/atoms/persistentContent';
 import { initialProjectContent } from '@/state/defaults';
 import { createNewUUID, getNameAlias, updateLastSegment } from '@/utils/common';
@@ -49,6 +50,7 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
   const homeFolder = useAtomValue(HomeFolderStateAtom);
   const language = useAtomValue(LanguageStateAtom);
   const [allProjects, setAllProjects] = useAtom(ProjectsDataStateAtom);
+  const dailyWordsStats = useAtomValue(DailyWordsStatsStateAtom);
 
   const [loadingProjects, setLoadingProjects] = useState<boolean>(true);
   const [editingId, setEditingId] = useState<string>('');
@@ -152,7 +154,6 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
         setLoadingProjects(false);
       }
     };
-
     void fetchAllProjects();
     hasFetchedProjects.current = true;
   }, [allProjects, homeFolder, language, loadingProjects, setAllProjects, t]);
@@ -261,6 +262,8 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
       }
     })();
   };
+
+  console.log(dailyWordsStats)
 
   return (
     <SafeScreen>

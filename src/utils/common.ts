@@ -1,7 +1,7 @@
 import markdownit from 'markdown-it';
 import uuid from 'react-native-uuid';
 
-import type { DailyStats, WritingStats } from '@/state/defaults';
+import { DailyStats, DailyWordsStatsType, WritingStats } from '@/state/defaults';
 
 export const createNewUUID = (): string => {
   return uuid.v4();
@@ -206,3 +206,28 @@ export const countParagraphs = (markdownText: string): number => {
   const paragraphs = renderedMarkDown.match(/<p>[\S\s]*?<\/p>/g);
   return paragraphs ? paragraphs.length : 0;
 };
+
+
+export const updateWordWrittenTodayRecords = (
+  existingRecords: DailyWordsStatsType[],
+  newRecord: DailyWordsStatsType
+): DailyWordsStatsType[] => {
+  if (existingRecords.length === 0) {return [newRecord];}
+  const firstDay = Math.min(...existingRecords.map((rec) => rec.date));
+
+  const recordMap = new Map<number, DailyWordsStatsType>();
+  for (const rec of existingRecords) {
+    recordMap.set(rec.date, rec);
+  }
+  recordMap.set(newRecord.date, newRecord);
+
+  const completeRecords: DailyWordsStatsType[] = [];
+  for (let current = firstDay; current <= newRecord.date; current += 86_400_000) {
+    if (recordMap.has(current)) {
+      completeRecords.push(recordMap.get(current)!);
+    } else {
+      completeRecords.push({ date: current, totalWords: 0 });
+    }
+  }
+  return completeRecords;
+}

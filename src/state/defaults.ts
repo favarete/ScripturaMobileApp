@@ -51,6 +51,13 @@ export type WritingStats = {
   wednesday: DailyStats[];
 };
 
+export type DailyWordsStatsType = {
+  date: number;
+  totalWords: number;
+};
+
+const DEFAULT_DAILY_WORDS_STATS: DailyWordsStatsType[] = []
+
 const DEFAULT_WRITING_STATS: WritingStats = {
   friday: [],
   monday: [],
@@ -154,6 +161,7 @@ export const DEFAULT_DATA = {
   autosaveMode: DEFAULT_AUTOSAVE_MODE,
   currentStreak: DEFAULT_CURRENT_STREAK,
   dailyGoalMode: DEFAULT_DAILY_GOAL_MODE,
+  dailyWordsStats: DEFAULT_DAILY_WORDS_STATS,
   favoriteProjects: DEFAULT_FAVORITE_PROJECTS,
   homeFolder: DEFAULT_HOME_FOLDER,
   language: DEFAULT_LANGUAGE,

@@ -36,6 +36,7 @@ import MarkdownRenderer from '@/components/molecules/MarkdownRenderer/MarkdownRe
 import {
   AutosaveModeStateAtom,
   DailyGoalModeStateAtom,
+  DailyWordsStatsStateAtom,
   ProjectsDataStateAtom,
   SaveAtomEffect,
   WordsWrittenTodayStateAtom,
@@ -53,6 +54,7 @@ import {
   getWeekdayKey,
   minimizeMarkdownText,
   minimizeMarkdownTextLength,
+  updateWordWrittenTodayRecords,
 } from '@/utils/common';
 import { print } from '@/utils/logger';
 
@@ -71,6 +73,10 @@ function ContentView({
   const [allProjects, setAllProjects] = useAtom(ProjectsDataStateAtom);
   const [wordWrittenToday, setWordsWrittenToday] = useAtom(
     WordsWrittenTodayStateAtom,
+  );
+
+  const [dailyWordsStats, setDailyWordsStats] = useAtom(
+    DailyWordsStatsStateAtom,
   );
 
   const autosaveMode = useAtomValue(AutosaveModeStateAtom);
@@ -150,6 +156,27 @@ function ContentView({
       }
     }, []),
   );
+
+  useEffect(() => {
+    const lastEntry = dailyWordsStats.at(-1);
+    if (lastEntry?.date === dayRef.current) {
+      setDailyWordsStats((prevStats) => {
+        const newDailyWordsStats = [...prevStats];
+        const lastIndex = newDailyWordsStats.length - 1;
+        newDailyWordsStats[lastIndex] = {
+          ...newDailyWordsStats[lastIndex],
+          totalWords: wordWrittenToday.value,
+        };
+        return newDailyWordsStats;
+      });
+    } else {
+      const completedRecords = updateWordWrittenTodayRecords(dailyWordsStats, {
+        date: dayRef.current,
+        totalWords: wordWrittenToday.value,
+      });
+      setDailyWordsStats(completedRecords);
+    }
+  }, [wordWrittenToday]);
 
   const [writingStats, setWritingStats] = useAtom(WritingStatsStateAtom);
   const dailyGoalMode = useAtomValue(DailyGoalModeStateAtom);

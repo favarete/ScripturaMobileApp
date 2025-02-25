@@ -1,6 +1,6 @@
 import type { SupportedLanguages } from '@/hooks/language/schema';
-import type {
-  DailyGoalMode,
+import {
+  DailyGoalMode, DailyWordsStatsType,
   ElementUUID,
   Project, WordsWrittenTodayType,
   WritingStats
@@ -103,6 +103,12 @@ const CommonStorage = new MMKV({ id: DEFAULT_STORAGE_VALUES.commonStorage });
 export const DailyGoalModeStateAtom = atomWithMMKV<DailyGoalMode>(
   'daily_goal_mode',
   DEFAULT_DATA.dailyGoalMode,
+  CommonStorage,
+);
+
+export const DailyWordsStatsStateAtom = atomWithMMKV<DailyWordsStatsType[]>(
+  'daily_words_stats',
+  DEFAULT_DATA.dailyWordsStats,
   CommonStorage,
 );
 
