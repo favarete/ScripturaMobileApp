@@ -1,4 +1,4 @@
-import type { Project } from '@/state/defaults';
+import type { DailyWordsStatsType, Project, UsageStatsType } from '@/state/defaults';
 
 export const findProjectByTitleAndPath = (
   projects: Project[],
@@ -61,3 +61,52 @@ export const projectListsAreEqual = (
 
   return JSON.stringify(sorted1) === JSON.stringify(sorted2);
 };
+
+export const calculateUsageStats = (data: DailyWordsStatsType[]): UsageStatsType => {
+  if (!data || data.length === 0) {
+    return {
+      averagePerDay: 0,
+      averagePerMonth: 0,
+      averagePerWeek: 0,
+      currentStreak: 0,
+      writingStreak: 0,
+    };
+  }
+  const totalDays = data.length;
+  const sumWords = data.reduce((acc, day) => acc + day.totalWords, 0);
+
+  const averagePerDay = sumWords / totalDays;
+  const averagePerWeek = (sumWords / totalDays) * 7;
+  const averagePerMonth = (sumWords / totalDays) * 30;
+
+  let currentStreakCount = 0;
+  let writingStreak = 0;
+
+  for (let i = 0; i < data.length; i++) {
+    if (data[i].totalWords > 0) {
+      currentStreakCount++;
+      if (currentStreakCount > writingStreak) {
+        writingStreak = currentStreakCount;
+      }
+    } else {
+      currentStreakCount = 0;
+    }
+  }
+
+  let currentStreak = 0;
+  for (let i = data.length - 1; i >= 0; i--) {
+    if (data[i].totalWords > 0) {
+      currentStreak++;
+    } else {
+      break;
+    }
+  }
+
+  return {
+    averagePerDay,
+    averagePerMonth,
+    averagePerWeek,
+    currentStreak,
+    writingStreak,
+  };
+}

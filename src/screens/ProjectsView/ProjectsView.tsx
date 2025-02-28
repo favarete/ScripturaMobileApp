@@ -29,12 +29,14 @@ import {
   HomeFolderStateAtom,
   LanguageStateAtom,
   ProjectsDataStateAtom,
-  SaveAtomEffect
+  SaveAtomEffect,
+  UsageStatsStateAtom,
 } from '@/state/atoms/persistentContent';
 import { initialProjectContent } from '@/state/defaults';
 import { createNewUUID, getNameAlias, updateLastSegment } from '@/utils/common';
 import { print } from '@/utils/logger';
 import {
+  calculateUsageStats,
   findProjectById,
   findProjectByTitle,
   findProjectByTitleAndPath,
@@ -54,6 +56,14 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
 
   const [loadingProjects, setLoadingProjects] = useState<boolean>(true);
   const [editingId, setEditingId] = useState<string>('');
+
+  const [usageStats, setUsageStats] = useAtom(UsageStatsStateAtom);
+
+  useEffect(() => {
+    if (dailyWordsStats.length > 0) {
+      setUsageStats(calculateUsageStats(dailyWordsStats));
+    }
+  }, [dailyWordsStats]);
 
   const hasFetchedProjects = useRef(false);
   useEffect(() => {
@@ -263,8 +273,6 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
     })();
   };
 
-  console.log(dailyWordsStats)
-
   return (
     <SafeScreen>
       <ScrollView>
@@ -281,11 +289,19 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
             </Text>
           </View>
         </View>
-        <MainHeader onNavigateSettings={onNavigateSettings} streak={5} />
+        <MainHeader
+          currentStreak={usageStats.currentStreak}
+          maxStreak={usageStats.writingStreak}
+          onNavigateSettings={onNavigateSettings}
+        />
         <View style={[gutters.paddingHorizontal_32]}>
           <FolderSelector />
         </View>
-        <Averages daily={10_215} monthly={100_211} weekly={20_564} />
+        <Averages
+          daily={usageStats.averagePerDay}
+          monthly={usageStats.averagePerMonth}
+          weekly={usageStats.averagePerWeek}
+        />
         <View>
           <View style={[gutters.marginVertical_24]}>
             <TitleBar title={t('screen_projects.view')} />

@@ -10,11 +10,12 @@ import { LanguageStateAtom } from '@/state/atoms/persistentContent';
 import { formatNumber } from '@/utils/chapterHelpers';
 
 type MainHeaderProps = {
+  currentStreak: number;
+  maxStreak: number;
   onNavigateSettings: () => void;
-  streak: number;
 };
 
-function MainHeader({ onNavigateSettings, streak }: MainHeaderProps) {
+function MainHeader({ currentStreak, maxStreak,  onNavigateSettings}: MainHeaderProps) {
   const { colors, fonts, gutters, layout } = useTheme();
   const { t } = useTranslation();
 
@@ -26,55 +27,79 @@ function MainHeader({ onNavigateSettings, streak }: MainHeaderProps) {
     },
   });
 
-  const formatStreakNumber = formatNumber(streak, language);
+  const formatStreakNumber = formatNumber(maxStreak, language);
   const streakCountLabel =
-    streak === 1
+    maxStreak === 1
+      ? t('screen_projects.days').slice(0, -1)
+      : t('screen_projects.days');
+
+  const formatCurrentStreakNumber = formatNumber(currentStreak, language);
+  const currentStreakCountLabel =
+    currentStreak === 1
       ? t('screen_projects.days').slice(0, -1)
       : t('screen_projects.days');
 
   return (
-    <View
-      style={[
-        layout.row,
-        layout.justifyBetween,
-        layout.itemsEnd,
-        gutters.marginTop_20,
-        gutters.marginBottom_8,
-      ]}
-    >
-      <View style={gutters.paddingLeft_32}>
+    <View>
+      <View style={[gutters.paddingLeft_32, gutters.marginTop_20]}>
         <Text
-          style={[fonts.defaultFontFamilyBold, fonts.gray200, fonts.size_16]}
+          style={[fonts.defaultFontFamilyBold, fonts.gray200, fonts.size_12]}
         >
           {t('screen_projects.writing_streak')}
         </Text>
         <Text
           style={[
-            fonts.defaultFontFamilySemibold,
+            fonts.defaultFontFamilyBold,
             fonts.fullOpposite,
-            fonts.size_32,
+            fonts.size_20,
           ]}
         >
           {`${formatStreakNumber} ${streakCountLabel}`}
         </Text>
       </View>
-      <TouchableOpacity onPress={onNavigateSettings}>
-        <View style={[gutters.paddingRight_32, layout.row, layout.itemsCenter]}>
-          <Text style={styles.icon}>
-            <MaterialIcons color={colors.gray200} name="settings" size={25} />
+      <View
+        style={[
+          layout.row,
+          layout.justifyBetween,
+          layout.itemsEnd,
+          gutters.marginTop_8,
+          gutters.marginBottom_8,
+        ]}
+      >
+        <View style={gutters.paddingLeft_32}>
+          <Text
+            style={[fonts.defaultFontFamilyBold, fonts.gray200, fonts.size_16]}
+          >
+            {t('screen_projects.current_writing_streak')}
           </Text>
           <Text
             style={[
-              fonts.defaultFontFamilyBold,
+              fonts.defaultFontFamilySemibold,
               fonts.fullOpposite,
-              fonts.size_16,
-              gutters.paddingVertical_8,
+              fonts.size_32,
             ]}
           >
-            {t('screen_projects.settings')}
+            {`${formatCurrentStreakNumber} ${currentStreakCountLabel}`}
           </Text>
         </View>
-      </TouchableOpacity>
+        <TouchableOpacity onPress={onNavigateSettings}>
+          <View style={[gutters.paddingRight_32, layout.row, layout.itemsCenter]}>
+            <Text style={styles.icon}>
+              <MaterialIcons color={colors.gray200} name="settings" size={25} />
+            </Text>
+            <Text
+              style={[
+                fonts.defaultFontFamilyBold,
+                fonts.fullOpposite,
+                fonts.size_16,
+                gutters.paddingVertical_8,
+              ]}
+            >
+              {t('screen_projects.settings')}
+            </Text>
+          </View>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }

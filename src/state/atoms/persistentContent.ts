@@ -1,9 +1,11 @@
 import type { SupportedLanguages } from '@/hooks/language/schema';
-import {
+import type {
   DailyGoalMode, DailyWordsStatsType,
   ElementUUID,
   Project, WordsWrittenTodayType,
   WritingStats
+} from '@/state/defaults';
+import { type UsageStatsType
 } from '@/state/defaults';
 import type { Variant } from '@/theme/types/config';
 
@@ -112,15 +114,9 @@ export const DailyWordsStatsStateAtom = atomWithMMKV<DailyWordsStatsType[]>(
   CommonStorage,
 );
 
-export const MaxStreakStateAtom = atomWithMMKV<number>(
-  'max_streak',
-  DEFAULT_DATA.maxStreak,
-  CommonStorage,
-);
-
-export const CurrentStreakStateAtom = atomWithMMKV<number>(
-  'current_streak',
-  DEFAULT_DATA.currentStreak,
+export const UsageStatsStateAtom = atomWithMMKV<UsageStatsType>(
+  'usage_stats',
+  DEFAULT_DATA.usageStats,
   CommonStorage,
 );
 

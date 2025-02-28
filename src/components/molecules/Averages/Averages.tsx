@@ -26,9 +26,9 @@ function Averages({ daily, monthly, weekly }: AveragesProps) {
         </Text>
       </View>
       <View style={[layout.row, gutters.marginTop_8]}>
-        <CardInformation label={t('screen_projects.daily')} value={daily} />
-        <CardInformation label={t('screen_projects.weekly')} value={weekly} />
-        <CardInformation label={t('screen_projects.monthly')} value={monthly} />
+        <CardInformation label={t('screen_projects.daily')} value={Math.round(daily)} />
+        <CardInformation label={t('screen_projects.weekly')} value={Math.round(weekly)} />
+        <CardInformation label={t('screen_projects.monthly')} value={Math.round(monthly)} />
       </View>
     </View>
   );

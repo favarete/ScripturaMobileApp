@@ -51,9 +51,25 @@ export type WritingStats = {
   wednesday: DailyStats[];
 };
 
+export type UsageStatsType = {
+  averagePerDay: number;
+  averagePerMonth: number;
+  averagePerWeek: number;
+  currentStreak: number;
+  writingStreak: number
+};
+
 export type DailyWordsStatsType = {
   date: number;
   totalWords: number;
+};
+
+const DEFAULT_USAGE_STATS: UsageStatsType = {
+  averagePerDay: 0,
+  averagePerMonth: 0,
+  averagePerWeek: 0,
+  currentStreak: 0,
+  writingStreak: 0,
 };
 
 const DEFAULT_DAILY_WORDS_STATS: DailyWordsStatsType[] = []
@@ -169,6 +185,7 @@ export const DEFAULT_DATA = {
   projectsData: DEFAULT_PROJECTS_DATA,
   theme: DEFAULT_THEME,
   typewriterMode: DEFAULT_TYPEWRITER_MODE,
+  usageStats: DEFAULT_USAGE_STATS,
   wordWrittenToday: DEFAULT_WORDS_WRITTEN_TODAY,
   writingStats: DEFAULT_WRITING_STATS,
 };
