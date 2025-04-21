@@ -18,6 +18,7 @@ import {
 } from 'react-native';
 
 import { SelectedChapterStateAtom } from '@/state/atoms/temporaryContent';
+import { useTheme } from '@/theme';
 
 export type ContextMenuItem = {
   color: string;
@@ -48,6 +49,8 @@ function CustomContextMenu({
   onPress,
 }: CustomContextMenuProps) {
   const setSelectedChapterId = useSetAtom(SelectedChapterStateAtom);
+  const { colors } = useTheme();
+
   const [menuVisible, setMenuVisible] = useState(false);
   const [touchPosition, setTouchPosition] = useState({ x: 0, y: 0 });
   const [finalPosition, setFinalPosition] = useState({ x: -9999, y: -9999 });
@@ -59,7 +62,7 @@ function CustomContextMenu({
       elevation: 5,
       paddingBottom: 4,
       position: 'absolute',
-      shadowColor: '#000', // iOS
+      shadowColor: 'rgba(0,0,0,0.4)', // iOS
       shadowOffset: { height: 2, width: 2 },
       shadowOpacity: 0.3,
     },
@@ -82,6 +85,7 @@ function CustomContextMenu({
     },
     menuTitle: {
       backgroundColor: menuTitleBackgroundColor + '80',
+      color: colors.gray800,
       fontSize: 12,
       paddingHorizontal: 16,
       paddingVertical: 8,

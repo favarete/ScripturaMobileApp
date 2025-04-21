@@ -20,11 +20,12 @@ import { hasPermission, openDocument, readFile } from 'react-native-saf-x';
 
 import { useTheme } from '@/theme';
 import PlaceholderImage from '@/theme/assets/images/placeholder_book_cover.png';
+import PlaceholderImageDark from '@/theme/assets/images/dark/placeholder_book_cover.png';
 
 import ConfirmationDialog from '@/components/atoms/ConfirmationDialog/ConfirmationDialog';
 import CustomContextMenu from '@/components/atoms/CustomContextMenu/CustomContextMenu';
 
-import { HomeFolderStateAtom } from '@/state/atoms/persistentContent';
+import { HomeFolderStateAtom, ThemeStateAtom } from '@/state/atoms/persistentContent';
 import { print } from '@/utils/logger';
 
 type ProjectProps = {
@@ -61,9 +62,10 @@ function ProjectCard({
 
   const { t } = useTranslation();
   const homeFolder = useAtomValue(HomeFolderStateAtom);
+  const variant = useAtomValue(ThemeStateAtom);
 
   const [imageToLoad, setImageToLoad] =
-    useState<ImageURISource>(PlaceholderImage);
+    useState<ImageURISource>(variant === 'default'? PlaceholderImage : PlaceholderImageDark);
 
   useEffect(() => {
     if (image && image.length > 0) {
@@ -324,6 +326,7 @@ function ProjectCard({
                     fonts.defaultFontFamilyBold,
                     styles.inputTitleContent,
                     fonts.size_16,
+                    fonts.gray800,
                     gutters.marginBottom_12,
                   ]}
                   value={editedTitle}
@@ -349,6 +352,7 @@ function ProjectCard({
                 style={[
                   fonts.defaultFontFamilyBold,
                   fonts.size_16,
+                  fonts.gray800,
                   gutters.marginBottom_12,
                   editingId.length === 0 ||
                   (editingId === id && isEditing === EDIT_TITLE_TYPE)
@@ -374,7 +378,7 @@ function ProjectCard({
                     styles.inputDescriptionContent,
                     gutters.marginBottom_12,
                     fonts.defaultFontFamilyRegular,
-                    fonts.gray400,
+                    fonts.gray800,
                     fonts.size_12,
                     fonts.lineGap,
                   ]}

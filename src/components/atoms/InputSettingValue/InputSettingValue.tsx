@@ -21,6 +21,7 @@ function InputSettingValue({ disabled = false, getter, setter, title }: Props) {
       borderColor: colors.gray800,
       ...borders.rounded_4,
       ...fonts.size_16,
+      ...fonts.gray800,
       borderWidth: 1,
       ...gutters.padding_16,
       height: 54,
@@ -58,7 +59,7 @@ function InputSettingValue({ disabled = false, getter, setter, title }: Props) {
           editable={!disabled}
           keyboardType="numeric"
           onChangeText={(text) => setter(Number.parseInt(text, 10) || 0)}
-          selectionColor={colors.gray200}
+          selectionColor={colors.purple100}
           style={styles.input}
           value={getter.toString()}
         />

@@ -65,6 +65,7 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
     }
   }, [dailyWordsStats]);
 
+
   const hasFetchedProjects = useRef(false);
   useEffect(() => {
     const fetchAllProjects = async () => {
@@ -169,7 +170,9 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
   }, [allProjects, homeFolder, language, loadingProjects, setAllProjects, t]);
 
   const onNavigate = (projectId: string) => {
-    navigation.navigate(Paths.ChaptersView, { projectId });
+    if(editingId === ''){
+      navigation.navigate(Paths.ChaptersView, { projectId });
+    }
   };
 
   const onNavigateSettings = () => {
