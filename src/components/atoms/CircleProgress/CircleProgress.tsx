@@ -1,13 +1,14 @@
-import React, { FC } from 'react';
+import type { FC } from 'react';
+import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import Svg, { Circle, G, Text as SvgText } from 'react-native-svg';
 
 type CircleProgressProps = {
+  backgroundColor?: string;
   progress: number;
+  progressColor?: string;
   size?: number;
   strokeWidth?: number;
-  progressColor?: string;
-  backgroundColor?: string;
   textColor?: string;
   textSize?: number;
 };
@@ -27,36 +28,36 @@ const CircleProgress: FC<CircleProgressProps> = ({
   const strokeDashoffset = circumference - circumference * progress;
 
   return (
-    <View style={[styles.container, { width: size, height: size }]}>
-      <Svg width={size} height={size}>
-        <G rotation="-90" originX={size / 2} originY={size / 2}>
+    <View style={[styles.container, { height: size, width: size }]}>
+      <Svg height={size} width={size}>
+        <G originX={size / 2} originY={size / 2} rotation="-90">
           <Circle
             cx={size / 2}
             cy={size / 2}
+            fill="none"
             r={radius}
             stroke={backgroundColor}
             strokeWidth={strokeWidth}
-            fill="none"
           />
           <Circle
             cx={size / 2}
             cy={size / 2}
+            fill="none"
             r={radius}
             stroke={progressColor}
-            strokeWidth={strokeWidth}
             strokeDasharray={circumference}
             strokeDashoffset={strokeDashoffset}
             strokeLinecap="round"
-            fill="none"
+            strokeWidth={strokeWidth}
           />
         </G>
         <SvgText
-          x={size / 2}
-          y={size / 2 + textSize / 2.5}
           fill={textColor}
           fontSize={textSize}
           fontWeight="900"
           textAnchor="middle"
+          x={size / 2}
+          y={size / 2 + textSize / 2.5}
         >
           {`${Math.round(progress * 100)}%`}
         </SvgText>
@@ -67,8 +68,8 @@ const CircleProgress: FC<CircleProgressProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'center',
   },
 });
 

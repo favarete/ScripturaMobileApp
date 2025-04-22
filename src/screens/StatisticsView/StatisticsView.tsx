@@ -179,7 +179,7 @@ function StatisticsView({
           <View style={[layout.row, gutters.marginHorizontal_40]}>
             <View style={!dailyGoalMode.enabled && styles.hide}>
               <CircleProgress
-                backgroundColor={colors.gray100}
+                backgroundColor={colors.gray200 + '2F'}
                 progress={
                   !dailyGoalMode.enabled
                     ? 1
@@ -207,7 +207,7 @@ function StatisticsView({
               </Text>
               <View style={!dailyGoalMode.enabled && styles.hide}>
                 <HorizontalProgressBar
-                  backgroundColor={colors.gray100}
+                  backgroundColor={colors.gray200 + '2F'}
                   fillColor={colors.fullOpposite}
                   height={15}
                   progress={

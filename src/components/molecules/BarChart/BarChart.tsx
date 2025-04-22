@@ -65,7 +65,7 @@ const BarChart: React.FC<BarChartProps> = ({
           return (
             <React.Fragment key={`grid-${i}`}>
               <Line
-                stroke={colors.gray100}
+                stroke={colors.gray200 + '2F'}
                 strokeWidth={1}
                 x1={margin - lineOffset}
                 x2={margin + chartWidth + lineOffset}

@@ -383,6 +383,7 @@ function ContentView({
 
   const markdownEditStyles = {
     ...fonts.size_16,
+    ...fonts.gray800,
     lineHeight: 24,
     ...fonts.defaultFontFamilyRegular,
     ...gutters.marginBottom_12,
@@ -409,6 +410,7 @@ function ContentView({
     },
     h1: {
       ...fonts.size_24,
+      ...fonts.gray800
     },
     link: {
       color: colors.purple500,

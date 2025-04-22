@@ -20,7 +20,7 @@ export type ChapterCardProps = {
   isActive: boolean;
   lastUpdate: string;
   lastViewedId: string;
-  onNavigate: (id: string, chapterId: string) => void;
+  onNavigate: (chapterId: string) => void;
   projectId: string;
   status: ChapterStatusType;
   title: string;
@@ -259,7 +259,7 @@ function ChapterCard({
             menuItems={menuItems}
             menuTitle={`${t('screen_chapters.status_header')} '${title}'`}
             menuTitleBackgroundColor={colors.purple100}
-            onPress={() => onNavigate(projectId, id)}
+            onPress={() => onNavigate(id)}
           >
             <View
               style={[

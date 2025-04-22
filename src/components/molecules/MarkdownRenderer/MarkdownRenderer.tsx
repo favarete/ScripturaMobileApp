@@ -15,6 +15,7 @@ function MarkdownRenderer({ markdown }: MarkdownRendererProps) {
     // The main container
     body: {
       ...fonts.size_16,
+      ...fonts.gray800,
       lineHeight: 24,
       ...fonts.defaultFontFamilyRegular,
       ...gutters.marginBottom_12,

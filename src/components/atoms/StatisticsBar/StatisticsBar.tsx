@@ -30,7 +30,7 @@ function StatisticsBar({
   wordGoal,
   wordsWrittenToday,
 }: Props) {
-  const { backgrounds, colors, fonts, gutters, layout } = useTheme();
+  const { colors, fonts, gutters, layout } = useTheme();
   const { t } = useTranslation();
 
   const language = useAtomValue(LanguageStateAtom);
@@ -90,14 +90,13 @@ function StatisticsBar({
         </View>
       )}
       <TouchableOpacity onPress={onNavigateToStatistics}>
-        <View style={[styles.statisticsBar, backgrounds.gray200, layout.row]}>
+        <View style={[styles.statisticsBar, layout.row, {backgroundColor: colors.gray50  + 'FF'}]}>
           <View style={[layout.col, layout.itemsStart]}>
             <Text
               style={[
                 fonts.defaultFontFamilyBold,
-                fonts.fullOpposite,
                 fonts.size_16,
-                fonts.full,
+                fonts.gray400,
               ]}
             >
               {`${formatedWordCount} ${wordCountLabel}`}
@@ -106,9 +105,8 @@ function StatisticsBar({
               <Text
                 style={[
                   fonts.defaultFontFamilySemibold,
-                  fonts.fullOpposite,
+                  fonts.gray400,
                   fonts.size_12,
-                  fonts.full,
                 ]}
               >
                 {`${formatNumber(pageCount, language)} ${pageCountLabel}`}
@@ -121,9 +119,8 @@ function StatisticsBar({
             <Text
               style={[
                 fonts.defaultFontFamilyBold,
-                fonts.fullOpposite,
+                fonts.gray400,
                 fonts.size_16,
-                fonts.full,
               ]}
             >
               {`${formatedWordGoalPercentage} ${t('screen_content.word_goal')}`}
@@ -132,9 +129,8 @@ function StatisticsBar({
               <Text
                 style={[
                   fonts.defaultFontFamilySemibold,
-                  fonts.fullOpposite,
+                  fonts.gray400,
                   fonts.size_12,
-                  fonts.full,
                 ]}
               >
                 {`${formatedWordsWrittenToday}/${formatedWordGoal} ${wordCountLabel}`}

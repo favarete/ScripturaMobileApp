@@ -121,7 +121,7 @@ export function ChaptersDynamicList({
       width: '100%',
     },
     image: {
-      filter: 'brightness(20%)',
+      filter: 'brightness(0.2), saturate(0.2)',
       height: IMG_HEIGHT,
       resizeMode: 'cover',
       width: '100%',
@@ -147,7 +147,7 @@ export function ChaptersDynamicList({
       top: 0,
     },
     overlayText: {
-      color: colors.full,
+      color: colors.light,
     },
   });
 

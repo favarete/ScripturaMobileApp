@@ -75,7 +75,7 @@ function ChaptersView({
     navigation.navigate(Paths.ProjectsView);
   };
 
-  const onNavigate = (projectId: string, chapterId: string) => {
+  const onNavigate = (chapterId: string) => {
     updateChaptersById(projectId, allChaptersSorted);
     navigation.navigate(Paths.ContentView, { chapterId, projectId });
   };
