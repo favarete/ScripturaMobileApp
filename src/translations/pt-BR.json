@@ -7,6 +7,9 @@
       "initials": "SCR"
     },
     "components": {
+      "delete_project": "Apagar",
+      "yes": "Sim",
+      "no": "Não",
       "folder_selector": {
         "directory_selected_success": {
           "text1": "Diretório selecionado!",
@@ -74,6 +77,10 @@
       "create_folder": "Novo Projeto",
       "folder_name": "Nome do Projeto",
       "enter_name": "Escreva o Nome",
+      "folder_deleted": {
+        "text1": "Projeto Apagado!",
+        "text2": "O projeto foi removido da lista."
+      },
       "folder_renamed": {
         "text1": "Pasta renomeada!",
         "text2": "A pasta do projeto foi renomeada."
@@ -105,6 +112,10 @@
     },
     "screen_chapters": {
       "title": "$t(common_appName.full)",
+      "file_deleted": {
+        "text1": "Capítulo Apagado!",
+        "text2": "O capítulo foi removido da lista."
+      },
       "view": "Tela de Capítulos",
       "word_count": "Palavras",
       "status_header": "Status para",

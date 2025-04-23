@@ -1,18 +1,29 @@
 import type { ContextMenuItem } from '@/components/atoms/CustomContextMenu/CustomContextMenu';
-import type { ChapterStatusType } from '@/state/defaults';
+import type { Chapter, ChapterStatusType, Project } from '@/state/defaults';
 
 import MaterialIcons from '@react-native-vector-icons/material-icons';
 import SimpleLineIcons from '@react-native-vector-icons/simple-line-icons';
 import { useAtomValue } from 'jotai';
+import { useSetAtom } from 'jotai/index';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { unlink } from 'react-native-saf-x';
+import Toast from 'react-native-toast-message';
 
 import { useTheme } from '@/theme';
 
 import CustomContextMenu from '@/components/atoms/CustomContextMenu/CustomContextMenu';
+import ContentDestroyer from '@/components/molecules/ContentDestroyer/ContentDestroyer';
 
+import {
+  HomeFolderStateAtom,
+  ProjectsDataStateAtom,
+} from '@/state/atoms/persistentContent';
 import { SelectedChapterStateAtom } from '@/state/atoms/temporaryContent';
+import { getChapterById } from '@/utils/chapterHelpers';
+import { print } from '@/utils/logger';
+import { getSupportFile } from '@/utils/projectHelpers';
 
 export type ChapterCardProps = {
   drag: () => void;
@@ -24,6 +35,7 @@ export type ChapterCardProps = {
   projectId: string;
   status: ChapterStatusType;
   title: string;
+  triggerUpdate: React.Dispatch<React.SetStateAction<boolean>>;
   updateChaptersStatus: (
     projectId: string,
     chapterId: string,
@@ -33,6 +45,13 @@ export type ChapterCardProps = {
 };
 
 type DynamicStyleType = { opacity?: number; zIndex: number } | undefined;
+
+const truncateText = (text: string) => {
+  if (text.length > 25) {
+    return text.slice(0, 25) + '...';
+  }
+  return text;
+};
 
 function ChapterCard({
   drag,
@@ -44,6 +63,7 @@ function ChapterCard({
   projectId,
   status,
   title,
+  triggerUpdate,
   updateChaptersStatus,
   wordCount,
 }: ChapterCardProps) {
@@ -52,7 +72,10 @@ function ChapterCard({
   const { t } = useTranslation();
 
   const selectedChapterId = useAtomValue(SelectedChapterStateAtom);
+  const setAllProjects = useSetAtom(ProjectsDataStateAtom);
+  const homeFolder = useAtomValue(HomeFolderStateAtom);
   const [dynamicStyle, setDynamicStyle] = useState<DynamicStyleType>();
+  const [deleteDialog, setDeleteDialog] = useState<boolean>(false);
 
   const styles = StyleSheet.create({
     cardContent: {
@@ -68,13 +91,19 @@ function ChapterCard({
     },
   });
 
-  const sendToBackground = useMemo(() => ({
-    opacity: 0.3,
-    zIndex: 1,
-  }), []);
-  const sendToForeground = useMemo(() => ({
-    zIndex: 200,
-  }), []);
+  const sendToBackground = useMemo(
+    () => ({
+      opacity: 0.3,
+      zIndex: 1,
+    }),
+    [],
+  );
+  const sendToForeground = useMemo(
+    () => ({
+      zIndex: 200,
+    }),
+    [],
+  );
 
   useEffect(() => {
     if (selectedChapterId.length === 0) {
@@ -234,7 +263,68 @@ function ChapterCard({
       label: t('screen_chapters.status.manuscript_done'),
       onPress: () => updateChaptersStatus(projectId, id, 'manuscript_done'),
     },
+    {
+      color: colors.red500,
+      icon: (
+        <MaterialIcons color={colors.red500} name="delete" size={ICON_SIZE} />
+      ),
+      label: 'Delete',
+      onPress: () => {
+        setDeleteDialog(true);
+      },
+    },
   ];
+
+  const destroyContent = async (shouldDestroy: boolean) => {
+    if (shouldDestroy) {
+      try {
+        const allProjectsFromFile: Project[] = await getSupportFile(homeFolder);
+        const selectedChapter: Chapter | null = getChapterById(
+          projectId,
+          id,
+          allProjectsFromFile,
+        );
+        if (selectedChapter) {
+          await unlink(selectedChapter.androidFilePath);
+          const filteredProjects = allProjectsFromFile.map((project) => {
+            if (project.id !== projectId) {
+              return project;
+            }
+            const updatedChapters = project.chapters.filter(
+              (ch) => ch.id !== id,
+            );
+            const updatedChapterSort = project.chapterSort.filter(
+              (_id) => _id !== id,
+            );
+            const updatedLastViewed =
+              project.chapterLastViewed === id ? '' : project.chapterLastViewed;
+            return {
+              ...project,
+              chapterLastViewed: updatedLastViewed,
+              chapters: updatedChapters,
+              chapterSort: updatedChapterSort,
+            };
+          });
+          setAllProjects(filteredProjects);
+          Toast.show({
+            text1: t('screen_chapters.file_deleted.text1'),
+            text2: t('screen_chapters.file_deleted.text2'),
+            type: 'success',
+          });
+        }
+      } catch (error) {
+        Toast.show({
+          text1: t('unknown_error.text1'),
+          text2: t('unknown_error.text2'),
+          type: 'error',
+        });
+        print(error);
+      } finally {
+        triggerUpdate(true);
+      }
+    }
+    setDeleteDialog(false);
+  };
 
   return (
     <View
@@ -299,6 +389,11 @@ function ChapterCard({
               </Text>
             </View>
           </CustomContextMenu>
+          <ContentDestroyer
+            destroyContent={destroyContent}
+            show={deleteDialog}
+            title={`${truncateText(`${t('components.delete_project')} \"${title}`)}\"?`}
+          />
         </View>
       </View>
       <View>

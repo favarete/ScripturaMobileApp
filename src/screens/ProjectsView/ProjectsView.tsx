@@ -340,6 +340,7 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
                     onNavigate={onNavigate}
                     setEditingId={setEditingId}
                     title={project.title}
+                    triggerUpdate={setLoadingProjects}
                   />
                 );
               })

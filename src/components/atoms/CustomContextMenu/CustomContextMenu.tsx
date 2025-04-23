@@ -113,7 +113,7 @@ function CustomContextMenu({
     }
 
     if (py + height > SCREEN_HEIGHT) {
-      py = SCREEN_HEIGHT - height - 5;
+      py = SCREEN_HEIGHT - height - 35;
     }
 
     if (px < 0) {

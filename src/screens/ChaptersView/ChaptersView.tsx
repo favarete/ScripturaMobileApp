@@ -328,6 +328,7 @@ function ChaptersView({
           projectId={projectId}
           projectWordCount={projectWordCount}
           setAllChaptersSorted={setAllChaptersSorted}
+          triggerUpdate={setLoadingChapters}
           updateChaptersStatus={updateChaptersStatus}
         />
       ) : (

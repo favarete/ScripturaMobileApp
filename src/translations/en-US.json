@@ -7,6 +7,9 @@
       "initials": "SCR"
     },
     "components": {
+      "delete_project": "Delete",
+      "yes": "Yes",
+      "no": "No",
       "folder_selector": {
         "directory_selected_success": {
           "text1": "Directory selected!",
@@ -74,8 +77,12 @@
       "create_folder": "New Project",
       "folder_name": "Folder Name",
       "enter_name": "Enter Name",
+      "folder_deleted": {
+        "text1": "Project Deleted!",
+        "text2": "The project was removed from the list."
+      },
       "folder_renamed": {
-        "text1": "Folder renamed!",
+        "text1": "Folder Renamed!",
         "text2": "The project's folder was renamed."
       },
       "description_updated": {
@@ -105,6 +112,10 @@
     },
     "screen_chapters": {
       "title": "$t(common_appName.full)",
+      "file_deleted": {
+        "text1": "Chapter Deleted!",
+        "text2": "The chapter was removed from the list."
+      },
       "view": "Chapters Screen",
       "word_count": "Words",
       "total_word_count": "Total Words",

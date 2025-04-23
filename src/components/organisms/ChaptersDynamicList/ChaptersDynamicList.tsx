@@ -47,6 +47,7 @@ type ChaptersDynamicListType = {
   projectId: string;
   projectWordCount: number;
   setAllChaptersSorted: React.Dispatch<React.SetStateAction<Chapter[]>>;
+  triggerUpdate: React.Dispatch<React.SetStateAction<boolean>>;
   updateChaptersStatus: (
     projectId: string,
     chapterId: string,
@@ -66,6 +67,7 @@ export function ChaptersDynamicList({
   projectId,
   projectWordCount,
   setAllChaptersSorted,
+  triggerUpdate,
   updateChaptersStatus,
 }: ChaptersDynamicListType) {
   const language = useAtomValue(LanguageStateAtom);
@@ -93,6 +95,7 @@ export function ChaptersDynamicList({
           projectId={projectId}
           status={status}
           title={title}
+          triggerUpdate={triggerUpdate}
           updateChaptersStatus={updateChaptersStatus}
           wordCount={wordCount}
         />
