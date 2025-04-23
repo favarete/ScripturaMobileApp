@@ -225,7 +225,6 @@ function ChaptersView({
                   : project,
               ),
             );
-            setLastChapterViewed(latestUpdateInProjectId);
             setProjectWordCount(totalWordCount);
             setProjectTitle(selectedProject.title);
             setProjectUpdatedOn(
@@ -268,6 +267,7 @@ function ChaptersView({
     const selectedProject = findProjectById(allProjects, projectId);
     if (selectedProject) {
       const updatedChapters = selectedProject.chapters;
+      setLastChapterViewed(selectedProject.chapterLastViewed);
 
       let chapterSort = selectedProject.chapterSort;
       if (chapterSort.length === 0) {
