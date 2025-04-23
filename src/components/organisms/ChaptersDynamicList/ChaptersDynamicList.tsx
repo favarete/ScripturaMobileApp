@@ -27,6 +27,7 @@ import { useTheme } from '@/theme';
 
 import { TitleBar } from '@/components/atoms';
 import ChapterCard from '@/components/molecules/ChapterCard/ChapterCard';
+import ContentCreator from '@/components/molecules/ContentCreator/ContentCreator';
 
 import { LanguageStateAtom } from '@/state/atoms/persistentContent';
 import { formatNumber } from '@/utils/chapterHelpers';
@@ -36,6 +37,7 @@ const IMG_HEIGHT = 180;
 
 type ChaptersDynamicListType = {
   allChaptersSorted: Chapter[];
+  footerAction: (chapterName: string) => Promise<void>;
   lastChapterViewed: string;
   onNavigate: (chapterId: string) => void;
   onNavigateBack: () => void;
@@ -54,6 +56,7 @@ type ChaptersDynamicListType = {
 
 export function ChaptersDynamicList({
   allChaptersSorted,
+  footerAction,
   lastChapterViewed,
   onNavigate,
   onNavigateBack,
@@ -67,7 +70,7 @@ export function ChaptersDynamicList({
 }: ChaptersDynamicListType) {
   const language = useAtomValue(LanguageStateAtom);
 
-  const { colors, fonts, gutters } = useTheme();
+  const { colors, fonts, gutters, layout } = useTheme();
   const { t } = useTranslation();
 
   const listRef = useRef<FlatList<Chapter>>(null);
@@ -226,6 +229,17 @@ export function ChaptersDynamicList({
         contentContainerStyle={styles.listContainer}
         data={allChaptersSorted}
         keyExtractor={(item) => item.id}
+        ListFooterComponent={
+          <View
+            style={[layout.itemsCenter, layout.fullWidth, gutters.marginTop_4]}
+          >
+            <ContentCreator
+              createContent={footerAction}
+              subtitle={t('screen_chapters.file_name')}
+              title={t('screen_chapters.create_file')}
+            />
+          </View>
+        }
         ListHeaderComponent={
           <View style={gutters.marginBottom_16}>
             <View style={styles.header}>

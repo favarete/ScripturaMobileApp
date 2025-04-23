@@ -11,13 +11,19 @@ import {
 
 import { useTheme } from '@/theme';
 
-interface FolderCreatorProps {
-  createFolder: (name: string) => void;
+interface ContentCreatorProps {
+  createContent: (name: string) => void;
+  subtitle: string;
+  title: string;
 }
 
-const FolderCreator: React.FC<FolderCreatorProps> = ({ createFolder }) => {
+const ContentCreator: React.FC<ContentCreatorProps> = ({
+  createContent,
+  subtitle,
+  title,
+}) => {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
-  const [folderName, setFolderName] = useState<string>('');
+  const [contentName, setContentName] = useState<string>('');
 
   const { t } = useTranslation();
 
@@ -64,14 +70,14 @@ const FolderCreator: React.FC<FolderCreatorProps> = ({ createFolder }) => {
   });
 
   const openModal = () => {
-    setFolderName('');
+    setContentName('');
     setModalVisible(true);
   };
 
   const handleSubmit = () => {
-    const name = folderName.trim();
+    const name = contentName.trim();
     if (name) {
-      createFolder(name);
+      createContent(name);
     }
     setModalVisible(false);
   };
@@ -88,7 +94,7 @@ const FolderCreator: React.FC<FolderCreatorProps> = ({ createFolder }) => {
             fonts.alignCenter,
           ]}
         >
-          {t('screen_projects.create_folder')}
+          {title}
         </Text>
       </TouchableOpacity>
 
@@ -107,17 +113,17 @@ const FolderCreator: React.FC<FolderCreatorProps> = ({ createFolder }) => {
                 gutters.marginBottom_12,
               ]}
             >
-              {t('screen_projects.folder_name')}
+              {subtitle}
             </Text>
             <TextInput
               autoFocus
               cursorColor={colors.purple500}
               keyboardType="numeric"
-              onChangeText={setFolderName}
+              onChangeText={setContentName}
               placeholder={t('screen_projects.enter_name')}
               selectionColor={colors.purple100}
               style={styles.input}
-              value={folderName}
+              value={contentName}
             />
             <View style={[layout.row, layout.justifyEnd]}>
               <TouchableOpacity
@@ -163,4 +169,4 @@ const FolderCreator: React.FC<FolderCreatorProps> = ({ createFolder }) => {
   );
 };
 
-export default FolderCreator;
+export default ContentCreator;

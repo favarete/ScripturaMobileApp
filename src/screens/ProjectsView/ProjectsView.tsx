@@ -2,13 +2,15 @@ import type { RootScreenProps } from '@/navigation/types';
 import type { Project } from '@/state/defaults';
 
 import { useAtom, useAtomValue } from 'jotai';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, Text, View } from 'react-native';
 import {
   copyFile,
+  createFile,
   hasPermission,
   listFiles,
+  mkdir,
   rename,
 } from 'react-native-saf-x';
 import Toast from 'react-native-toast-message';
@@ -20,6 +22,7 @@ import { TitleBar } from '@/components/atoms';
 import MainHeader from '@/components/atoms/MainHeader/MainHeader';
 import { FolderSelector } from '@/components/molecules';
 import Averages from '@/components/molecules/Averages/Averages';
+import ContentCreator from '@/components/molecules/ContentCreator/ContentCreator';
 import ProjectCard from '@/components/molecules/ProjectCard/ProjectCard';
 import { SafeScreen } from '@/components/templates';
 
@@ -38,10 +41,10 @@ import {
   calculateUsageStats,
   findProjectById,
   findProjectByTitle,
-  findProjectByTitleAndPath, getSupportFile,
-  projectListsAreEqual
+  findProjectByTitleAndPath,
+  getSupportFile,
+  projectListsAreEqual,
 } from '@/utils/projectHelpers';
-import FolderCreator from '@/components/molecules/FolderCreator/FolderCreator';
 
 function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
   useAtom(SaveAtomEffect);
@@ -65,8 +68,6 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
     }
   }, [dailyWordsStats]);
 
-
-  const hasFetchedProjects = useRef(false);
   useEffect(() => {
     const fetchAllProjects = async () => {
       try {
@@ -79,13 +80,13 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
               type: 'error',
             });
           } else {
-            let allProjectsTemp: Project[] = await getSupportFile(homeFolder)
+            let allProjectsTemp: Project[] = await getSupportFile(homeFolder);
             const alreadyLoadedProjects = projectListsAreEqual(
               allProjectsTemp,
               allProjects,
             );
 
-            if (!alreadyLoadedProjects) {
+            if (!alreadyLoadedProjects || loadingProjects) {
               // List all files in "homeFolder" (selected by user)
               const __allExternalStorageFolders = await listFiles(homeFolder);
               // Remove everything that's not a directory and also hidden directories
@@ -114,7 +115,7 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
                   );
 
                   if (persistedExternalProjectContent) {
-                    // It was mapped before on other device
+                    // It was mapped before on another device
                     allProjectsTemp = allProjectsTemp.map((savedProject) =>
                       savedProject.id === persistedExternalProjectContent.id
                         ? {
@@ -157,11 +158,10 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
       }
     };
     void fetchAllProjects();
-    hasFetchedProjects.current = true;
   }, [allProjects, homeFolder, language, loadingProjects, setAllProjects, t]);
 
   const onNavigate = (projectId: string) => {
-    if(editingId === ''){
+    if (editingId === '') {
       navigation.navigate(Paths.ChaptersView, { projectId });
     }
   };
@@ -267,13 +267,27 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
     })();
   };
 
-
-  const createFolder = (name: string) => {
-    // seu código para criar a pasta, ex:
-    console.log('Criando pasta:', name);
-    // ou chame sua API / módulo de filesystem aqui
+  const createFolder = async (projectName: string) => {
+    const newProject = `${homeFolder}/${projectName}`;
+    try {
+      await mkdir(newProject);
+      const projectsFile = `${newProject}/${t('screen_projects.chapter_default')}.md`;
+      await createFile(projectsFile);
+      setLoadingProjects(true);
+      Toast.show({
+        text1: t('creating_folder_success.text1'),
+        text2: t('creating_folder_success.text2'),
+        type: 'success',
+      });
+    } catch (error) {
+      Toast.show({
+        text1: t('creating_folder_error.text1'),
+        text2: t('creating_folder_error.text2'),
+        type: 'error',
+      });
+      print(error);
+    }
   };
-
 
   return (
     <SafeScreen>
@@ -334,13 +348,13 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
             )}
           </View>
           <View
-            style={[
-              layout.itemsCenter,
-              layout.fullWidth,
-              gutters.marginTop_4,
-            ]}
+            style={[layout.itemsCenter, layout.fullWidth, gutters.marginTop_4]}
           >
-            <FolderCreator createFolder={createFolder} />
+            <ContentCreator
+              createContent={createFolder}
+              subtitle={t('screen_projects.create_folder')}
+              title={t('screen_projects.folder_name')}
+            />
           </View>
         </View>
       </ScrollView>

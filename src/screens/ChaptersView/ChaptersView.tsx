@@ -2,17 +2,23 @@ import type { ImageURISource } from 'react-native';
 import type { RootScreenProps } from '@/navigation/types';
 import type { Chapter, Project } from '@/state/defaults';
 
-import { useFocusEffect } from '@react-navigation/native';
 import { useAtom, useAtomValue } from 'jotai/index';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Text, View } from 'react-native';
-import { hasPermission, listFiles, readFile } from 'react-native-saf-x';
+import {
+  createFile,
+  hasPermission,
+  listFiles,
+  readFile,
+} from 'react-native-saf-x';
+import Toast from 'react-native-toast-message';
 
 import { useTheme } from '@/theme';
 import PlaceholderImage from '@/theme/assets/images/placeholder_book_cover.png';
 import { Paths } from '@/navigation/paths';
 
+import ContentCreator from '@/components/molecules/ContentCreator/ContentCreator';
 import { ChaptersDynamicList } from '@/components/organisms/ChaptersDynamicList/ChaptersDynamicList';
 
 import {
@@ -46,7 +52,7 @@ function ChaptersView({
 
   const { t } = useTranslation();
   const { projectId } = route.params;
-  const { gutters } = useTheme();
+  const { gutters, layout } = useTheme();
 
   const language = useAtomValue(LanguageStateAtom);
   const homeFolder = useAtomValue(HomeFolderStateAtom);
@@ -123,10 +129,10 @@ function ChaptersView({
     });
   };
 
-  useFocusEffect(
-    useCallback(() => {
-      (async () => {
-        try {
+  useEffect(() => {
+    const fetchAllChapters = async () => {
+      try {
+        if (loadingChapters) {
           const allProjectsFromFile: Project[] =
             await getSupportFile(homeFolder);
           const selectedProject: Project | undefined = getProjectById(
@@ -149,7 +155,7 @@ function ChaptersView({
             const __allExternalStorageProjectFiles = await listFiles(
               selectedProject.androidFolderPath,
             );
-            // Remove everything that's not a markdown
+            // Remove everything that's not a Markdown
             const allExternalStorageProjectFiles =
               __allExternalStorageProjectFiles.filter(
                 (item) => item.mime === 'text/markdown',
@@ -226,12 +232,15 @@ function ChaptersView({
               formatTimestamp(latestUpdateInProject, language),
             );
           }
-        } catch (error) {
-          print(error);
         }
-      })();
-    }, []),
-  );
+      } catch (error) {
+        print(error);
+      } finally {
+        setLoadingChapters(false);
+      }
+    };
+    void fetchAllChapters();
+  }, [loadingChapters]);
 
   useEffect(() => {
     if (allChaptersSorted.length > 0) {
@@ -276,6 +285,32 @@ function ChaptersView({
     }
   }, [allProjects, projectId]);
 
+  const createChapterFile = async (chapterName: string) => {
+    try {
+      const selectedProject: Project | undefined = getProjectById(
+        projectId,
+        allProjects,
+      );
+      if (selectedProject) {
+        const newChapterFile = `${selectedProject.androidFolderPath}/${chapterName}.md`;
+        await createFile(newChapterFile);
+        setLoadingChapters(true);
+      }
+      Toast.show({
+        text1: t('creating_file_success.text1'),
+        text2: t('creating_file_success.text2'),
+        type: 'success',
+      });
+    } catch (error) {
+      Toast.show({
+        text1: t('creating_file_error.text1'),
+        text2: t('creating_file_error.text2'),
+        type: 'error',
+      });
+      print(error);
+    }
+  };
+
   return (
     <View style={[gutters.marginTop_16]}>
       {loadingChapters ? (
@@ -283,6 +318,7 @@ function ChaptersView({
       ) : allChaptersSorted.length > 0 ? (
         <ChaptersDynamicList
           allChaptersSorted={allChaptersSorted}
+          footerAction={createChapterFile}
           lastChapterViewed={lastChapterViewed}
           onNavigate={onNavigate}
           onNavigateBack={onNavigateBack}
@@ -297,6 +333,13 @@ function ChaptersView({
       ) : (
         <Text>{t('screen_chapters.no_chapters')}</Text>
       )}
+      <View style={[layout.itemsCenter, layout.fullWidth, gutters.marginTop_4]}>
+        <ContentCreator
+          createContent={createFile}
+          subtitle={t('screen_chapters.create_file')}
+          title={t('screen_chapters.file_name')}
+        />
+      </View>
     </View>
   );
 }

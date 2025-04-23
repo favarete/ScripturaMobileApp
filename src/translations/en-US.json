@@ -30,6 +30,22 @@
       "text1": "Oops! =/",
       "text2": "Something went wrong."
     },
+    "creating_folder_error": {
+      "text1": "Error trying to create project! =/",
+      "text2": "Something happened and your project wasn't created."
+    },
+    "creating_file_error": {
+      "text1": "Error trying to create a chapter! =/",
+      "text2": "Something happened and your chapter wasn't created."
+    },
+    "creating_folder_success": {
+      "text1": "New project created!",
+      "text2": "Your project was created successfully."
+    },
+    "creating_file_success": {
+      "text1": "New chapter created!",
+      "text2": "Your chapter was created successfully."
+    },
     "saving_error": {
       "text1": "Error trying to save! =/",
       "text2": "Something happened and your file wasn't saved."
@@ -49,6 +65,7 @@
       "days": "Days",
       "create": "Create",
       "cancel": "Cancel",
+      "chapter_default": "Chapter 1",
       "settings": "Settings",
       "averages_title": "Average Words Written",
       "daily": "Daily",
@@ -93,6 +110,8 @@
       "total_word_count": "Total Words",
       "status_header": "Status for",
       "updated_at": "Last Updated on",
+      "create_file": "New Chapter",
+      "file_name": "Chapter Name",
       "chapter_updated_at": {
         "today": "Last Updated at",
         "past": "Last Updated on"

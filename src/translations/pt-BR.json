@@ -30,6 +30,22 @@
       "text1": "Eita! =/",
       "text2": "Algo deu errado."
     },
+    "creating_folder_error": {
+      "text1": "Erro ao tentar criar o projeto! =/",
+      "text2": "Algo ocorreu e seu projeto não pôde ser criado."
+    },
+    "creating_file_error": {
+      "text1": "Erro ao tentar criar o capítulo! =/",
+      "text2": "Algo ocorreu e seu capítulo não pôde ser criado."
+    },
+    "creating_folder_success": {
+      "text1": "Novo projeto criado!",
+      "text2": "Seu projeto foi criado com sucesso."
+    },
+    "creating_file_success": {
+      "text1": "Novo capítulo criado!",
+      "text2": "Seu capítulo foi criado com sucesso"
+    },
     "saving_error": {
       "text1": "Erro ao tentar salvar! =/",
       "text2": "Algo ocorreu e seu arquivo não pôde ser salvo."
@@ -49,6 +65,7 @@
       "days": "Dias",
       "create": "Criar",
       "cancel": "Cancelar",
+      "chapter_default": "Capítulo 1",
       "settings": "Configurações",
       "averages_title": "Média de Palavras Escritas",
       "daily": "Diárias",
@@ -93,6 +110,8 @@
       "status_header": "Status para",
       "total_word_count": "Palavras Totais",
       "updated_at": "Última atualização em",
+      "create_file": "Novo Capítulo",
+      "file_name": "Nome do Capítulo",
       "chapter_updated_at": {
         "today": "Atualizado às",
         "past": "Atualizado em"
