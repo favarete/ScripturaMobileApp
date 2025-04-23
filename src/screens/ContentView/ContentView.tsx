@@ -145,6 +145,9 @@ function ContentView({
                 start: chapter.revisionPosition,
               });
             }
+            if(markdownTextContent.length === 0) {
+              setViewMode(false);
+            }
           } catch (error) {
             Toast.show({
               text1: t('saving_error.text1'),
