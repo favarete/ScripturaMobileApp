@@ -47,11 +47,16 @@
       "writing_streak": "Maior Sequência de Escrita",
       "current_writing_streak": "Sequência de Escrita Atual",
       "days": "Dias",
+      "create": "Criar",
+      "cancel": "Cancelar",
       "settings": "Configurações",
       "averages_title": "Média de Palavras Escritas",
       "daily": "Diárias",
       "monthly": "Mensais",
       "weekly": "Semanais",
+      "create_folder": "Novo Projeto",
+      "folder_name": "Nome do Projeto",
+      "enter_name": "Escreva o Nome",
       "folder_renamed": {
         "text1": "Pasta renomeada!",
         "text2": "A pasta do projeto foi renomeada."

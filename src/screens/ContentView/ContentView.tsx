@@ -1,7 +1,7 @@
 import type { MarkdownStyle } from '@expensify/react-native-live-markdown';
 import type {
   NativeSyntheticEvent,
-  TextInputSelectionChangeEventData,
+  TextInputSelectionChangeEventData
 } from 'react-native';
 import type { RootScreenProps } from '@/navigation/types';
 import type { Chapter, DailyStats, Project } from '@/state/defaults';
@@ -65,6 +65,7 @@ function ContentView({
   route,
 }: RootScreenProps<Paths.ContentView>) {
   useAtom(SaveAtomEffect);
+
   const { t } = useTranslation();
 
   const { colors, fonts, gutters, layout } = useTheme();

@@ -37,7 +37,7 @@ const IMG_HEIGHT = 180;
 type ChaptersDynamicListType = {
   allChaptersSorted: Chapter[];
   lastChapterViewed: string;
-  onNavigate: (projectId: string, chapterId: string) => void;
+  onNavigate: (chapterId: string) => void;
   onNavigateBack: () => void;
   parallaxImage: ImageSourcePropType;
   parallaxSubtitle: string;

@@ -24,6 +24,7 @@ function InputSettingValue({ disabled = false, getter, setter, title }: Props) {
       ...fonts.gray800,
       borderWidth: 1,
       ...gutters.padding_16,
+      ...fonts.defaultFontFamilyRegular,
       height: 54,
       textAlign: 'left',
       width: 100,

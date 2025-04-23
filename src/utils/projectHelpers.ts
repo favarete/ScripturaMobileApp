@@ -1,4 +1,6 @@
 import type { DailyWordsStatsType, Project, UsageStatsType } from '@/state/defaults';
+import { getNameAlias } from '@/utils/common';
+import { readFile } from 'react-native-saf-x';
 
 export const findProjectByTitleAndPath = (
   projects: Project[],
@@ -109,4 +111,18 @@ export const calculateUsageStats = (data: DailyWordsStatsType[]): UsageStatsType
     currentStreak,
     writingStreak,
   };
+}
+
+export const getSupportFile = async (homeFolder: string) => {
+  const supportFile = getNameAlias(homeFolder);
+  const allProjectsPersistedDataPath = `${homeFolder}/.scriptura/${supportFile}.json`;
+
+  const allProjectsPersistedData: string = await readFile(
+    allProjectsPersistedDataPath,
+  );
+  const allProjectsTemp: Project[] = JSON.parse(
+    allProjectsPersistedData,
+  );
+
+  return allProjectsTemp
 }

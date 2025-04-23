@@ -36,7 +36,7 @@ import {
   removeFileExtension,
 } from '@/utils/common';
 import { print } from '@/utils/logger';
-import { findProjectById } from '@/utils/projectHelpers';
+import { findProjectById, getSupportFile } from '@/utils/projectHelpers';
 
 function ChaptersView({
   navigation,
@@ -62,6 +62,14 @@ function ChaptersView({
   const [projectTitle, setProjectTitle] = useState<string>('');
   const [projectUpdatedOn, setProjectUpdatedOn] = useState<string>('');
 
+  type NavigateObject = {
+    chapterId?: string;
+    willNavigate: string;
+  };
+  const [navigateObject, setNavigateObject] = useState<NavigateObject>({
+    willNavigate: '',
+  });
+
   const updateChaptersById = (id: string, newChapters: Chapter[]) => {
     setAllProjects((prevProjects) =>
       prevProjects.map((project) =>
@@ -70,14 +78,38 @@ function ChaptersView({
     );
   };
 
+  useEffect(() => {
+    // Check if the object has been updated with specific key-value pairs
+    if (navigateObject.willNavigate !== '') {
+      if (navigateObject.willNavigate === 'back') {
+        navigation.navigate(Paths.ProjectsView);
+      } else {
+        if (
+          navigateObject.willNavigate === 'forward' &&
+          navigateObject.chapterId
+        ) {
+          navigation.navigate(Paths.ContentView, {
+            chapterId: navigateObject.chapterId,
+            projectId,
+          });
+        }
+      }
+    }
+  }, [navigateObject, navigation]);
+
   const onNavigateBack = () => {
     updateChaptersById(projectId, allChaptersSorted);
-    navigation.navigate(Paths.ProjectsView);
+    setNavigateObject({
+      willNavigate: 'back',
+    });
   };
 
   const onNavigate = (chapterId: string) => {
     updateChaptersById(projectId, allChaptersSorted);
-    navigation.navigate(Paths.ContentView, { chapterId, projectId });
+    setNavigateObject({
+      chapterId,
+      willNavigate: 'forward',
+    });
   };
 
   const updateChaptersStatus = (
@@ -93,13 +125,15 @@ function ChaptersView({
 
   useFocusEffect(
     useCallback(() => {
-      const selectedProject: Project | undefined = getProjectById(
-        projectId,
-        allProjects,
-      );
-      if (selectedProject) {
-        (async () => {
-          try {
+      (async () => {
+        try {
+          const allProjectsFromFile: Project[] =
+            await getSupportFile(homeFolder);
+          const selectedProject: Project | undefined = getProjectById(
+            projectId,
+            allProjectsFromFile,
+          );
+          if (selectedProject) {
             const imageURI = `${homeFolder}/.scriptura/covers/${selectedProject.coverPath}`;
             const __hasPermission = await hasPermission(imageURI);
             if (__hasPermission) {
@@ -191,11 +225,11 @@ function ChaptersView({
             setProjectUpdatedOn(
               formatTimestamp(latestUpdateInProject, language),
             );
-          } catch (error) {
-            print(error);
           }
-        })();
-      }
+        } catch (error) {
+          print(error);
+        }
+      })();
     }, []),
   );
 

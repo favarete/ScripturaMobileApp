@@ -9,7 +9,6 @@ import {
   copyFile,
   hasPermission,
   listFiles,
-  readFile,
   rename,
 } from 'react-native-saf-x';
 import Toast from 'react-native-toast-message';
@@ -33,21 +32,22 @@ import {
   UsageStatsStateAtom,
 } from '@/state/atoms/persistentContent';
 import { initialProjectContent } from '@/state/defaults';
-import { createNewUUID, getNameAlias, updateLastSegment } from '@/utils/common';
+import { createNewUUID, updateLastSegment } from '@/utils/common';
 import { print } from '@/utils/logger';
 import {
   calculateUsageStats,
   findProjectById,
   findProjectByTitle,
-  findProjectByTitleAndPath,
-  projectListsAreEqual,
+  findProjectByTitleAndPath, getSupportFile,
+  projectListsAreEqual
 } from '@/utils/projectHelpers';
+import FolderCreator from '@/components/molecules/FolderCreator/FolderCreator';
 
 function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
   useAtom(SaveAtomEffect);
 
   const { t } = useTranslation();
-  const { fonts, gutters } = useTheme();
+  const { fonts, gutters, layout } = useTheme();
 
   const homeFolder = useAtomValue(HomeFolderStateAtom);
   const language = useAtomValue(LanguageStateAtom);
@@ -79,16 +79,7 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
               type: 'error',
             });
           } else {
-            const supportFile = getNameAlias(homeFolder);
-            const allProjectsPersistedDataPath = `${homeFolder}/.scriptura/${supportFile}.json`;
-
-            const allProjectsPersistedData: string = await readFile(
-              allProjectsPersistedDataPath,
-            );
-            let allProjectsTemp: Project[] = JSON.parse(
-              allProjectsPersistedData,
-            );
-
+            let allProjectsTemp: Project[] = await getSupportFile(homeFolder)
             const alreadyLoadedProjects = projectListsAreEqual(
               allProjectsTemp,
               allProjects,
@@ -276,6 +267,14 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
     })();
   };
 
+
+  const createFolder = (name: string) => {
+    // seu código para criar a pasta, ex:
+    console.log('Criando pasta:', name);
+    // ou chame sua API / módulo de filesystem aqui
+  };
+
+
   return (
     <SafeScreen>
       <ScrollView>
@@ -333,6 +332,15 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
             ) : (
               <Text>{t('screen_projects.nothing_found')}</Text>
             )}
+          </View>
+          <View
+            style={[
+              layout.itemsCenter,
+              layout.fullWidth,
+              gutters.marginTop_4,
+            ]}
+          >
+            <FolderCreator createFolder={createFolder} />
           </View>
         </View>
       </ScrollView>

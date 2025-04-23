@@ -47,11 +47,16 @@
       "writing_streak": "Max Writing Streak",
       "current_writing_streak": "Current Writing Streak",
       "days": "Days",
+      "create": "Create",
+      "cancel": "Cancel",
       "settings": "Settings",
       "averages_title": "Average Words Written",
       "daily": "Daily",
       "monthly": "Monthly",
       "weekly": "Weekly",
+      "create_folder": "New Project",
+      "folder_name": "Folder Name",
+      "enter_name": "Enter Name",
       "folder_renamed": {
         "text1": "Folder renamed!",
         "text2": "The project's folder was renamed."
