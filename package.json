@@ -7,6 +7,7 @@
     "ios": "react-native run-ios",
     "start": "react-native start",
     "test": "jest",
+    "build-debug": "react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res && cd android && ./gradlew assembleDebug",
     "lint:rules": "eslint . --cache",
     "lint:code-format": "prettier --check \"{src,__mocks__}/**/*.{js,json,md,ts,tsx,yml,yaml}\"",
     "lint:type-check": "tsc",

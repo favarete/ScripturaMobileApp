@@ -12,13 +12,17 @@ import { useTranslation } from 'react-i18next';
 import {
   Image,
   Keyboard,
-  NativeModules,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from 'react-native';
-import { hasPermission, openDocument, readFile, unlink } from 'react-native-saf-x';
+import {
+  hasPermission,
+  openDocument,
+  readFile,
+  unlink,
+} from 'react-native-saf-x';
 import Toast from 'react-native-toast-message';
 
 import { useTheme } from '@/theme';
@@ -30,8 +34,10 @@ import CustomContextMenu from '@/components/atoms/CustomContextMenu/CustomContex
 import ContentDestroyer from '@/components/molecules/ContentDestroyer/ContentDestroyer';
 
 import {
-  HomeFolderStateAtom, ProjectsDataStateAtom,
-  ThemeStateAtom
+  HomeFolderStateAtom,
+  ProjectsDataStateAtom,
+  ThemeStateAtom,
+  TypewriterModeStateAtom,
 } from '@/state/atoms/persistentContent';
 import { getProjectById } from '@/utils/chapterHelpers';
 import { print } from '@/utils/logger';
@@ -50,7 +56,6 @@ type ProjectProps = {
   title: string;
   triggerUpdate: React.Dispatch<React.SetStateAction<boolean>>;
 };
-const { KeyboardModule } = NativeModules;
 
 export const EDIT_TITLE_TYPE = 'edit-title';
 export const EDIT_DESCRIPTION_TYPE = 'edit-description';
@@ -112,16 +117,13 @@ function ProjectCard({
   const [editedTitle, setEditedTitle] = useState(title);
   const [editedDescription, setEditedDescription] = useState(description);
   const [deleteDialog, setDeleteDialog] = useState<boolean>(false);
-  const [isPhysicalKeyboard, setIsPhysicalKeyboard] = useState<boolean>(false);
-
+  const typewriterMode = useAtomValue(TypewriterModeStateAtom);
   const ICON_SIZE = 20;
 
   useEffect(() => {
     const checkKeyboard = async () => {
       try {
-        const isPhysical = await KeyboardModule.isPhysicalKeyboardConnected();
-        setIsPhysicalKeyboard(isPhysical);
-        if (isPhysical) {
+        if (typewriterMode) {
           Keyboard.dismiss();
         }
       } catch (error) {
@@ -316,7 +318,7 @@ function ProjectCard({
         );
         if (selectedProject) {
           await unlink(selectedProject.androidFolderPath);
-          setAllProjects(allProjectsFromFile.filter(item => item.id !== id));
+          setAllProjects(allProjectsFromFile.filter((item) => item.id !== id));
 
           Toast.show({
             text1: t('screen_projects.folder_deleted.text1'),
@@ -384,7 +386,7 @@ function ProjectCard({
                   maxLength={25}
                   onChangeText={setEditedTitle}
                   selectionColor={colors.gray200}
-                  showSoftInputOnFocus={!isPhysicalKeyboard}
+                  showSoftInputOnFocus={!typewriterMode}
                   style={[
                     fonts.defaultFontFamilyBold,
                     styles.inputTitleContent,
@@ -436,7 +438,7 @@ function ProjectCard({
                   multiline
                   onChangeText={setEditedDescription}
                   selectionColor={colors.gray200}
-                  showSoftInputOnFocus={!isPhysicalKeyboard}
+                  showSoftInputOnFocus={!typewriterMode}
                   style={[
                     styles.inputDescriptionContent,
                     gutters.marginBottom_12,

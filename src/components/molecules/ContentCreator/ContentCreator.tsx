@@ -118,7 +118,7 @@ const ContentCreator: React.FC<ContentCreatorProps> = ({
             <TextInput
               autoFocus
               cursorColor={colors.purple500}
-              keyboardType="numeric"
+              keyboardType="default"
               onChangeText={setContentName}
               placeholder={t('screen_projects.enter_name')}
               selectionColor={colors.purple100}

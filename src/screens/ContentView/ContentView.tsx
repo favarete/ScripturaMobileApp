@@ -17,7 +17,6 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Keyboard,
-  NativeModules,
   Platform,
   ScrollView,
   StyleSheet,
@@ -38,9 +37,9 @@ import {
   DailyGoalModeStateAtom,
   DailyWordsStatsStateAtom,
   ProjectsDataStateAtom,
-  SaveAtomEffect,
+  SaveAtomEffect, TypewriterModeStateAtom,
   WordsWrittenTodayStateAtom,
-  WritingStatsStateAtom,
+  WritingStatsStateAtom
 } from '@/state/atoms/persistentContent';
 import {
   countWordsFromHTML,
@@ -57,8 +56,6 @@ import {
   updateWordWrittenTodayRecords,
 } from '@/utils/common';
 import { print } from '@/utils/logger';
-
-const { KeyboardModule } = NativeModules;
 
 function ContentView({
   navigation,
@@ -80,11 +77,10 @@ function ContentView({
     DailyWordsStatsStateAtom,
   );
 
+  const typewriterMode = useAtomValue(TypewriterModeStateAtom);
   const autosaveMode = useAtomValue(AutosaveModeStateAtom);
 
   const [viewMode, setViewMode] = useState<boolean>(true);
-  const [isPhysicalKeyboard, setIsPhysicalKeyboard] = useState<boolean>(false);
-
   const [chapterTitle, setChapterTitle] = useState<string>(
     t('screen_chapters.no_title'),
   );
@@ -355,9 +351,7 @@ function ContentView({
   useEffect(() => {
     const checkKeyboard = async () => {
       try {
-        const isPhysical = await KeyboardModule.isPhysicalKeyboardConnected();
-        setIsPhysicalKeyboard(isPhysical);
-        if (isPhysical) {
+        if (typewriterMode) {
           Keyboard.dismiss();
         }
       } catch (error) {
@@ -481,7 +475,7 @@ function ContentView({
                   parser={parseExpensiMark}
                   selection={selection}
                   selectionColor={colors.gray200}
-                  showSoftInputOnFocus={!isPhysicalKeyboard}
+                  showSoftInputOnFocus={!typewriterMode}
                   style={[markdownEditStyles]}
                   value={markdownText}
                 />
