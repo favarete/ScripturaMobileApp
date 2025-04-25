@@ -6,7 +6,7 @@ import type { Project } from '@/state/defaults';
 import FeatherIcons from '@react-native-vector-icons/feather';
 import MaterialIcons from '@react-native-vector-icons/material-icons';
 import SimpleLineIcons from '@react-native-vector-icons/simple-line-icons';
-import { useAtomValue, useSetAtom } from 'jotai/index';
+import { useAtomValue, useSetAtom } from 'jotai';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -39,6 +39,7 @@ import {
   ThemeStateAtom,
   TypewriterModeStateAtom,
 } from '@/state/atoms/persistentContent';
+import { DisableAllNavigationStateAtom } from '@/state/atoms/temporaryContent';
 import { getProjectById } from '@/utils/chapterHelpers';
 import { print } from '@/utils/logger';
 import { getSupportFile } from '@/utils/projectHelpers';
@@ -87,6 +88,7 @@ function ProjectCard({
   const homeFolder = useAtomValue(HomeFolderStateAtom);
   const variant = useAtomValue(ThemeStateAtom);
   const setAllProjects = useSetAtom(ProjectsDataStateAtom);
+  const setDisableAllNavigation = useSetAtom(DisableAllNavigationStateAtom);
 
   const [imageToLoad, setImageToLoad] = useState<ImageURISource>(
     variant === 'default' ? PlaceholderImage : PlaceholderImageDark,
@@ -119,6 +121,14 @@ function ProjectCard({
   const [deleteDialog, setDeleteDialog] = useState<boolean>(false);
   const typewriterMode = useAtomValue(TypewriterModeStateAtom);
   const ICON_SIZE = 20;
+
+  useEffect(() => {
+    if (isEditing.length !== 0) {
+      setDisableAllNavigation(true);
+    } else {
+      setDisableAllNavigation(false);
+    }
+  }, [isEditing]);
 
   useEffect(() => {
     const checkKeyboard = async () => {

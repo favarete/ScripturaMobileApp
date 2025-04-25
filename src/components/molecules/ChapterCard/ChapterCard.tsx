@@ -1,26 +1,37 @@
 import type { ContextMenuItem } from '@/components/atoms/CustomContextMenu/CustomContextMenu';
 import type { Chapter, ChapterStatusType, Project } from '@/state/defaults';
 
+import FeatherIcons from '@react-native-vector-icons/feather';
 import MaterialIcons from '@react-native-vector-icons/material-icons';
 import SimpleLineIcons from '@react-native-vector-icons/simple-line-icons';
-import { useAtomValue } from 'jotai';
-import { useSetAtom } from 'jotai/index';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { unlink } from 'react-native-saf-x';
 import Toast from 'react-native-toast-message';
 
 import { useTheme } from '@/theme';
 
+import ConfirmationDialog from '@/components/atoms/ConfirmationDialog/ConfirmationDialog';
 import CustomContextMenu from '@/components/atoms/CustomContextMenu/CustomContextMenu';
 import ContentDestroyer from '@/components/molecules/ContentDestroyer/ContentDestroyer';
 
 import {
   HomeFolderStateAtom,
   ProjectsDataStateAtom,
+  TypewriterModeStateAtom,
 } from '@/state/atoms/persistentContent';
-import { SelectedChapterStateAtom } from '@/state/atoms/temporaryContent';
+import {
+  DisableAllNavigationStateAtom,
+  SelectedChapterStateAtom,
+} from '@/state/atoms/temporaryContent';
 import { getChapterById } from '@/utils/chapterHelpers';
 import { print } from '@/utils/logger';
 import { getSupportFile } from '@/utils/projectHelpers';
@@ -29,10 +40,12 @@ export type ChapterCardProps = {
   drag: () => void;
   id: string;
   isActive: boolean;
+  isEditingChapterTitle: string;
   lastUpdate: string;
   lastViewedId: string;
   onNavigate: (chapterId: string) => void;
   projectId: string;
+  setIsEditingChapterTitle: React.Dispatch<React.SetStateAction<string>>;
   status: ChapterStatusType;
   title: string;
   triggerUpdate: React.Dispatch<React.SetStateAction<boolean>>;
@@ -44,8 +57,7 @@ export type ChapterCardProps = {
   wordCount: number;
 };
 
-type DynamicStyleType = { opacity?: number; zIndex: number } | undefined;
-
+export const EDIT_CHAPTER_TITLE_TYPE = 'edit-chapter-title';
 const truncateText = (text: string) => {
   if (text.length > 25) {
     return text.slice(0, 25) + '...';
@@ -57,10 +69,12 @@ function ChapterCard({
   drag,
   id,
   isActive,
+  isEditingChapterTitle,
   lastUpdate,
   lastViewedId,
   onNavigate,
   projectId,
+  setIsEditingChapterTitle,
   status,
   title,
   triggerUpdate,
@@ -74,10 +88,25 @@ function ChapterCard({
   const selectedChapterId = useAtomValue(SelectedChapterStateAtom);
   const setAllProjects = useSetAtom(ProjectsDataStateAtom);
   const homeFolder = useAtomValue(HomeFolderStateAtom);
-  const [dynamicStyle, setDynamicStyle] = useState<DynamicStyleType>();
+  const typewriterMode = useAtomValue(TypewriterModeStateAtom);
+  const [disableAllNavigation, setDisableAllNavigation] = useAtom(
+    DisableAllNavigationStateAtom,
+  );
   const [deleteDialog, setDeleteDialog] = useState<boolean>(false);
+  const [editedTitle, setEditedTitle] = useState(title);
 
   const styles = StyleSheet.create({
+    adornmentContainer: {
+      borderRadius: 50,
+      color: colors.full,
+      paddingHorizontal: 8,
+      paddingVertical: 2,
+      textAlign: 'center',
+    },
+    adornmentContainerTitle: {
+      backgroundColor:
+        editedTitle.length < 25 ? colors.purple500 : colors.red500,
+    },
     cardContent: {
       alignItems: 'center',
       ...gutters.paddingVertical_4,
@@ -89,33 +118,32 @@ function ChapterCard({
     hiddenIcon: {
       opacity: 0,
     },
+    inputTitleContainer: {
+      backgroundColor: 'transparent',
+      borderBottomColor: colors.purple500,
+      borderBottomWidth: 1,
+      height: 24,
+      marginBottom: 2.5,
+    },
+    inputTitleContent: {
+      backgroundColor: 'transparent',
+      height: 24,
+      includeFontPadding: false,
+      lineHeight: 24,
+      paddingBottom: 1,
+      paddingLeft: 0,
+      paddingTop: 1,
+      textAlignVertical: 'center',
+    },
   });
 
-  const sendToBackground = useMemo(
-    () => ({
-      opacity: 0.3,
-      zIndex: 1,
-    }),
-    [],
-  );
-  const sendToForeground = useMemo(
-    () => ({
-      zIndex: 200,
-    }),
-    [],
-  );
-
   useEffect(() => {
-    if (selectedChapterId.length === 0) {
-      setDynamicStyle(sendToForeground);
+    if (isEditingChapterTitle.length + selectedChapterId.length !== 0) {
+      setDisableAllNavigation(true);
     } else {
-      if (selectedChapterId === id) {
-        setDynamicStyle(sendToForeground);
-      } else {
-        setDynamicStyle(sendToBackground);
-      }
+      setDisableAllNavigation(false);
     }
-  }, [id, selectedChapterId, sendToBackground, sendToForeground]);
+  }, [id, selectedChapterId, isEditingChapterTitle]);
 
   const ICON_SIZE = 20;
   const menuItems: ContextMenuItem[] = [
@@ -264,6 +292,16 @@ function ChapterCard({
       onPress: () => updateChaptersStatus(projectId, id, 'manuscript_done'),
     },
     {
+      color: colors.gray800,
+      icon: (
+        <FeatherIcons color={colors.gray800} name="edit-3" size={ICON_SIZE} />
+      ),
+      label: t('screen_projects.cards.edit_title'),
+      onPress: () => {
+        setIsEditingChapterTitle(id);
+      },
+    },
+    {
       color: colors.red500,
       icon: (
         <MaterialIcons color={colors.red500} name="delete" size={ICON_SIZE} />
@@ -326,6 +364,101 @@ function ChapterCard({
     setDeleteDialog(false);
   };
 
+  const handleDialogClick = (action: string, dialogType: string): void => {
+    console.log('handleDialogClick', action, dialogType);
+    // if (dialogType === 'save') {
+    //   switch (action) {
+    //     case CHANGE_IMAGE_TYPE: {
+    //       if (tempImage?.uri) {
+    //         setImageToLoad(tempImage);
+    //         changeProjectImage(id, tempImage.uri);
+    //       }
+    //       break;
+    //     }
+    //     case EDIT_DESCRIPTION_TYPE: {
+    //       changeProjectDescription(id, editedDescription);
+    //       break;
+    //     }
+    //     case EDIT_TITLE_TYPE: {
+    //       changeProjectTitle(id, editedTitle);
+    //       break;
+    //     }
+    //     default:
+    //       break;
+    //   }
+    // }
+    setIsEditingChapterTitle('');
+  };
+
+  const noInteraction =
+    isEditingChapterTitle.length + selectedChapterId.length === 0;
+  const selectingStatus =
+    isEditingChapterTitle.length === 0 && selectedChapterId.length !== 0;
+  const editingTitle = isEditingChapterTitle.length !== 0;
+  const interactionFocus =
+    isEditingChapterTitle === id || selectedChapterId === id;
+
+  const sendToBackground = useMemo(
+    () => ({
+      opacity: 0.3,
+      zIndex: 1,
+    }),
+    [],
+  );
+  const sendToForeground = useMemo(
+    () => ({
+      zIndex: 200,
+    }),
+    [],
+  );
+
+  let titleDynamicStyle;
+  let statusDynamicStyle;
+  let dateDynamicStyle;
+  let iconsDynamicStyle;
+
+  if (noInteraction) {
+    titleDynamicStyle = sendToForeground;
+    statusDynamicStyle = sendToForeground;
+    dateDynamicStyle = sendToForeground;
+    iconsDynamicStyle = sendToForeground;
+  } else if (selectingStatus) {
+    if (interactionFocus) {
+      titleDynamicStyle = sendToForeground;
+      statusDynamicStyle = sendToForeground;
+      dateDynamicStyle = sendToForeground;
+      iconsDynamicStyle = sendToForeground;
+    } else {
+      titleDynamicStyle = sendToBackground;
+      statusDynamicStyle = sendToBackground;
+      dateDynamicStyle = sendToBackground;
+      iconsDynamicStyle = sendToBackground;
+    }
+  } else if (editingTitle) {
+    if (interactionFocus) {
+      titleDynamicStyle = sendToForeground;
+      statusDynamicStyle = sendToBackground;
+      dateDynamicStyle = sendToBackground;
+      iconsDynamicStyle = sendToBackground;
+    } else {
+      titleDynamicStyle = sendToBackground;
+      statusDynamicStyle = sendToBackground;
+      dateDynamicStyle = sendToBackground;
+      iconsDynamicStyle = sendToBackground;
+    }
+  } else {
+    titleDynamicStyle = sendToForeground;
+    statusDynamicStyle = sendToForeground;
+    dateDynamicStyle = sendToForeground;
+    iconsDynamicStyle = sendToForeground;
+  }
+
+  const handleNavigate = () => {
+    if (!disableAllNavigation) {
+      onNavigate(id);
+    }
+  };
+
   return (
     <View
       style={[
@@ -336,9 +469,9 @@ function ChapterCard({
         isActive && styles.elevatedBox,
       ]}
     >
-      <View style={[layout.row, styles.cardContent, dynamicStyle]}>
+      <View style={[layout.row, styles.cardContent]}>
         <View style={lastViewedId !== id && styles.hiddenIcon}>
-          <Text>
+          <Text style={iconsDynamicStyle}>
             <SimpleLineIcons color={colors.gray400} name="cup" size={25} />
           </Text>
         </View>
@@ -349,7 +482,7 @@ function ChapterCard({
             menuItems={menuItems}
             menuTitle={`${t('screen_chapters.status_header')} '${title}'`}
             menuTitleBackgroundColor={colors.purple100}
-            onPress={() => onNavigate(id)}
+            onPress={handleNavigate}
           >
             <View
               style={[
@@ -359,17 +492,57 @@ function ChapterCard({
                 gutters.paddingHorizontal_16,
               ]}
             >
+              {isEditingChapterTitle === id ? (
+                <View style={styles.inputTitleContainer}>
+                  <TextInput
+                    autoFocus
+                    cursorColor={colors.purple500}
+                    keyboardType="visible-password"
+                    maxLength={25}
+                    onChangeText={setEditedTitle}
+                    selectionColor={colors.gray200}
+                    showSoftInputOnFocus={!typewriterMode}
+                    style={[
+                      styles.inputTitleContent,
+                      fonts.defaultFontFamilyBold,
+                      fonts.fullOpposite,
+                      fonts.size_16,
+                      gutters.marginBottom_4,
+                    ]}
+                    value={editedTitle}
+                  />
+                  <ConfirmationDialog
+                    dialogType={EDIT_CHAPTER_TITLE_TYPE}
+                    handleDialogClick={handleDialogClick}
+                  >
+                    <Text
+                      style={[
+                        fonts.defaultFontFamilySemibold,
+                        fonts.size_12,
+                        styles.adornmentContainer,
+                        styles.adornmentContainerTitle,
+                      ]}
+                    >
+                      {editedTitle.length}/25
+                    </Text>
+                  </ConfirmationDialog>
+                </View>
+              ) : (
+                <Text
+                  style={[
+                    fonts.defaultFontFamilyBold,
+                    fonts.fullOpposite,
+                    fonts.size_16,
+                    gutters.marginBottom_4,
+                    titleDynamicStyle,
+                  ]}
+                >
+                  {title}
+                </Text>
+              )}
               <Text
-                style={[
-                  fonts.defaultFontFamilyBold,
-                  fonts.fullOpposite,
-                  fonts.size_16,
-                  gutters.marginBottom_4,
-                ]}
+                style={[fonts.size_12, styles.cardContent, statusDynamicStyle]}
               >
-                {title}
-              </Text>
-              <Text style={[fonts.size_12, styles.cardContent]}>
                 <Text style={[fonts.defaultFontFamilyBold, fonts.purple500]}>
                   {t(`screen_chapters.status.${status}`)}
                 </Text>
@@ -383,6 +556,7 @@ function ChapterCard({
                   fonts.gray400,
                   fonts.size_12,
                   styles.cardContent,
+                  dateDynamicStyle,
                 ]}
               >
                 <Text>{lastUpdate}</Text>
@@ -396,8 +570,8 @@ function ChapterCard({
           />
         </View>
       </View>
-      <View>
-        <TouchableOpacity onLongPress={drag}>
+      <View style={iconsDynamicStyle}>
+        <TouchableOpacity disabled={disableAllNavigation} onLongPress={drag}>
           <Text>
             <MaterialIcons color={colors.gray800} name="sort" size={30} />
           </Text>

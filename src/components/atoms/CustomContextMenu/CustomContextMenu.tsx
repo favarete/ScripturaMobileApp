@@ -1,13 +1,8 @@
+import type { PropsWithChildren, ReactElement } from 'react';
 import type { GestureResponderEvent, LayoutChangeEvent } from 'react-native';
 
 import { useSetAtom } from 'jotai';
-import type {
-  PropsWithChildren,
-  ReactElement} from 'react';
-import React, {
-  useEffect,
-  useState,
-} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Dimensions,
   Modal,
@@ -17,8 +12,9 @@ import {
   View,
 } from 'react-native';
 
-import { SelectedChapterStateAtom } from '@/state/atoms/temporaryContent';
 import { useTheme } from '@/theme';
+
+import { SelectedChapterStateAtom } from '@/state/atoms/temporaryContent';
 
 export type ContextMenuItem = {
   color: string;
@@ -112,8 +108,8 @@ function CustomContextMenu({
       px = SCREEN_WIDTH - width - 5;
     }
 
-    if (py + height > SCREEN_HEIGHT) {
-      py = SCREEN_HEIGHT - height - 35;
+    if (py + height > SCREEN_HEIGHT - 65) {
+      py = SCREEN_HEIGHT - height - 65;
     }
 
     if (px < 0) {

@@ -1,7 +1,7 @@
 import type { Translations } from '@/translations/types';
 
 import MaterialIcons from '@react-native-vector-icons/material-icons';
-import { useAtom } from 'jotai';
+import { useAtom, useAtomValue } from 'jotai';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -13,6 +13,7 @@ import { useTheme } from '@/theme';
 import { HomeFolderStateAtom } from '@/state/atoms/persistentContent';
 import { print } from '@/utils/logger';
 import { getNameAlias } from '@/utils/common';
+import { DisableAllNavigationStateAtom } from '@/state/atoms/temporaryContent';
 
 const pickFolder =
   (setHomeFolder: (folderPath: string) => void, t: Translations) =>
@@ -92,6 +93,7 @@ const extractFriendlyPath = (
 function FolderSelector() {
   const { borders, colors, fonts, gutters } = useTheme();
   const [homeFolder, setHomeFolder] = useAtom(HomeFolderStateAtom);
+  const disableAllNavigation = useAtomValue(DisableAllNavigationStateAtom);
 
   const { t } = useTranslation();
 
@@ -120,7 +122,7 @@ function FolderSelector() {
         borders.w_1,
       ]}
     >
-      <TouchableOpacity onPress={pickFolder(setHomeFolder, t)}>
+      <TouchableOpacity disabled={disableAllNavigation} onPress={pickFolder(setHomeFolder, t)}>
         <View>
           <Text style={[fonts.defaultFontFamilyRegular, fonts.gray400]}>
             {friendlyFolderName}

@@ -1,3 +1,4 @@
+import { useAtomValue } from 'jotai';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -10,6 +11,8 @@ import {
 } from 'react-native';
 
 import { useTheme } from '@/theme';
+
+import { DisableAllNavigationStateAtom } from '@/state/atoms/temporaryContent';
 
 interface ContentCreatorProps {
   createContent: (name: string) => void;
@@ -24,6 +27,7 @@ const ContentCreator: React.FC<ContentCreatorProps> = ({
 }) => {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [contentName, setContentName] = useState<string>('');
+  const disableAllNavigation = useAtomValue(DisableAllNavigationStateAtom);
 
   const { t } = useTranslation();
 
@@ -84,7 +88,11 @@ const ContentCreator: React.FC<ContentCreatorProps> = ({
 
   return (
     <View>
-      <TouchableOpacity onPress={openModal} style={styles.openButton}>
+      <TouchableOpacity
+        disabled={disableAllNavigation}
+        onPress={openModal}
+        style={styles.openButton}
+      >
         <Text
           style={[
             fonts.defaultFontFamilyExtraBold,

@@ -1,5 +1,5 @@
 import MaterialIcons from '@react-native-vector-icons/material-icons';
-import { useAtomValue } from 'jotai/index';
+import { useAtomValue } from 'jotai';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -7,6 +7,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '@/theme';
 
 import { LanguageStateAtom } from '@/state/atoms/persistentContent';
+import { DisableAllNavigationStateAtom } from '@/state/atoms/temporaryContent';
 import { formatNumber } from '@/utils/chapterHelpers';
 
 type MainHeaderProps = {
@@ -15,8 +16,14 @@ type MainHeaderProps = {
   onNavigateSettings: () => void;
 };
 
-function MainHeader({ currentStreak, maxStreak,  onNavigateSettings}: MainHeaderProps) {
+function MainHeader({
+  currentStreak,
+  maxStreak,
+  onNavigateSettings,
+}: MainHeaderProps) {
   const { colors, fonts, gutters, layout } = useTheme();
+  const disableAllNavigation = useAtomValue(DisableAllNavigationStateAtom);
+
   const { t } = useTranslation();
 
   const language = useAtomValue(LanguageStateAtom);
@@ -82,8 +89,13 @@ function MainHeader({ currentStreak, maxStreak,  onNavigateSettings}: MainHeader
             {`${formatCurrentStreakNumber} ${currentStreakCountLabel}`}
           </Text>
         </View>
-        <TouchableOpacity onPress={onNavigateSettings}>
-          <View style={[gutters.paddingRight_32, layout.row, layout.itemsCenter]}>
+        <TouchableOpacity
+          disabled={disableAllNavigation}
+          onPress={onNavigateSettings}
+        >
+          <View
+            style={[gutters.paddingRight_32, layout.row, layout.itemsCenter]}
+          >
             <Text style={styles.icon}>
               <MaterialIcons color={colors.gray200} name="settings" size={25} />
             </Text>

@@ -1,9 +1,12 @@
 import FeatherIcons from '@react-native-vector-icons/feather';
 import MaterialIcons from '@react-native-vector-icons/material-icons';
+import { useAtomValue } from 'jotai';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { useTheme } from '@/theme';
+
+import { DisableAllNavigationStateAtom } from '@/state/atoms/temporaryContent';
 
 type Props = {
   onNavigateBack?: (() => void) | false;
@@ -25,6 +28,7 @@ function TitleBar({
   viewMode = false,
 }: Props) {
   const { backgrounds, colors, fonts, gutters, layout } = useTheme();
+  const disableAllNavigation = useAtomValue(DisableAllNavigationStateAtom);
 
   const extraElements = onToggleView || onNavigateBack;
   const ICON_SIZE = 25;
@@ -34,7 +38,7 @@ function TitleBar({
     },
     hide: {
       opacity: 0,
-    }
+    },
   });
 
   return (
@@ -51,7 +55,7 @@ function TitleBar({
     >
       {onNavigateBack && (
         <View>
-          <TouchableOpacity onPress={onNavigateBack}>
+          <TouchableOpacity disabled={disableAllNavigation} onPress={onNavigateBack}>
             <Text>
               <MaterialIcons
                 color={colors.fullOpposite}

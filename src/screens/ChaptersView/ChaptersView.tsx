@@ -2,7 +2,7 @@ import type { ImageURISource } from 'react-native';
 import type { RootScreenProps } from '@/navigation/types';
 import type { Chapter, Project } from '@/state/defaults';
 
-import { useAtom, useAtomValue } from 'jotai/index';
+import { useAtom, useAtomValue } from 'jotai';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Text, View } from 'react-native';
@@ -67,6 +67,8 @@ function ChaptersView({
   const [projectWordCount, setProjectWordCount] = useState<number>(0);
   const [projectTitle, setProjectTitle] = useState<string>('');
   const [projectUpdatedOn, setProjectUpdatedOn] = useState<string>('');
+  const [isEditingChapterTitle, setIsEditingChapterTitle] =
+    useState<string>('');
 
   type NavigateObject = {
     chapterId?: string;
@@ -319,6 +321,7 @@ function ChaptersView({
         <ChaptersDynamicList
           allChaptersSorted={allChaptersSorted}
           footerAction={createChapterFile}
+          isEditingChapterTitle={isEditingChapterTitle}
           lastChapterViewed={lastChapterViewed}
           onNavigate={onNavigate}
           onNavigateBack={onNavigateBack}
@@ -328,6 +331,7 @@ function ChaptersView({
           projectId={projectId}
           projectWordCount={projectWordCount}
           setAllChaptersSorted={setAllChaptersSorted}
+          setIsEditingChapterTitle={setIsEditingChapterTitle}
           triggerUpdate={setLoadingChapters}
           updateChaptersStatus={updateChaptersStatus}
         />

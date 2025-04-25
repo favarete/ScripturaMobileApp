@@ -7,7 +7,7 @@ import type {
 import type { ReorderableListReorderEvent } from 'react-native-reorderable-list';
 import type { Chapter } from '@/state/defaults';
 
-import { useAtomValue } from 'jotai/index';
+import { useAtomValue } from 'jotai';
 import React, { memo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
@@ -38,6 +38,7 @@ const IMG_HEIGHT = 180;
 type ChaptersDynamicListType = {
   allChaptersSorted: Chapter[];
   footerAction: (chapterName: string) => Promise<void>;
+  isEditingChapterTitle: string;
   lastChapterViewed: string;
   onNavigate: (chapterId: string) => void;
   onNavigateBack: () => void;
@@ -47,6 +48,7 @@ type ChaptersDynamicListType = {
   projectId: string;
   projectWordCount: number;
   setAllChaptersSorted: React.Dispatch<React.SetStateAction<Chapter[]>>;
+  setIsEditingChapterTitle: React.Dispatch<React.SetStateAction<string>>;
   triggerUpdate: React.Dispatch<React.SetStateAction<boolean>>;
   updateChaptersStatus: (
     projectId: string,
@@ -58,6 +60,7 @@ type ChaptersDynamicListType = {
 export function ChaptersDynamicList({
   allChaptersSorted,
   footerAction,
+  isEditingChapterTitle,
   lastChapterViewed,
   onNavigate,
   onNavigateBack,
@@ -67,6 +70,7 @@ export function ChaptersDynamicList({
   projectId,
   projectWordCount,
   setAllChaptersSorted,
+  setIsEditingChapterTitle,
   triggerUpdate,
   updateChaptersStatus,
 }: ChaptersDynamicListType) {
@@ -88,11 +92,13 @@ export function ChaptersDynamicList({
           drag={drag}
           id={id}
           isActive={isActive}
+          isEditingChapterTitle={isEditingChapterTitle}
           key={id}
           lastUpdate={chapterUpdatedOn(lastUpdate)}
           lastViewedId={lastChapterViewed}
           onNavigate={onNavigate}
           projectId={projectId}
+          setIsEditingChapterTitle={setIsEditingChapterTitle}
           status={status}
           title={title}
           triggerUpdate={triggerUpdate}
@@ -234,7 +240,12 @@ export function ChaptersDynamicList({
         keyExtractor={(item) => item.id}
         ListFooterComponent={
           <View
-            style={[layout.itemsCenter, layout.fullWidth, gutters.marginTop_4]}
+            style={[
+              layout.itemsCenter,
+              layout.fullWidth,
+              { zIndex: -10 },
+              gutters.marginTop_4,
+            ]}
           >
             <ContentCreator
               createContent={footerAction}
