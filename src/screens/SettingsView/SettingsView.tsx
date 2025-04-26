@@ -18,10 +18,10 @@ import SelectionList from '@/components/atoms/SelectionList/SelectionList';
 import ToggleSwitchEntry from '@/components/atoms/ToggleSwitchEntry/ToggleSwitchEntry';
 
 import {
-  DailyGoalModeStateAtom,
+  DailyGoalModeStateAtom, FocusedModeStateAtom,
   LanguageStateAtom,
   ThemeStateAtom,
-  TypewriterModeStateAtom,
+  TypewriterModeStateAtom
 } from '@/state/atoms/persistentContent';
 
 function SettingsView({
@@ -35,6 +35,7 @@ function SettingsView({
   const [selectedLanguage, setSelectedLanguage] = useAtom(LanguageStateAtom);
   const [dailyWordGoal, setDailyWordGoal] = useAtom(DailyGoalModeStateAtom);
   const [typewriterMode, setTypewriterMode] = useAtom(TypewriterModeStateAtom);
+  const [focusedMode, setFocusedMode] = useAtom(FocusedModeStateAtom);
   const [variant, setVariant] = useAtom(ThemeStateAtom);
 
   const onNavigateBack = () => {
@@ -108,6 +109,11 @@ function SettingsView({
           getter={typewriterMode}
           setter={setTypewriterMode}
           title={t('screen_settings.typewriter_mode')}
+        />
+        <ToggleSwitchEntry
+          getter={focusedMode}
+          setter={setFocusedMode}
+          title={t('screen_settings.focused_mode')}
         />
         <ToggleSwitchEntry
           getter={variant === 'dark'}

@@ -5,12 +5,13 @@ import type { Chapter, Project } from '@/state/defaults';
 import { useAtom, useAtomValue } from 'jotai';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Text, View } from 'react-native';
+import { Image, StyleSheet, Text, View } from 'react-native';
 import {
   createFile,
   hasPermission,
   listFiles,
   readFile,
+  rename,
 } from 'react-native-saf-x';
 import Toast from 'react-native-toast-message';
 
@@ -18,6 +19,8 @@ import { useTheme } from '@/theme';
 import PlaceholderImage from '@/theme/assets/images/placeholder_book_cover.png';
 import { Paths } from '@/navigation/paths';
 
+import { TitleBar } from '@/components/atoms';
+import BounceLoader from '@/components/atoms/BounceLoader/BounceLoader';
 import ContentCreator from '@/components/molecules/ContentCreator/ContentCreator';
 import { ChaptersDynamicList } from '@/components/organisms/ChaptersDynamicList/ChaptersDynamicList';
 
@@ -30,6 +33,7 @@ import {
 import { ChapterStatusType, getValidChapterEnum } from '@/state/defaults';
 import {
   findChapterByTitleAndPath,
+  getChapterById,
   getProjectById,
   updateChapterValue,
 } from '@/utils/chapterHelpers';
@@ -40,6 +44,7 @@ import {
   formatTimestamp,
   minimizeMarkdownTextLength,
   removeFileExtension,
+  updateLastSegment,
 } from '@/utils/common';
 import { print } from '@/utils/logger';
 import { findProjectById, getSupportFile } from '@/utils/projectHelpers';
@@ -52,7 +57,29 @@ function ChaptersView({
 
   const { t } = useTranslation();
   const { projectId } = route.params;
-  const { gutters, layout } = useTheme();
+  const { colors, fonts, gutters, layout } = useTheme();
+
+  const IMG_HEIGHT = 180 - 52;
+
+  const styles = StyleSheet.create({
+    image: {
+      filter: 'brightness(0.8), saturate(0.2)',
+      height: IMG_HEIGHT,
+      resizeMode: 'cover',
+      width: '100%',
+    },
+    imageContainer: {
+      height: IMG_HEIGHT,
+      marginBottom: 24,
+      overflow: 'hidden',
+    },
+    overlay: {
+      alignItems: 'flex-start',
+    },
+    overlayText: {
+      color: colors.light,
+    },
+  });
 
   const language = useAtomValue(LanguageStateAtom);
   const homeFolder = useAtomValue(HomeFolderStateAtom);
@@ -129,6 +156,46 @@ function ChaptersView({
     updateChapterValue(setAllProjects, projectId, chapterId, {
       status: validEnum,
     });
+  };
+
+  const changeChapterTitle = (chapterId: string, newTitle: string) => {
+    const chapterContent = getChapterById(projectId, chapterId, allProjects);
+    if (chapterContent) {
+      (async () => {
+        try {
+          if (chapterContent.title !== newTitle) {
+            const fileRenamed = await rename(
+              chapterContent.androidFilePath,
+              `${newTitle}.md`,
+            );
+            if (fileRenamed) {
+              const newAndroidPath = updateLastSegment(
+                chapterContent.androidFilePath,
+                `${newTitle}.md`,
+              );
+              updateChapterValue(setAllProjects, projectId, chapterId, {
+                androidFilePath: newAndroidPath,
+              });
+              Toast.show({
+                text1: t('screen_chapters.chapter_renamed.text1'),
+                text2: t('screen_chapters.chapter_renamed.text2'),
+                type: 'success',
+              });
+            } else {
+              Toast.show({
+                text1: t('screen_chapters.chapter_not_renamed.text1'),
+                text2: t('screen_chapters.chapter_not_renamed.text2'),
+                type: 'error',
+              });
+            }
+          }
+        } catch (error) {
+          print(error);
+        } finally {
+          setLoadingChapters(true);
+        }
+      })();
+    }
   };
 
   useEffect(() => {
@@ -316,10 +383,26 @@ function ChaptersView({
   return (
     <View style={[gutters.marginTop_16]}>
       {loadingChapters ? (
-        <Text>Loading...</Text>
+        <View>
+          <View>
+            <TitleBar onNavigateBack={onNavigateBack} title={projectTitle} />
+          </View>
+          <View style={styles.imageContainer}>
+            <Image source={PlaceholderImage} style={[styles.image]} />
+          </View>
+          <BounceLoader
+            animationDuration={800}
+            bounceHeight={20}
+            color={colors.gray800}
+            dotCount={3}
+            size={14}
+            staggerDelay={200}
+          />
+        </View>
       ) : allChaptersSorted.length > 0 ? (
         <ChaptersDynamicList
           allChaptersSorted={allChaptersSorted}
+          changeChapterTitle={changeChapterTitle}
           footerAction={createChapterFile}
           isEditingChapterTitle={isEditingChapterTitle}
           lastChapterViewed={lastChapterViewed}
@@ -336,14 +419,35 @@ function ChaptersView({
           updateChaptersStatus={updateChaptersStatus}
         />
       ) : (
-        <Text>{t('screen_chapters.no_chapters')}</Text>
+        <View style={[gutters.marginTop_4, gutters.marginVertical_20]}>
+          <View>
+            <View>
+              <TitleBar onNavigateBack={onNavigateBack} title={projectTitle} />
+            </View>
+            <View style={styles.imageContainer}>
+              <Image source={PlaceholderImage} style={[styles.image]} />
+            </View>
+            <Text
+              style={[
+                gutters.marginHorizontal_32,
+                fonts.size_20,
+                fonts.gray400,
+                fonts.defaultFontFamilyBold,
+              ]}
+            >
+              {t('screen_chapters.no_chapters')}
+            </Text>
+          </View>
+        </View>
       )}
       <View style={[layout.itemsCenter, layout.fullWidth, gutters.marginTop_4]}>
-        <ContentCreator
-          createContent={createFile}
-          subtitle={t('screen_chapters.create_file')}
-          title={t('screen_chapters.file_name')}
-        />
+        {!loadingChapters && (
+          <ContentCreator
+            createContent={createChapterFile}
+            subtitle={t('screen_chapters.file_name')}
+            title={t('screen_chapters.create_file')}
+          />
+        )}
       </View>
     </View>
   );

@@ -14,6 +14,7 @@ const DEFAULT_THEME: Variant = 'default';
 const DEFAULT_HOME_FOLDER: string = '';
 const DEFAULT_LANGUAGE: SupportedLanguages = SupportedLanguages.EN_US;
 const DEFAULT_TYPEWRITER_MODE: boolean = true;
+const DEFAULT_FOCUSED_MODE: boolean = true;
 const DEFAULT_AUTOSAVE_MODE: boolean = true;
 
 export type DailyGoalMode = { enabled: boolean; target: number };
@@ -56,7 +57,7 @@ export type UsageStatsType = {
   averagePerMonth: number;
   averagePerWeek: number;
   currentStreak: number;
-  writingStreak: number
+  writingStreak: number;
 };
 
 export type DailyWordsStatsType = {
@@ -72,7 +73,7 @@ const DEFAULT_USAGE_STATS: UsageStatsType = {
   writingStreak: 0,
 };
 
-const DEFAULT_DAILY_WORDS_STATS: DailyWordsStatsType[] = []
+const DEFAULT_DAILY_WORDS_STATS: DailyWordsStatsType[] = [];
 
 const DEFAULT_WRITING_STATS: WritingStats = {
   friday: [],
@@ -179,6 +180,7 @@ export const DEFAULT_DATA = {
   dailyGoalMode: DEFAULT_DAILY_GOAL_MODE,
   dailyWordsStats: DEFAULT_DAILY_WORDS_STATS,
   favoriteProjects: DEFAULT_FAVORITE_PROJECTS,
+  focusedMode: DEFAULT_FOCUSED_MODE,
   homeFolder: DEFAULT_HOME_FOLDER,
   language: DEFAULT_LANGUAGE,
   maxStreak: DEFAULT_MAX_STREAK,

@@ -94,6 +94,12 @@ export const TypewriterModeStateAtom = atomWithMMKV<boolean>(
   DeviceOnlyStorage,
 );
 
+export const FocusedModeStateAtom = atomWithMMKV<boolean>(
+  'focused_mode',
+  DEFAULT_DATA.focusedMode,
+  DeviceOnlyStorage,
+);
+
 export const AutosaveModeStateAtom = atomWithMMKV<boolean>(
   'autosave_mode',
   DEFAULT_DATA.autosaveMode,

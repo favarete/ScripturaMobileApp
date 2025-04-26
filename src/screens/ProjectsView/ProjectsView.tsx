@@ -19,6 +19,7 @@ import { useTheme } from '@/theme';
 import { Paths } from '@/navigation/paths';
 
 import { TitleBar } from '@/components/atoms';
+import BounceLoader from '@/components/atoms/BounceLoader/BounceLoader';
 import MainHeader from '@/components/atoms/MainHeader/MainHeader';
 import { FolderSelector } from '@/components/molecules';
 import Averages from '@/components/molecules/Averages/Averages';
@@ -50,7 +51,7 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
   useAtom(SaveAtomEffect);
 
   const { t } = useTranslation();
-  const { fonts, gutters, layout } = useTheme();
+  const { colors, fonts, gutters, layout } = useTheme();
 
   const homeFolder = useAtomValue(HomeFolderStateAtom);
   const language = useAtomValue(LanguageStateAtom);
@@ -324,7 +325,14 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
           </View>
           <View style={[gutters.paddingHorizontal_32]}>
             {loadingProjects ? (
-              <Text>Loading...</Text>
+              <BounceLoader
+                animationDuration={800}
+                bounceHeight={20}
+                color={colors.gray800}
+                dotCount={3}
+                size={14}
+                staggerDelay={200}
+              />
             ) : allProjects.length > 0 ? (
               allProjects.map((project: Project) => {
                 return (
@@ -345,17 +353,29 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
                 );
               })
             ) : (
-              <Text>{t('screen_projects.nothing_found')}</Text>
+              <View style={[gutters.marginTop_4, gutters.marginVertical_20]}>
+                <Text
+                  style={[
+                    fonts.size_20,
+                    fonts.gray400,
+                    fonts.defaultFontFamilyBold,
+                  ]}
+                >
+                  {t('screen_projects.nothing_found')}
+                </Text>
+              </View>
             )}
           </View>
           <View
             style={[layout.itemsCenter, layout.fullWidth, gutters.marginTop_4]}
           >
-            <ContentCreator
-              createContent={createFolder}
-              subtitle={t('screen_projects.create_folder')}
-              title={t('screen_projects.folder_name')}
-            />
+            {!loadingProjects && (
+              <ContentCreator
+                createContent={createFolder}
+                subtitle={t('screen_projects.folder_name')}
+                title={t('screen_projects.create_folder')}
+              />
+            )}
           </View>
         </View>
       </ScrollView>

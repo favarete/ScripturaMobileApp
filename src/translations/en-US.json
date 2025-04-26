@@ -127,6 +127,14 @@
         "today": "Last Updated at",
         "past": "Last Updated on"
       },
+      "chapter_renamed": {
+        "text1": "File Renamed!",
+        "text2": "The chapters's file was renamed."
+      },
+      "chapter_not_renamed": {
+        "text1": "Something went wrong!",
+        "text2": "The chapter's file wasn't renamed."
+      },
       "no_title": "No title! Use '# Some title' on your file",
       "no_chapters": "No chapters available",
       "status": {
@@ -183,6 +191,7 @@
       "daily_word_goal": "Daily Word Goal",
       "word_count_target": "Word Count Target",
       "typewriter_mode": "Typewriter Mode",
+      "focused_mode": "Focused Mode",
       "dark_mode": "Dark Mode",
       "language": "Language",
       "select_language": "Select a Language",

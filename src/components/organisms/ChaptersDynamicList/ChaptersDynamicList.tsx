@@ -37,6 +37,7 @@ const IMG_HEIGHT = 180;
 
 type ChaptersDynamicListType = {
   allChaptersSorted: Chapter[];
+  changeChapterTitle: (chapterId: string, newTitle: string) => void;
   footerAction: (chapterName: string) => Promise<void>;
   isEditingChapterTitle: string;
   lastChapterViewed: string;
@@ -59,6 +60,7 @@ type ChaptersDynamicListType = {
 
 export function ChaptersDynamicList({
   allChaptersSorted,
+  changeChapterTitle,
   footerAction,
   isEditingChapterTitle,
   lastChapterViewed,
@@ -89,6 +91,7 @@ export function ChaptersDynamicList({
 
       return (
         <ChapterCard
+          changeChapterTitle={changeChapterTitle}
           drag={drag}
           id={id}
           isActive={isActive}

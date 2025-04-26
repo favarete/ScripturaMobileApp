@@ -127,6 +127,14 @@
         "today": "Atualizado às",
         "past": "Atualizado em"
       },
+      "chapter_renamed": {
+        "text1": "Arquivo renomeado!",
+        "text2": "O arquivo do capítulo foi renomeado."
+      },
+      "chapter_not_renamed": {
+        "text1": "Algo deu Errado!",
+        "text2": "O arquivo do capítulo não foi renomeada."
+      },
       "no_title": "Sem título! Use '# Título' no seu arquivo",
       "no_chapters": "Nenhum capítulo disponível",
       "status": {
@@ -182,7 +190,8 @@
       "view_title": "Configurações",
       "daily_word_goal": "Meta de Palavras Diárias",
       "word_count_target": "Meta de Palavras",
-      "typewriter_mode": "Modo Focado",
+      "typewriter_mode": "Modo Máquina de Escrever",
+      "focused_mode": "Modo Focado",
       "dark_mode": "Modo Escuro",
       "language": "Idioma",
       "select_language": "Escolha um Idioma",

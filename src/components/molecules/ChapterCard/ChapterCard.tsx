@@ -37,6 +37,7 @@ import { print } from '@/utils/logger';
 import { getSupportFile } from '@/utils/projectHelpers';
 
 export type ChapterCardProps = {
+  changeChapterTitle: (chapterId: string, newTitle: string) => void;
   drag: () => void;
   id: string;
   isActive: boolean;
@@ -66,6 +67,7 @@ const truncateText = (text: string) => {
 };
 
 function ChapterCard({
+  changeChapterTitle,
   drag,
   id,
   isActive,
@@ -365,28 +367,11 @@ function ChapterCard({
   };
 
   const handleDialogClick = (action: string, dialogType: string): void => {
-    console.log('handleDialogClick', action, dialogType);
-    // if (dialogType === 'save') {
-    //   switch (action) {
-    //     case CHANGE_IMAGE_TYPE: {
-    //       if (tempImage?.uri) {
-    //         setImageToLoad(tempImage);
-    //         changeProjectImage(id, tempImage.uri);
-    //       }
-    //       break;
-    //     }
-    //     case EDIT_DESCRIPTION_TYPE: {
-    //       changeProjectDescription(id, editedDescription);
-    //       break;
-    //     }
-    //     case EDIT_TITLE_TYPE: {
-    //       changeProjectTitle(id, editedTitle);
-    //       break;
-    //     }
-    //     default:
-    //       break;
-    //   }
-    // }
+    if (dialogType === 'save') {
+      if (action === EDIT_CHAPTER_TITLE_TYPE) {
+        changeChapterTitle(id, editedTitle);
+      }
+    }
     setIsEditingChapterTitle('');
   };
 
