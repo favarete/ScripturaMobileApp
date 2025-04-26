@@ -1,7 +1,8 @@
 import type { MarkdownStyle } from '@expensify/react-native-live-markdown';
 import type {
   NativeSyntheticEvent,
-  TextInputSelectionChangeEventData
+  TextInputContentSizeChangeEventData,
+  TextInputSelectionChangeEventData,
 } from 'react-native';
 import type { RootScreenProps } from '@/navigation/types';
 import type { Chapter, DailyStats, Project } from '@/state/defaults';
@@ -11,8 +12,7 @@ import {
   parseExpensiMark,
 } from '@expensify/react-native-live-markdown';
 import { useFocusEffect } from '@react-navigation/native';
-import { useAtomValue } from 'jotai/index';
-import { useAtom } from 'jotai/react';
+import { useAtom, useAtomValue } from 'jotai';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -20,6 +20,7 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { readFile, writeFile } from 'react-native-saf-x';
@@ -36,10 +37,12 @@ import {
   AutosaveModeStateAtom,
   DailyGoalModeStateAtom,
   DailyWordsStatsStateAtom,
+  FocusedModeStateAtom,
   ProjectsDataStateAtom,
-  SaveAtomEffect, TypewriterModeStateAtom,
+  SaveAtomEffect,
+  TypewriterModeStateAtom,
   WordsWrittenTodayStateAtom,
-  WritingStatsStateAtom
+  WritingStatsStateAtom,
 } from '@/state/atoms/persistentContent';
 import {
   countWordsFromHTML,
@@ -56,6 +59,12 @@ import {
   updateWordWrittenTodayRecords,
 } from '@/utils/common';
 import { print } from '@/utils/logger';
+
+const countHashSegments = (text: string): number => {
+  const regex = /#[^\n]*(?=\n|$)/g;
+  const matches = text.match(regex) || [];
+  return matches.length;
+};
 
 function ContentView({
   navigation,
@@ -78,6 +87,7 @@ function ContentView({
   );
 
   const typewriterMode = useAtomValue(TypewriterModeStateAtom);
+  const focusedrMode = useAtomValue(FocusedModeStateAtom);
   const autosaveMode = useAtomValue(AutosaveModeStateAtom);
 
   const [viewMode, setViewMode] = useState<boolean>(true);
@@ -98,6 +108,36 @@ function ContentView({
   const lastSaveRef = useRef<number>(0);
 
   const [selection, setSelection] = useState({ end: 0, start: 0 });
+  const [autoLines, setAutoLines] = useState<number>(0);
+  const [caretYPosition, setCaretYPosition] = useState<number>(0);
+
+  const { height: windowHeight } = useWindowDimensions();
+
+  const handleContentSize = useCallback(
+    (e: NativeSyntheticEvent<TextInputContentSizeChangeEventData>) => {
+      if (focusedrMode) {
+        const h = e.nativeEvent.contentSize.height;
+        const count = Math.round(h / 24);
+        if (count !== autoLines) {
+          setAutoLines(count);
+        }
+      }
+    },
+    [autoLines],
+  );
+
+  useEffect(() => {
+    const CARET_OFFSET = 24;
+    if (focusedrMode) {
+      const caretY = autoLines * 24;
+      const relative = caretY / windowHeight;
+      const headerOccurrences = countHashSegments(markdownText);
+      const focusPosition = CARET_OFFSET + caretY + headerOccurrences * 8;
+      setCaretYPosition(focusPosition);
+      print(`caretYPosition: ${caretYPosition} adjusted to ${focusPosition}px`);
+      print(`Caret is at ${(relative * 100).toFixed(1)}% of the top`);
+    }
+  }, [autoLines, markdownText]);
 
   const handleSelectionChange = (
     event: NativeSyntheticEvent<TextInputSelectionChangeEventData>,
@@ -141,7 +181,7 @@ function ContentView({
                 start: chapter.revisionPosition,
               });
             }
-            if(markdownTextContent.length === 0) {
+            if (markdownTextContent.length === 0) {
               setViewMode(false);
             }
           } catch (error) {
@@ -408,7 +448,7 @@ function ContentView({
     },
     h1: {
       ...fonts.size_24,
-      ...fonts.gray800
+      ...fonts.gray800,
     },
     link: {
       color: colors.purple500,
@@ -437,6 +477,18 @@ function ContentView({
 
   return (
     <View style={layout.flex_1}>
+      {/*<View*/}
+      {/*  style={{*/}
+      {/*    backgroundColor: 'red',*/}
+      {/*    borderRadius: 10,*/}
+      {/*    height: 20,*/}
+      {/*    left: '50%',*/}
+      {/*    position: 'absolute',*/}
+      {/*    top: caretYPosition,*/}
+      {/*    width: 20,*/}
+      {/*    zIndex: 999,*/}
+      {/*  }}*/}
+      {/*></View>*/}
       {selectedChapter && (
         <View style={layout.flex_1}>
           <TitleBar
@@ -471,6 +523,7 @@ function ContentView({
                   maxLength={30_000}
                   multiline
                   onChangeText={handleTextChange}
+                  onContentSizeChange={handleContentSize}
                   onSelectionChange={handleSelectionChange}
                   parser={parseExpensiMark}
                   selection={selection}
