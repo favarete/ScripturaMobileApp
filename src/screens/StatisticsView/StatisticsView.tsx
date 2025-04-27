@@ -1,6 +1,6 @@
 import type { RootScreenProps } from '@/navigation/types';
 
-import { useAtomValue } from 'jotai/index';
+import { useAtomValue } from 'jotai';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import {

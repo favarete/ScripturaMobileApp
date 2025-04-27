@@ -25,8 +25,8 @@ import ContentDestroyer from '@/components/molecules/ContentDestroyer/ContentDes
 
 import {
   HomeFolderStateAtom,
-  ProjectsDataStateAtom,
-  TypewriterModeStateAtom,
+  ProjectsDataStateAtom, SaveAtomEffect,
+  TypewriterModeStateAtom
 } from '@/state/atoms/persistentContent';
 import {
   DisableAllNavigationStateAtom,
@@ -83,6 +83,7 @@ function ChapterCard({
   updateChaptersStatus,
   wordCount,
 }: ChapterCardProps) {
+  useAtom(SaveAtomEffect);
   const { colors, fonts, gutters, layout } = useTheme();
 
   const { t } = useTranslation();

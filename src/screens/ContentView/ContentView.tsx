@@ -518,7 +518,7 @@ function ContentView({
                   autoCapitalize="none"
                   autoFocus
                   cursorColor={colors.purple500}
-                  keyboardType="visible-password"
+                  keyboardType="default"
                   markdownStyle={markdownStylesEdit}
                   maxLength={30_000}
                   multiline

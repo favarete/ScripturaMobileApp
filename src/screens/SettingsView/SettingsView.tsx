@@ -4,7 +4,7 @@ import type { RootScreenProps } from '@/navigation/types';
 import { useAtom } from 'jotai';
 import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { useTheme } from '@/theme';
 import { languages } from '@/hooks/language/schema';
@@ -16,12 +16,14 @@ import InformationRow from '@/components/atoms/InformationRow/InformationRow';
 import InputSettingValue from '@/components/atoms/InputSettingValue/InputSettingValue';
 import SelectionList from '@/components/atoms/SelectionList/SelectionList';
 import ToggleSwitchEntry from '@/components/atoms/ToggleSwitchEntry/ToggleSwitchEntry';
+import { SafeScreen } from '@/components/templates';
 
 import {
-  DailyGoalModeStateAtom, FocusedModeStateAtom,
+  DailyGoalModeStateAtom,
+  FocusedModeStateAtom,
   LanguageStateAtom,
   ThemeStateAtom,
-  TypewriterModeStateAtom
+  TypewriterModeStateAtom,
 } from '@/state/atoms/persistentContent';
 
 function SettingsView({
@@ -41,8 +43,7 @@ function SettingsView({
   const onNavigateBack = () => {
     if (chapterId.length + projectId.length === 0) {
       navigation.navigate(Paths.ProjectsView);
-    }
-    else {
+    } else {
       navigation.navigate(Paths.StatisticsView, { chapterId, projectId });
     }
   };
@@ -79,74 +80,78 @@ function SettingsView({
   );
 
   return (
-    <View style={[styles.container, layout.flex_1]}>
-      <View style={gutters.marginBottom_16}>
-        <View style={gutters.marginBottom_8}>
-          <TitleBar
-            onNavigateBack={onNavigateBack}
-            title={t('screen_settings.view_title')}
-          />
+    <SafeScreen>
+      <ScrollView>
+        <View style={[styles.container, layout.flex_1]}>
+          <View style={gutters.marginBottom_16}>
+            <View style={gutters.marginBottom_8}>
+              <TitleBar
+                onNavigateBack={onNavigateBack}
+                title={t('screen_settings.view_title')}
+              />
+            </View>
+            <ToggleSwitchEntry
+              getter={dailyWordGoal.enabled}
+              setter={updateWordGoalModeInfo}
+              title={t('screen_settings.daily_word_goal')}
+            />
+            <InputSettingValue
+              disabled={!dailyWordGoal.enabled}
+              getter={dailyWordGoal.target}
+              setter={updateWordGoalModeInfo}
+              title={t('screen_settings.word_count_target')}
+            />
+            <SelectionList
+              modalTitle={t('screen_settings.select_language')}
+              onSelect={onChangeLanguage}
+              options={languages}
+              selectedOption={selectedLanguage}
+              title={t('screen_settings.language')}
+            />
+            <ToggleSwitchEntry
+              getter={typewriterMode}
+              setter={setTypewriterMode}
+              title={t('screen_settings.typewriter_mode')}
+            />
+            <ToggleSwitchEntry
+              getter={focusedMode}
+              setter={setFocusedMode}
+              title={t('screen_settings.focused_mode')}
+            />
+            <ToggleSwitchEntry
+              getter={variant === 'dark'}
+              setter={changeTheme}
+              title={t('screen_settings.dark_mode')}
+            />
+            <ActionLongButton
+              command={{
+                action: 'navigate',
+                data: 'https://github.com/favarete/ScripturaMobileApp',
+              }}
+              title={t('screen_settings.donate')}
+            />
+            <ActionLongButton
+              command={{
+                action: 'share',
+                data: 'https://github.com/favarete/ScripturaMobileApp',
+              }}
+              title={t('screen_settings.share')}
+            />
+            <ActionLongButton
+              command={{
+                action: 'contact',
+                data: 'rodrigo@favarete.art',
+              }}
+              title={t('screen_settings.contact_me')}
+            />
+            <InformationRow
+              title={t('screen_settings.version')}
+              value={t('common_appName.code')}
+            />
+          </View>
         </View>
-        <ToggleSwitchEntry
-          getter={dailyWordGoal.enabled}
-          setter={updateWordGoalModeInfo}
-          title={t('screen_settings.daily_word_goal')}
-        />
-        <InputSettingValue
-          disabled={!dailyWordGoal.enabled}
-          getter={dailyWordGoal.target}
-          setter={updateWordGoalModeInfo}
-          title={t('screen_settings.word_count_target')}
-        />
-        <SelectionList
-          modalTitle={t('screen_settings.select_language')}
-          onSelect={onChangeLanguage}
-          options={languages}
-          selectedOption={selectedLanguage}
-          title={t('screen_settings.language')}
-        />
-        <ToggleSwitchEntry
-          getter={typewriterMode}
-          setter={setTypewriterMode}
-          title={t('screen_settings.typewriter_mode')}
-        />
-        <ToggleSwitchEntry
-          getter={focusedMode}
-          setter={setFocusedMode}
-          title={t('screen_settings.focused_mode')}
-        />
-        <ToggleSwitchEntry
-          getter={variant === 'dark'}
-          setter={changeTheme}
-          title={t('screen_settings.dark_mode')}
-        />
-        <ActionLongButton
-          command={{
-            action: 'navigate',
-            data: 'https://github.com/favarete/ScripturaMobileApp',
-          }}
-          title={t('screen_settings.donate')}
-        />
-        <ActionLongButton
-          command={{
-            action: 'share',
-            data: 'https://github.com/favarete/ScripturaMobileApp',
-          }}
-          title={t('screen_settings.share')}
-        />
-        <ActionLongButton
-          command={{
-            action: 'contact',
-            data: 'rodrigo@favarete.art',
-          }}
-          title={t('screen_settings.contact_me')}
-        />
-        <InformationRow
-          title={t('screen_settings.version')}
-          value={t('common_appName.code')}
-        />
-      </View>
-    </View>
+      </ScrollView>
+    </SafeScreen>
   );
 }
 

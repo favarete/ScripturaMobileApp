@@ -153,9 +153,24 @@ function ChaptersView({
     newStatus: string,
   ) => {
     const validEnum = getValidChapterEnum(newStatus);
-    updateChapterValue(setAllProjects, projectId, chapterId, {
-      status: validEnum,
-    });
+    setAllProjects((prevState) =>
+      prevState.map((book) =>
+        book.id === projectId
+          ? {
+              ...book,
+              chapters: book.chapters.map((chapter) =>
+                chapter.id === chapterId
+                  ? {
+                      ...chapter,
+                      status: validEnum,
+                    }
+                  : chapter,
+              ),
+            }
+          : book,
+      ),
+    );
+    setLoadingChapters(true);
   };
 
   const changeChapterTitle = (chapterId: string, newTitle: string) => {

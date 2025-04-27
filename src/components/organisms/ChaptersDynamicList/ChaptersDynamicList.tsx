@@ -7,7 +7,7 @@ import type {
 import type { ReorderableListReorderEvent } from 'react-native-reorderable-list';
 import type { Chapter } from '@/state/defaults';
 
-import { useAtomValue } from 'jotai';
+import { useAtom, useAtomValue } from 'jotai';
 import React, { memo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
@@ -29,7 +29,7 @@ import { TitleBar } from '@/components/atoms';
 import ChapterCard from '@/components/molecules/ChapterCard/ChapterCard';
 import ContentCreator from '@/components/molecules/ContentCreator/ContentCreator';
 
-import { LanguageStateAtom } from '@/state/atoms/persistentContent';
+import { LanguageStateAtom, SaveAtomEffect } from '@/state/atoms/persistentContent';
 import { formatNumber } from '@/utils/chapterHelpers';
 import { formatDateTime } from '@/utils/common';
 
@@ -76,6 +76,7 @@ export function ChaptersDynamicList({
   triggerUpdate,
   updateChaptersStatus,
 }: ChaptersDynamicListType) {
+  useAtom(SaveAtomEffect);
   const language = useAtomValue(LanguageStateAtom);
 
   const { colors, fonts, gutters, layout } = useTheme();
@@ -247,7 +248,7 @@ export function ChaptersDynamicList({
               layout.itemsCenter,
               layout.fullWidth,
               { zIndex: -10 },
-              gutters.marginTop_4,
+              gutters.marginTop_4
             ]}
           >
             <ContentCreator
@@ -269,6 +270,7 @@ export function ChaptersDynamicList({
         ref={listRef}
         renderItem={renderItem}
         shouldUpdateActiveItem
+        style={gutters.marginBottom_80}
       />
     </View>
   );

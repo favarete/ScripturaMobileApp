@@ -1,4 +1,4 @@
-import { useAtomValue } from 'jotai/index';
+import { useAtomValue } from 'jotai';
 import React from 'react';
 import { Text, View } from 'react-native';
 

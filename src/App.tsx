@@ -14,7 +14,7 @@ import '@/translations';
 import type { JSX } from 'react';
 
 import i18n from 'i18next';
-import { useAtomValue } from 'jotai/index';
+import { useAtomValue } from 'jotai';
 import { useEffect } from 'react';
 
 import { LanguageStateAtom } from '@/state/atoms/persistentContent';

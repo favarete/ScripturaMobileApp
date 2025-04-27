@@ -392,9 +392,10 @@ function ProjectCard({
                 <TextInput
                   autoFocus
                   cursorColor={colors.purple500}
-                  keyboardType="visible-password"
+                  keyboardType="default"
                   maxLength={25}
                   onChangeText={setEditedTitle}
+                  returnKeyType="default"
                   selectionColor={colors.gray200}
                   showSoftInputOnFocus={!typewriterMode}
                   style={[
@@ -443,10 +444,11 @@ function ProjectCard({
                 <TextInput
                   autoFocus
                   cursorColor={colors.purple500}
-                  keyboardType="visible-password"
+                  keyboardType="default"
                   maxLength={130}
                   multiline
                   onChangeText={setEditedDescription}
+                  returnKeyType="default"
                   selectionColor={colors.gray200}
                   showSoftInputOnFocus={!typewriterMode}
                   style={[

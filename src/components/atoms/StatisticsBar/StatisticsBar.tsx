@@ -1,5 +1,5 @@
 import FeatherIcons from '@react-native-vector-icons/feather';
-import { useAtomValue } from 'jotai/index';
+import { useAtomValue } from 'jotai';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';

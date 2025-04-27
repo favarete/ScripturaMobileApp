@@ -10,12 +10,10 @@ import { Paths } from '@/navigation/paths';
 import {
   ChaptersView,
   ContentView,
-  Home,
   SettingsView,
-  Startup,
   StatisticsView,
 } from '@/screens';
-import ProjectsView from '@/screens/ProjectsView/ProjectsView';
+import { ProjectsView } from '@/screens/index';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -26,22 +24,13 @@ function ApplicationNavigator() {
     <SafeAreaProvider>
       <NavigationContainer theme={navigationTheme}>
         <Stack.Navigator
+          initialRouteName={Paths.ProjectsView}
           key={variant}
           screenOptions={{
             detachPreviousScreen: true,
             headerShown: false,
           }}
         >
-          <Stack.Screen
-            component={Startup}
-            key={'Startup-' + Date.now()}
-            name={Paths.Startup}
-          />
-          <Stack.Screen
-            component={Home}
-            key={'Home-' + Date.now()}
-            name={Paths.Home}
-          />
           <Stack.Screen
             component={ProjectsView}
             key={'ProjectsView-' + Date.now()}
