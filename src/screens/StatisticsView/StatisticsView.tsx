@@ -70,7 +70,7 @@ function StatisticsView({
       ...gutters.paddingHorizontal_16,
       ...gutters.padding_8,
       ...gutters.marginTop_4,
-      width: 60,
+      width: 80,
     },
     hide: {
       opacity: 0.4,
@@ -109,8 +109,8 @@ function StatisticsView({
   ];
 
   const wordsToGo = (wordsValue: number) => {
-    let wordToGo = dailyGoalMode.target - wordsValue
-    if(wordToGo < 0) {
+    let wordToGo = dailyGoalMode.target - wordsValue;
+    if (wordToGo < 0) {
       wordToGo = 0;
     }
     return language === 'en-US'
@@ -266,6 +266,7 @@ function StatisticsView({
                   style={styles.editButton}
                 >
                   <Text
+                    numberOfLines={1}
                     style={[
                       fonts.defaultFontFamilyExtraBold,
                       fonts.uppercase,
