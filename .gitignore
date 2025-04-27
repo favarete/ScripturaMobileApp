@@ -24,7 +24,6 @@ DerivedData
 
 # Android/IntelliJ
 #
-build/
 .idea
 .gradle
 local.properties
@@ -81,3 +80,5 @@ yarn-error.log
 
 # webstorm
 .idea/*
+/secret/keystore.md
+/android/keystore.properties
