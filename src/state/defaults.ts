@@ -74,6 +74,7 @@ const DEFAULT_USAGE_STATS: UsageStatsType = {
 };
 
 const DEFAULT_DAILY_WORDS_STATS: DailyWordsStatsType[] = [];
+const DEFAULT_PROJECTS_SORT: ElementUUID[] = [];
 
 const DEFAULT_WRITING_STATS: WritingStats = {
   friday: [],
@@ -185,9 +186,10 @@ export const DEFAULT_DATA = {
   language: DEFAULT_LANGUAGE,
   maxStreak: DEFAULT_MAX_STREAK,
   projectsData: DEFAULT_PROJECTS_DATA,
+  projectsSort: DEFAULT_PROJECTS_SORT,
   theme: DEFAULT_THEME,
   typewriterMode: DEFAULT_TYPEWRITER_MODE,
   usageStats: DEFAULT_USAGE_STATS,
   wordWrittenToday: DEFAULT_WORDS_WRITTEN_TODAY,
-  writingStats: DEFAULT_WRITING_STATS,
+  writingStats: DEFAULT_WRITING_STATS
 };

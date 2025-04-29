@@ -149,3 +149,9 @@ export const ProjectsDataStateAtom = atomWithMMKV<Project[]>(
   DEFAULT_DATA.projectsData,
   CommonStorage,
 );
+
+export const ProjectsSortStateAtom = atomWithMMKV<ElementUUID[]>(
+  'projects_sort_projects',
+  DEFAULT_DATA.projectsSort,
+  CommonStorage,
+);

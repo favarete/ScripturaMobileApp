@@ -1,10 +1,22 @@
+import type { FC } from 'react';
+import type { FlatList, ListRenderItemInfo } from 'react-native';
+import type { ReorderableListReorderEvent } from 'react-native-reorderable-list';
 import type { RootScreenProps } from '@/navigation/types';
 import type { Project } from '@/state/defaults';
 
 import { useAtom, useAtomValue } from 'jotai';
-import React, { useEffect, useState } from 'react';
+import React, { memo, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
+import {
+  useAnimatedScrollHandler,
+  useSharedValue,
+} from 'react-native-reanimated';
+import ReorderableList, {
+  reorderItems,
+  useIsActive,
+  useReorderableDrag,
+} from 'react-native-reorderable-list';
 import {
   copyFile,
   createFile,
@@ -25,13 +37,13 @@ import { FolderSelector } from '@/components/molecules';
 import Averages from '@/components/molecules/Averages/Averages';
 import ContentCreator from '@/components/molecules/ContentCreator/ContentCreator';
 import ProjectCard from '@/components/molecules/ProjectCard/ProjectCard';
-import { SafeScreen } from '@/components/templates';
 
 import {
   DailyWordsStatsStateAtom,
   HomeFolderStateAtom,
   LanguageStateAtom,
   ProjectsDataStateAtom,
+  ProjectsSortStateAtom,
   SaveAtomEffect,
   UsageStatsStateAtom,
 } from '@/state/atoms/persistentContent';
@@ -56,6 +68,7 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
   const homeFolder = useAtomValue(HomeFolderStateAtom);
   const language = useAtomValue(LanguageStateAtom);
   const [allProjects, setAllProjects] = useAtom(ProjectsDataStateAtom);
+  const [allProjectsSort, setAllProjectsSort] = useAtom(ProjectsSortStateAtom);
   const dailyWordsStats = useAtomValue(DailyWordsStatsStateAtom);
 
   const [loadingProjects, setLoadingProjects] = useState<boolean>(true);
@@ -140,10 +153,22 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
                   }
                 }
               }
-              allProjectsTemp.sort((a, b) =>
-                a.title.toLowerCase().localeCompare(b.title.toLowerCase()),
+              let projectsSort = allProjectsSort;
+              if (projectsSort.length === 0) {
+                projectsSort = allProjectsTemp.map((project) => project.id);
+                setAllProjectsSort(projectsSort);
+              }
+              const orderMap = new Map(
+                projectsSort.map((id, index) => [id, index]),
               );
-              setAllProjects(allProjectsTemp);
+              const sortedArray = [...allProjectsTemp].sort((a, b) => {
+                return (
+                  (orderMap.get(a.id) ?? Infinity) -
+                  (orderMap.get(b.id) ?? Infinity)
+                );
+              });
+
+              setAllProjects(sortedArray);
             }
           }
         }
@@ -290,96 +315,131 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
     }
   };
 
+  const ProjectCardInstance: FC<Project> = memo(
+    ({ blurb, coverPath, id, title }) => {
+      const drag = useReorderableDrag();
+      const isActive = useIsActive();
+
+      return (
+        <View style={[gutters.paddingHorizontal_24]}>
+          <ProjectCard
+            changeProjectDescription={changeProjectDescription}
+            changeProjectImage={changeProjectImage}
+            changeProjectTitle={changeProjectTitle}
+            description={blurb}
+            drag={drag}
+            editingId={editingId}
+            id={id}
+            image={coverPath}
+            isActive={isActive}
+            key={title}
+            onNavigate={onNavigate}
+            setEditingId={setEditingId}
+            title={title}
+            triggerUpdate={setLoadingProjects}
+          />
+        </View>
+      );
+    },
+  );
+
+  const renderItem = ({ item }: ListRenderItemInfo<Project>) => (
+    <ProjectCardInstance {...item} />
+  );
+
+  const handleReorder = ({ from, to }: ReorderableListReorderEvent) => {
+    setAllProjects((value) => reorderItems(value, from, to));
+  };
+  const listRef = useRef<FlatList<Project>>(null);
+  const scrollY = useSharedValue(0);
+
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollY.value = event.contentOffset.y;
+    },
+  });
+
   return (
-    <SafeScreen>
-      <ScrollView>
-        <View style={[gutters.paddingHorizontal_32]}>
-          <View style={[gutters.marginTop_40]}>
-            <Text
+    <View>
+      {loadingProjects ? (
+        <BounceLoader
+          animationDuration={800}
+          bounceHeight={20}
+          color={colors.gray800}
+          dotCount={3}
+          size={14}
+          staggerDelay={200}
+        />
+      ) : allProjects.length > 0 ? (
+        <ReorderableList
+          data={allProjects}
+          keyExtractor={(item) => item.id}
+          ListFooterComponent={
+            <View
               style={[
-                fonts.size_24,
-                fonts.gray400,
-                fonts.defaultFontFamilyBold,
+                layout.itemsCenter,
+                layout.fullWidth,
+                gutters.marginTop_4,
               ]}
             >
-              {t('screen_projects.title')}
-            </Text>
-          </View>
-        </View>
-        <MainHeader
-          currentStreak={usageStats.currentStreak}
-          maxStreak={usageStats.writingStreak}
-          onNavigateSettings={onNavigateSettings}
-        />
-        <View style={[gutters.paddingHorizontal_32]}>
-          <FolderSelector />
-        </View>
-        <Averages
-          daily={usageStats.averagePerDay}
-          monthly={usageStats.averagePerMonth}
-          weekly={usageStats.averagePerWeek}
-        />
-        <View>
-          <View style={[gutters.marginVertical_24]}>
-            <TitleBar title={t('screen_projects.view')} />
-          </View>
-          <View style={[gutters.paddingHorizontal_32]}>
-            {loadingProjects ? (
-              <BounceLoader
-                animationDuration={800}
-                bounceHeight={20}
-                color={colors.gray800}
-                dotCount={3}
-                size={14}
-                staggerDelay={200}
-              />
-            ) : allProjects.length > 0 ? (
-              allProjects.map((project: Project) => {
-                return (
-                  <ProjectCard
-                    changeProjectDescription={changeProjectDescription}
-                    changeProjectImage={changeProjectImage}
-                    changeProjectTitle={changeProjectTitle}
-                    description={project.blurb}
-                    editingId={editingId}
-                    id={project.id}
-                    image={project.coverPath}
-                    key={project.title}
-                    onNavigate={onNavigate}
-                    setEditingId={setEditingId}
-                    title={project.title}
-                    triggerUpdate={setLoadingProjects}
-                  />
-                );
-              })
-            ) : (
-              <View style={[gutters.marginTop_4, gutters.marginVertical_20]}>
-                <Text
-                  style={[
-                    fonts.size_20,
-                    fonts.gray400,
-                    fonts.defaultFontFamilyBold,
-                  ]}
-                >
-                  {t('screen_projects.nothing_found')}
-                </Text>
+              {!loadingProjects && (
+                <ContentCreator
+                  createContent={createFolder}
+                  subtitle={t('screen_projects.folder_name')}
+                  title={t('screen_projects.create_folder')}
+                />
+              )}
+            </View>
+          }
+          ListHeaderComponent={
+            <View>
+              <View style={[gutters.paddingHorizontal_32]}>
+                <View style={[gutters.marginTop_40]}>
+                  <Text
+                    style={[
+                      fonts.size_24,
+                      fonts.gray400,
+                      fonts.defaultFontFamilyBold,
+                    ]}
+                  >
+                    {t('screen_projects.title')}
+                  </Text>
+                </View>
               </View>
-            )}
-          </View>
-          <View
-            style={[layout.itemsCenter, layout.fullWidth, gutters.marginTop_4]}
-          >
-            {!loadingProjects && (
-              <ContentCreator
-                createContent={createFolder}
-                subtitle={t('screen_projects.folder_name')}
-                title={t('screen_projects.create_folder')}
+              <MainHeader
+                currentStreak={usageStats.currentStreak}
+                maxStreak={usageStats.writingStreak}
+                onNavigateSettings={onNavigateSettings}
               />
-            )}
-          </View>
+              <View style={[gutters.paddingHorizontal_32]}>
+                <FolderSelector />
+              </View>
+              <Averages
+                daily={usageStats.averagePerDay}
+                monthly={usageStats.averagePerMonth}
+                weekly={usageStats.averagePerWeek}
+              />
+              <View style={[gutters.marginVertical_24]}>
+                <TitleBar title={t('screen_projects.view')} />
+              </View>
+            </View>
+          }
+          onReorder={handleReorder}
+          onScroll={scrollHandler}
+          ref={listRef}
+          renderItem={renderItem}
+          shouldUpdateActiveItem
+        />
+      ) : (
+        <View style={[gutters.marginTop_4, gutters.marginVertical_20]}>
+          <Text
+            style={[fonts.size_20, fonts.gray400, fonts.defaultFontFamilyBold]}
+          >
+            {t('screen_projects.nothing_found')}
+          </Text>
         </View>
-      </ScrollView>
-    </SafeScreen>
+      )}
+    </View>
   );
 }
 

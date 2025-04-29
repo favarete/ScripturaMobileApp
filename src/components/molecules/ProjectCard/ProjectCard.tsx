@@ -1,4 +1,3 @@
-import type { ImageURISource } from 'react-native';
 import type { DocumentFileDetail } from 'react-native-saf-x';
 import type { ContextMenuItem } from '@/components/atoms/CustomContextMenu/CustomContextMenu';
 import type { Project } from '@/state/defaults';
@@ -9,12 +8,15 @@ import SimpleLineIcons from '@react-native-vector-icons/simple-line-icons';
 import { useAtomValue, useSetAtom } from 'jotai';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import type {
+  ImageURISource} from 'react-native';
 import {
   Image,
   Keyboard,
   StyleSheet,
   Text,
   TextInput,
+  TouchableOpacity,
   View,
 } from 'react-native';
 import {
@@ -49,9 +51,11 @@ type ProjectProps = {
   changeProjectImage: (projectId: string, imagePath: string) => void;
   changeProjectTitle: (projectId: string, newTitle: string) => void;
   description: string;
+  drag: () => void;
   editingId: string;
   id: string;
   image: null | string;
+  isActive: boolean;
   onNavigate: (id: string) => void;
   setEditingId: React.Dispatch<React.SetStateAction<string>>;
   title: string;
@@ -74,9 +78,11 @@ function ProjectCard({
   changeProjectImage,
   changeProjectTitle,
   description,
+  drag,
   editingId,
   id,
   image,
+  isActive,
   onNavigate,
   setEditingId,
   title,
@@ -262,6 +268,10 @@ function ProjectCard({
       backgroundColor:
         editedTitle.length < 25 ? colors.purple500 : colors.red500,
     },
+    elevatedBox: {
+      backgroundColor: colors.purple100 + '4E',
+      borderRadius: 10,
+    },
     image: {
       borderRadius: 8,
       height: 160,
@@ -351,7 +361,13 @@ function ProjectCard({
   };
 
   return (
-    <View style={[gutters.marginBottom_12, editingStyle]}>
+    <View
+      style={[
+        gutters.marginBottom_12,
+        isActive && styles.elevatedBox,
+        editingStyle,
+      ]}
+    >
       <CustomContextMenu
         backgroundColor={colors.full}
         id={title}
@@ -384,7 +400,7 @@ function ProjectCard({
             style={[
               layout.flex_1,
               layout.itemsStretch,
-              gutters.paddingHorizontal_16,
+              gutters.paddingHorizontal_12,
             ]}
           >
             {isEditing === EDIT_TITLE_TYPE ? (
@@ -494,6 +510,13 @@ function ProjectCard({
                 {descriptionContent}
               </Text>
             )}
+          </View>
+          <View>
+            <TouchableOpacity onLongPress={drag}>
+              <Text>
+                <MaterialIcons color={colors.gray800} name="sort" size={30} />
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
       </CustomContextMenu>

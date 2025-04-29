@@ -28,7 +28,7 @@ import {
   HomeFolderStateAtom,
   LanguageStateAtom,
   ProjectsDataStateAtom,
-  SaveAtomEffect,
+  SaveAtomEffect
 } from '@/state/atoms/persistentContent';
 import { ChapterStatusType, getValidChapterEnum } from '@/state/defaults';
 import {
