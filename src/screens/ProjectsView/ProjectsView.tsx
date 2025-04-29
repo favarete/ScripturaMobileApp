@@ -347,8 +347,12 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
     <ProjectCardInstance {...item} />
   );
 
+  useEffect(() => {
+    setLoadingProjects(true);
+  }, [allProjectsSort]);
+
   const handleReorder = ({ from, to }: ReorderableListReorderEvent) => {
-    setAllProjects((value) => reorderItems(value, from, to));
+    setAllProjectsSort((value) => reorderItems(value, from, to));
   };
   const listRef = useRef<FlatList<Project>>(null);
   const scrollY = useSharedValue(0);
