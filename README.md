@@ -5,9 +5,10 @@
 - [ ] Add feature to pin projects
 - [ ] Open App on the last visited screen before closing
 - [ ] Add marker to the last position during revisions of a text
+- [ ] Add Keyboard Shortcuts
 - [x] Add an option to delete (with confirmation dialog) projects
 - [x] Add placeholders to loading objects
-- [ ] Add a reorder option for non-pinned projects
+- [x] Add a reorder option for non-pinned projects
 
 # Bugs to Fix
 - [x] Changing the Home Folder doesn't update the projects unless you reopen the app

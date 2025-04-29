@@ -364,7 +364,7 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
   });
 
   return (
-    <View>
+    <View style={layout.flex_1}>
       {loadingProjects ? (
         <BounceLoader
           animationDuration={800}
