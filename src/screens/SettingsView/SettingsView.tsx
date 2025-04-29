@@ -20,7 +20,7 @@ import { SafeScreen } from '@/components/templates';
 
 import {
   DailyGoalModeStateAtom,
-  FocusedModeStateAtom,
+  //FocusedModeStateAtom,
   LanguageStateAtom,
   ThemeStateAtom,
   TypewriterModeStateAtom,
@@ -37,7 +37,7 @@ function SettingsView({
   const [selectedLanguage, setSelectedLanguage] = useAtom(LanguageStateAtom);
   const [dailyWordGoal, setDailyWordGoal] = useAtom(DailyGoalModeStateAtom);
   const [typewriterMode, setTypewriterMode] = useAtom(TypewriterModeStateAtom);
-  const [focusedMode, setFocusedMode] = useAtom(FocusedModeStateAtom);
+  //const [focusedMode, setFocusedMode] = useAtom(FocusedModeStateAtom);
   const [variant, setVariant] = useAtom(ThemeStateAtom);
 
   const onNavigateBack = () => {
@@ -113,11 +113,11 @@ function SettingsView({
               setter={setTypewriterMode}
               title={t('screen_settings.typewriter_mode')}
             />
-            <ToggleSwitchEntry
-              getter={focusedMode}
-              setter={setFocusedMode}
-              title={t('screen_settings.focused_mode')}
-            />
+            {/*<ToggleSwitchEntry*/}
+            {/*  getter={focusedMode}*/}
+            {/*  setter={setFocusedMode}*/}
+            {/*  title={t('screen_settings.focused_mode')}*/}
+            {/*/>*/}
             <ToggleSwitchEntry
               getter={variant === 'dark'}
               setter={changeTheme}
