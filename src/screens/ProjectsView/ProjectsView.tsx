@@ -1,5 +1,4 @@
 import type { FC } from 'react';
-import type { FlatList, ListRenderItemInfo } from 'react-native';
 import type { ReorderableListReorderEvent } from 'react-native-reorderable-list';
 import type { RootScreenProps } from '@/navigation/types';
 import type { Project } from '@/state/defaults';
@@ -7,7 +6,8 @@ import type { Project } from '@/state/defaults';
 import { useAtom, useAtomValue } from 'jotai';
 import React, { memo, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Text, View } from 'react-native';
+import { Alert, FlatList, ListRenderItemInfo, Text, View } from 'react-native';
+import { KeyboardExtendedBaseView } from 'react-native-external-keyboard';
 import {
   useAnimatedScrollHandler,
   useSharedValue,
@@ -75,6 +75,13 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
   const [editingId, setEditingId] = useState<string>('');
 
   const [usageStats, setUsageStats] = useAtom(UsageStatsStateAtom);
+
+  const handleKeyDown = (e) => {
+    // ex.: Ctrl+N para navegar
+    if (e.isCtrlPressed && e.unicodeChar.toLowerCase() === 'n') {
+      Alert.alert('Ctrl+N', 'Navegar');
+    }
+  };
 
   useEffect(() => {
     if (dailyWordsStats.length > 0) {
@@ -347,9 +354,9 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
     <ProjectCardInstance {...item} />
   );
 
-  useEffect(() => {
-    setLoadingProjects(true);
-  }, [allProjectsSort]);
+  // useEffect(() => {
+  //   setLoadingProjects(true);
+  // }, [allProjectsSort]);
 
   const handleReorder = ({ from, to }: ReorderableListReorderEvent) => {
     setAllProjectsSort((value) => reorderItems(value, from, to));
@@ -374,7 +381,7 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
           size={14}
           staggerDelay={200}
         />
-      ) : allProjects.length > 0 ? (
+      ) : (
         <ReorderableList
           data={allProjects}
           keyExtractor={(item) => item.id}
@@ -426,6 +433,26 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
               <View style={[gutters.marginVertical_24]}>
                 <TitleBar title={t('screen_projects.view')} />
               </View>
+              {allProjects.length === 0 && (
+                <View
+                  style={[
+                    layout.flex_1,
+                    layout.itemsCenter,
+                    gutters.marginTop_4,
+                    gutters.marginVertical_20,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      fonts.size_20,
+                      fonts.gray400,
+                      fonts.defaultFontFamilyBold,
+                    ]}
+                  >
+                    {t('screen_projects.nothing_found')}
+                  </Text>
+                </View>
+              )}
             </View>
           }
           onReorder={handleReorder}
@@ -434,14 +461,6 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
           renderItem={renderItem}
           shouldUpdateActiveItem
         />
-      ) : (
-        <View style={[gutters.marginTop_4, gutters.marginVertical_20]}>
-          <Text
-            style={[fonts.size_20, fonts.gray400, fonts.defaultFontFamilyBold]}
-          >
-            {t('screen_projects.nothing_found')}
-          </Text>
-        </View>
       )}
     </View>
   );

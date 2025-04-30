@@ -5,11 +5,26 @@ import type {
   TextStyle,
 } from 'react-native';
 
-import React, { useCallback, useRef, useState } from 'react';
-import { FlatList, StyleSheet, Text, TextInput, View } from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  FlatList,
+  StyleSheet,
+  Text,
+  TextInput,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 
+/* ------------------------------------------------------------------ */
+/*  MARKDOWN → ESTILO DE LINHA                                         */
+/* ------------------------------------------------------------------ */
 const BASE = 16;
 const LH = BASE * 1.25;
+
+interface HWKeyPressEvent extends TextInputKeyPressEventData {
+  /** keyCode vem do Android quando há teclado físico */
+  keyCode?: number;
+}
 
 function styleFor(line: string): TextStyle {
   if (line.startsWith('### ')) {
@@ -18,7 +33,7 @@ function styleFor(line: string): TextStyle {
       fontWeight: '700',
       includeFontPadding: false,
       lineHeight: BASE * 1.5,
-      paddingTop: 2, // micro-ajuste
+      paddingTop: 2,
     };
   }
   if (line.startsWith('## ')) {
@@ -53,88 +68,253 @@ function styleFor(line: string): TextStyle {
   return { fontSize: BASE, includeFontPadding: false, lineHeight: LH };
 }
 
-export default function MarkdownEditor(): JSX.Element {
-  const [lines, setLines] = useState<string[]>(['']);
+/* ------------------------------------------------------------------ */
+/*  PARSE INLINE (bold / italic / bold+italic)                         */
+/* ------------------------------------------------------------------ */
+type Segment = {
+  bold?: boolean;
+  italic?: boolean;
+  marker?: boolean;
+  txt: string;
+};
 
-  /** Armazena refs de cada TextInput indexado pela linha */
+function parseInline(txt: string): Segment[] {
+  const segs: Segment[] = [];
+  let rest = txt;
+  const rx = /(\*\*\*|___|\*\*|__|\*|_)/; // próximos marcadores
+  while (rest.length) {
+    const m = rest.match(rx);
+    if (!m) {
+      // não há marcador → fim
+      segs.push({ txt: rest });
+      break;
+    }
+    const [mark] = m;
+    const start = m.index ?? 0;
+    if (start) {
+      segs.push({ txt: rest.slice(0, start) });
+    } // texto antes do marcador
+
+    /* — marcador de abertura visível — */
+    segs.push({ marker: true, txt: mark });
+
+    rest = rest.slice(start + mark.length); // pula abertura
+    const end = rest.indexOf(mark);
+    if (end === -1) {
+      // sem fechamento
+      segs.push({ txt: rest }); // trata tudo como texto
+      break;
+    }
+
+    const content = rest.slice(0, end);
+    rest = rest.slice(end + mark.length); // pula fechamento
+
+    /* — conteúdo estilizado — */
+    const bold = mark.length >= 2;
+    const italic = mark.length === 1 || mark.length === 3;
+    segs.push({ bold, italic, txt: content });
+
+    /* — marcador de fechamento visível — */
+    segs.push({ marker: true, txt: mark });
+  }
+  return segs;
+}
+
+function renderInline(txt: string): React.ReactNode {
+  return parseInline(txt).map((s, i) => (
+    <Text
+      key={i}
+      style={{
+        color: s.marker ? '#888' : undefined, // marcação em cinza
+        fontStyle: s.italic ? 'italic' : undefined,
+        fontWeight: s.bold ? '700' : undefined,
+      }}
+    >
+      {s.txt || ' '}
+    </Text>
+  ));
+}
+
+/* ------------------------------------------------------------------ */
+/*  COMPONENTE                                                         */
+/* ------------------------------------------------------------------ */
+export default function MarkdownEditor({ initialValue = '' }) {
+  /* ---------- controles de “modo” -------------------------------- */
+  const [isTypewriter, setIsTypewriter] = useState(true); // liga / desliga
+  const [centerOffset, setCenterOffset] = useState(0); // px acima(+)/abaixo(-)
+
+  /* ---------- viewport ------------------------------------------- */
+  const { height: winH } = useWindowDimensions();
+  const HALF = winH / 2;
+
+  /* ---------- markdown lines ------------------------------------- */
+  const [lines, setLines] = useState(
+    initialValue.length ? initialValue.split(/\n/) : [''],
+  );
+
+  /* ---------- refs ------------------------------------------------ */
+  const listRef = useRef<FlatList<string>>(null);
   const inputsRef = useRef<Record<number, null | TextInput>>({});
+  const selStart = useRef<Record<number, number>>({});
+  const heightsRef = useRef<number[]>(lines.map(() => LH));
+  const caret = useRef(0); // linha focada
 
-  /** Insere nova linha logo abaixo da atual */
-  const insertLineBelow = useCallback(
-    (index: number, first = '', rest = '') => {
-      setLines((prev) => {
-        const next = [...prev];
-        next[index] = first;
-        next.splice(index + 1, 0, rest);
-        return next;
-      });
-      // foco na nova linha
-      setTimeout(() => inputsRef.current[index + 1]?.focus(), 0);
-    },
+  /* ---------- helpers -------------------------------------------- */
+  const offsetBefore = useCallback(
+    (i: number) => heightsRef.current.slice(0, i).reduce((a, b) => a + b, 0),
     [],
   );
 
-  /** Junta linha vazia com a anterior (Backspace) */
-  const joinWithPrevious = useCallback((index: number) => {
-    if (index === 0) {
-      return;
-    }
-    setLines((prev) => {
-      const next = [...prev];
-      next[index - 1] += next[index];
-      next.splice(index, 1);
-      return next;
+  const scrollToCenter = useCallback(
+    (i: number) => {
+      if (!isTypewriter) {
+        return;
+      } // modo off
+      const hLine = heightsRef.current[i] ?? LH;
+      const offset =
+        winH + // header vazio 1× viewport
+        offsetBefore(i) +
+        hLine / 2 -
+        HALF +
+        centerOffset;
+      listRef.current?.scrollToOffset({ animated: false, offset });
+    },
+    [isTypewriter, winH, HALF, centerOffset, offsetBefore],
+  );
+
+  const setHeight = useCallback(
+    (i: number, h: number) => {
+      if (heightsRef.current[i] === h) {
+        return;
+      }
+      heightsRef.current[i] = h;
+      if (i === caret.current) {
+        requestAnimationFrame(() => scrollToCenter(i));
+      }
+    },
+    [scrollToCenter],
+  );
+
+  /* ---------- edição --------------------------------------------- */
+  const insertBelow = useCallback((i: number, first = '', rest = '') => {
+    setLines((p) => {
+      const n = [...p];
+      n[i] = first;
+      n.splice(i + 1, 0, rest);
+      return n;
     });
-    setTimeout(() => inputsRef.current[index - 1]?.focus(), 0);
+    heightsRef.current.splice(i + 1, 0, LH);
+    setTimeout(() => inputsRef.current[i + 1]?.focus(), 0);
   }, []);
 
-  /** onChangeText: quebra em nova linha se contiver \n */
+  const mergeUp = useCallback((i: number) => {
+    if (i === 0) {
+      return;
+    }
+    setLines((p) => {
+      const n = [...p];
+      n[i - 1] += n[i];
+      n.splice(i, 1);
+      return n;
+    });
+    heightsRef.current[i - 1] += heightsRef.current[i];
+    heightsRef.current.splice(i, 1);
+    setTimeout(() => inputsRef.current[i - 1]?.focus(), 0);
+  }, []);
+
   const handleChange = useCallback(
-    (index: number, text: string) => {
-      if (text.includes('\n')) {
-        const [before, ...rest] = text.split(/\n/);
-        insertLineBelow(index, before, rest.join('\n'));
-      } else {
-        setLines((prev) => {
-          const next = [...prev];
-          next[index] = text;
-          return next;
-        });
+    (i: number, txt: string) => {
+      /* 1. Quebra de linha (Enter) -------------------------------- */
+      if (txt.includes('\n')) {
+        const [before, ...after] = txt.split(/\n/);
+        insertBelow(i, before, after.join('\n'));
+        return;
       }
+
+      /* 2. Conteúdo mudou na mesma linha --------------------------- */
+      setLines((prev) => {
+        /* -- detecta Backspace físico – linha já estava vazia e continua vazia */
+        if (prev[i] === '' && txt === '') {
+          mergeUp(i); // faz “voltar” de linha mesmo sem onKeyPress
+          return prev; // mergeUp atualiza o estado internamente
+        }
+
+        /* atualização normal do texto na linha */
+        const next = [...prev];
+        next[i] = txt;
+        return next;
+      });
     },
-    [insertLineBelow],
+    [insertBelow, mergeUp],
   );
 
-  /** onKeyPress: junta com a anterior se backspace em linha vazia */
-  const handleKeyPress = useCallback(
-    (index: number, e: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
-      if (e.nativeEvent.key === 'Backspace' && lines[index] === '') {
-        joinWithPrevious(index);
+  const BACKSPACE_CODES = new Set([
+    /* Android (hard-kbd) */ 67 /* KEYCODE_DEL            */,
+    /* AOSP / alguns mapeamentos ISO */ 112 /* KEYCODE_FORWARD_DEL? */,
+    /* iOS hard-kbd */ 8 /* ASCII Backspace        */,
+    /* Samsung Dex / LG */ 115 /* KEYCODE_MEDIA_REWIND   */,
+  ]);
+
+  const BACKSPACE_KEYS = new Set(['Backspace', 'Del', 'Delete']);
+
+  const handleKey = useCallback(
+    (i: number, e: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
+      const native = e.nativeEvent as HWKeyPressEvent;
+
+      const isBs =
+        BACKSPACE_KEYS.has(native.key) ||
+        BACKSPACE_CODES.has(native.keyCode ?? -1);
+
+      if (!isBs) return;
+
+      const col0 = (selStart.current[i] ?? 0) === 0;
+      const isEmpty = lines[i] === '';
+
+      if (isEmpty || col0) {
+        mergeUp(i);
       }
     },
-    [lines, joinWithPrevious],
+    [lines, mergeUp],
   );
 
-  /** renderItem do FlatList */
+  /* ---------- centralizar 1.ª vez -------------------------------- */
+  useEffect(() => {
+    requestAnimationFrame(() => scrollToCenter(0));
+  }, [scrollToCenter]);
+
+  /* ---------- renderItem ----------------------------------------- */
   const renderItem = ({ index, item }: ListRenderItemInfo<string>) => {
-    const dynamic = styleFor(item);
-
+    const dyn = styleFor(item);
     return (
-      <View style={styles.lineContainer}>
-        {/* Preview de markdown */}
-        <Text style={[styles.textBase, dynamic]}>{item || ' '}</Text>
+      <View
+        onLayout={(e) => setHeight(index, e.nativeEvent.layout.height)}
+        style={styles.lineContainer}
+      >
+        <Text style={[styles.textBase, dyn]}>{renderInline(item)}</Text>
 
-        {/* Input “transparente” sobreposto */}
         <TextInput
-          blurOnSubmit={false}
           cursorColor="#111"
           multiline
           onChangeText={(txt) => handleChange(index, txt)}
-          onKeyPress={(e) => handleKeyPress(index, e)}
+          onContentSizeChange={(e) =>
+            setHeight(index, e.nativeEvent.contentSize.height)
+          }
+          onFocus={() => {
+            caret.current = index;
+            scrollToCenter(index);
+          }}
+          onKeyPress={(e) => handleKey(index, e)}
+          onSelectionChange={(e) => {
+            /* Watch column to detect caret at the beginning                     */
+            selStart.current[index] = e.nativeEvent.selection.start;
+            caret.current = index;
+            scrollToCenter(index);
+          }}
           placeholder={index === 0 ? 'Digite seu markdown…' : undefined}
           placeholderTextColor="#999"
-          ref={(ref) => (inputsRef.current[index] = ref)}
-          style={[styles.inputOverlay, dynamic]}
+          ref={(r) => (inputsRef.current[index] = r)}
+          style={[styles.inputOverlay, dyn]}
+          submitBehavior="newline"
           underlineColorAndroid="transparent"
           value={item}
         />
@@ -142,18 +322,35 @@ export default function MarkdownEditor(): JSX.Element {
     );
   };
 
+  /* ---------- render --------------------------------------------- */
+  const blank = { height: isTypewriter ? winH : 0 };
+
   return (
-    <FlatList<string>
-      data={lines}
-      extraData={lines}
-      keyboardShouldPersistTaps="always"
-      keyExtractor={(_, i) => i.toString()}
-      renderItem={renderItem}
-    />
+    <>
+      {/* Exemplo rápido de UI de controle – remova/integre como quiser */}
+      {/* <Switch value={isTypewriter} onValueChange={setIsTypewriter} /> */}
+      {/* <Slider value={centerOffset} onValueChange={setCenterOffset} /> */}
+
+      <FlatList
+        data={lines}
+        extraData={lines}
+        initialNumToRender={20}
+        keyboardShouldPersistTaps="always"
+        keyExtractor={(_, i) => i.toString()}
+        ListFooterComponent={<View style={blank} />}
+        ListHeaderComponent={<View style={blank} />} /* calços 1× viewport */
+        ref={listRef}
+        renderItem={renderItem}
+        scrollEventThrottle={16}
+        showsVerticalScrollIndicator={false} /* ← sem scrollbar */
+      />
+    </>
   );
 }
 
-/** Estilos fixos */
+/* ------------------------------------------------------------------ */
+/*  STYLES                                                             */
+/* ------------------------------------------------------------------ */
 const styles = StyleSheet.create({
   inputOverlay: {
     backgroundColor: 'transparent',
@@ -164,11 +361,6 @@ const styles = StyleSheet.create({
     right: 0,
     top: 0,
   },
-  lineContainer: {
-    position: 'relative',
-  },
-  textBase: {
-    color: '#222',
-    padding: 0,
-  },
+  lineContainer: { position: 'relative' },
+  textBase: { color: '#222', padding: 0 },
 });
