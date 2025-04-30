@@ -1,4 +1,3 @@
-import type { MarkdownStyle } from '@expensify/react-native-live-markdown';
 import type {
   NativeSyntheticEvent,
   TextInputSelectionChangeEventData,
@@ -6,10 +5,6 @@ import type {
 import type { RootScreenProps } from '@/navigation/types';
 import type { Chapter, DailyStats, Project } from '@/state/defaults';
 
-import {
-  MarkdownTextInput,
-  parseExpensiMark,
-} from '@expensify/react-native-live-markdown';
 import { useFocusEffect } from '@react-navigation/native';
 import { useAtom, useAtomValue } from 'jotai';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -383,53 +378,53 @@ function ContentView({
     ...gutters.marginBottom_12,
   };
 
-  const markdownStylesEdit: MarkdownStyle = {
-    blockquote: {
-      borderColor: colors.purple500,
-    },
-    code: {
-      backgroundColor: colors.fullOpposite + '1A',
-      ...gutters.padding_12,
-      ...Platform.select({
-        ['android']: {
-          fontFamily: 'monospace',
-        },
-        ['ios']: {
-          fontFamily: 'Courier New',
-        },
-      }),
-    },
-    emoji: {
-      ...fonts.size_24,
-    },
-    h1: {
-      ...fonts.size_24,
-      ...fonts.gray800,
-    },
-    link: {
-      color: colors.purple500,
-    },
-    mentionHere: {
-      backgroundColor: colors.gray100,
-      color: colors.purple500,
-    },
-    mentionUser: {
-      backgroundColor: colors.gray100,
-      color: colors.green500,
-    },
-    pre: {
-      backgroundColor: colors.fullOpposite + '1A',
-      ...gutters.padding_12,
-      ...Platform.select({
-        ['android']: {
-          fontFamily: 'monospace',
-        },
-        ['ios']: {
-          fontFamily: 'Courier New',
-        },
-      }),
-    },
-  };
+  // const markdownStylesEdit: MarkdownStyle = {
+  //   blockquote: {
+  //     borderColor: colors.purple500,
+  //   },
+  //   code: {
+  //     backgroundColor: colors.fullOpposite + '1A',
+  //     ...gutters.padding_12,
+  //     ...Platform.select({
+  //       ['android']: {
+  //         fontFamily: 'monospace',
+  //       },
+  //       ['ios']: {
+  //         fontFamily: 'Courier New',
+  //       },
+  //     }),
+  //   },
+  //   emoji: {
+  //     ...fonts.size_24,
+  //   },
+  //   h1: {
+  //     ...fonts.size_24,
+  //     ...fonts.gray800,
+  //   },
+  //   link: {
+  //     color: colors.purple500,
+  //   },
+  //   mentionHere: {
+  //     backgroundColor: colors.gray100,
+  //     color: colors.purple500,
+  //   },
+  //   mentionUser: {
+  //     backgroundColor: colors.gray100,
+  //     color: colors.green500,
+  //   },
+  //   pre: {
+  //     backgroundColor: colors.fullOpposite + '1A',
+  //     ...gutters.padding_12,
+  //     ...Platform.select({
+  //       ['android']: {
+  //         fontFamily: 'monospace',
+  //       },
+  //       ['ios']: {
+  //         fontFamily: 'Courier New',
+  //       },
+  //     }),
+  //   },
+  // };
 
   return (
     <View style={layout.flex_1}>
@@ -458,23 +453,24 @@ function ContentView({
               {viewMode ? (
                 <MarkdownRenderer markdown={markdownText} />
               ) : (
-                <MarkdownTextInput
-                  autoCapitalize="none"
-                  autoFocus
-                  cursorColor={colors.purple500}
-                  keyboardType="default"
-                  markdownStyle={markdownStylesEdit}
-                  maxLength={30_000}
-                  multiline
-                  onChangeText={handleTextChange}
-                  onSelectionChange={handleSelectionChange}
-                  parser={parseExpensiMark}
-                  selection={selection}
-                  selectionColor={colors.gray200}
-                  showSoftInputOnFocus={!typewriterMode}
-                  style={[markdownEditStyles]}
-                  value={markdownText}
-                />
+                <View></View>
+                // <MarkdownTextInput
+                //   autoCapitalize="none"
+                //   autoFocus
+                //   cursorColor={colors.purple500}
+                //   keyboardType="default"
+                //   markdownStyle={markdownStylesEdit}
+                //   maxLength={30_000}
+                //   multiline
+                //   onChangeText={handleTextChange}
+                //   onSelectionChange={handleSelectionChange}
+                //   parser={parseExpensiMark}
+                //   selection={selection}
+                //   selectionColor={colors.gray200}
+                //   showSoftInputOnFocus={!typewriterMode}
+                //   style={[markdownEditStyles]}
+                //   value={markdownText}
+                // />
               )}
             </View>
           </ScrollView>
