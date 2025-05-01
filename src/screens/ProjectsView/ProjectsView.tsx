@@ -1,4 +1,5 @@
 import type { FC } from 'react';
+import type { FlatList, ListRenderItemInfo } from 'react-native';
 import type { ReorderableListReorderEvent } from 'react-native-reorderable-list';
 import type { RootScreenProps } from '@/navigation/types';
 import type { Project } from '@/state/defaults';
@@ -6,8 +7,7 @@ import type { Project } from '@/state/defaults';
 import { useAtom, useAtomValue } from 'jotai';
 import React, { memo, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, FlatList, ListRenderItemInfo, Text, View } from 'react-native';
-import { KeyboardExtendedBaseView } from 'react-native-external-keyboard';
+import { Text, View } from 'react-native';
 import {
   useAnimatedScrollHandler,
   useSharedValue,
@@ -75,13 +75,6 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
   const [editingId, setEditingId] = useState<string>('');
 
   const [usageStats, setUsageStats] = useAtom(UsageStatsStateAtom);
-
-  const handleKeyDown = (e) => {
-    // ex.: Ctrl+N para navegar
-    if (e.isCtrlPressed && e.unicodeChar.toLowerCase() === 'n') {
-      Alert.alert('Ctrl+N', 'Navegar');
-    }
-  };
 
   useEffect(() => {
     if (dailyWordsStats.length > 0) {
