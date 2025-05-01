@@ -1,19 +1,22 @@
+import { useAtomValue } from 'jotai';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import type {
   ListRenderItemInfo,
   NativeSyntheticEvent,
   TextInputKeyPressEventData,
-  TextStyle,
-} from 'react-native';
-
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+  TextStyle} from 'react-native';
 import {
   FlatList,
+  Keyboard,
   StyleSheet,
   Text,
   TextInput,
   useWindowDimensions,
   View,
 } from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
+
+import { TypewriterModeStateAtom } from '@/state/atoms/persistentContent';
 
 /* ------------------------------------------------------------------ */
 /*  MARKDOWN → ESTILO DE LINHA                                         */
@@ -136,12 +139,45 @@ function renderInline(txt: string): React.ReactNode {
 }
 
 /* ------------------------------------------------------------------ */
-/*  COMPONENTE                                                         */
+/*  COMPONENT                                                         */
 /* ------------------------------------------------------------------ */
 export default function MarkdownEditor({ initialValue = '' }) {
-  /* ---------- controles de “modo” -------------------------------- */
-  const [isTypewriter, setIsTypewriter] = useState(true); // liga / desliga
-  const [centerOffset, setCenterOffset] = useState(0); // px acima(+)/abaixo(-)
+  const typewriterMode = useAtomValue(TypewriterModeStateAtom);
+  const { height, width } = useWindowDimensions();
+
+  const [isTypewriter, setIsTypewriter] = useState(true);
+  const [isLandscape, setIsLandscape] = useState(width > height); // px above(+)/below(-)
+  const [centerOffset, setCenterOffset] = useState(typewriterMode ? 60 : 180); // px above(+)/below(-)
+
+  const [isKeyboardVisible, setKeyboardVisible] = useState(false);
+
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      'keyboardDidShow',
+      () => {
+        setKeyboardVisible(true);
+      },
+    );
+    const keyboardDidHideListener = Keyboard.addListener(
+      'keyboardDidHide',
+      () => {
+        setKeyboardVisible(false);
+      },
+    );
+
+    // Limpeza
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
+
+  useEffect(() => {
+
+    if(width > height !== isLandscape) {
+      setIsLandscape(!isLandscape);
+    }
+  }, [height, width]);
 
   /* ---------- viewport ------------------------------------------- */
   const { height: winH } = useWindowDimensions();
@@ -265,7 +301,9 @@ export default function MarkdownEditor({ initialValue = '' }) {
         BACKSPACE_KEYS.has(native.key) ||
         BACKSPACE_CODES.has(native.keyCode ?? -1);
 
-      if (!isBs) return;
+      if (!isBs) {
+        return;
+      }
 
       const col0 = (selStart.current[i] ?? 0) === 0;
       const isEmpty = lines[i] === '';
@@ -313,6 +351,7 @@ export default function MarkdownEditor({ initialValue = '' }) {
           placeholder={index === 0 ? 'Digite seu markdown…' : undefined}
           placeholderTextColor="#999"
           ref={(r) => (inputsRef.current[index] = r)}
+          showSoftInputOnFocus={!typewriterMode}
           style={[styles.inputOverlay, dyn]}
           submitBehavior="newline"
           underlineColorAndroid="transparent"
@@ -344,6 +383,31 @@ export default function MarkdownEditor({ initialValue = '' }) {
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false} /* ← sem scrollbar */
       />
+      <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+        {/* Gradiente superior: cor → transparente */}
+        <LinearGradient
+          colors={['white', 'transparent']}
+          style={{
+            height: HALF + centerOffset, // até a linha do caret
+            left: 0,
+            position: 'absolute',
+            right: 0,
+            top: 0,
+          }}
+        />
+
+        {/* Gradiente inferior: transparente → cor */}
+        <LinearGradient
+          colors={['transparent', 'white']}
+          style={{
+            bottom: 0,
+            height: HALF - centerOffset, // idem, parte de baixo
+            left: 0,
+            position: 'absolute',
+            right: 0,
+          }}
+        />
+      </View>
     </>
   );
 }
