@@ -1,7 +1,3 @@
-import type {
-  NativeSyntheticEvent,
-  TextInputSelectionChangeEventData,
-} from 'react-native';
 import type { RootScreenProps } from '@/navigation/types';
 import type { Chapter, DailyStats, Project } from '@/state/defaults';
 
@@ -9,7 +5,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useAtom, useAtomValue } from 'jotai';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Keyboard, Platform, ScrollView, StyleSheet, View } from 'react-native';
+import { Keyboard, View } from 'react-native';
 import { readFile, writeFile } from 'react-native-saf-x';
 import Toast from 'react-native-toast-message';
 
@@ -18,13 +14,11 @@ import { Paths } from '@/navigation/paths';
 
 import { TitleBar } from '@/components/atoms';
 import StatisticsBar from '@/components/atoms/StatisticsBar/StatisticsBar';
-import MarkdownRenderer from '@/components/molecules/MarkdownRenderer/MarkdownRenderer';
 
 import {
   AutosaveModeStateAtom,
   DailyGoalModeStateAtom,
   DailyWordsStatsStateAtom,
-  //FocusedModeStateAtom,
   ProjectsDataStateAtom,
   SaveAtomEffect,
   TypewriterModeStateAtom,
@@ -56,7 +50,7 @@ function ContentView({
 
   const { t } = useTranslation();
 
-  const { colors, fonts, gutters, layout } = useTheme();
+  const { gutters, layout } = useTheme();
   const { chapterId, projectId } = route.params;
 
   const [allProjects, setAllProjects] = useAtom(ProjectsDataStateAtom);
@@ -91,12 +85,12 @@ function ContentView({
 
   const [selection, setSelection] = useState({ end: 0, start: 0 });
 
-  const handleSelectionChange = (
-    event: NativeSyntheticEvent<TextInputSelectionChangeEventData>,
-  ) => {
-    const { selection } = event.nativeEvent;
-    setSelection(selection);
-  };
+  // const handleSelectionChange = (
+  //   event: NativeSyntheticEvent<TextInputSelectionChangeEventData>,
+  // ) => {
+  //   const { selection } = event.nativeEvent;
+  //   setSelection(selection);
+  // };
 
   const dayRef = useRef<number>(getDateOnlyFromTimestamp(Date.now()));
 
@@ -360,16 +354,16 @@ function ContentView({
     setViewMode(!viewMode);
   };
 
-  const styles = StyleSheet.create({
-    markdownContent: {
-      backgroundColor: colors.gray50 + '5F',
-      marginBottom: 64,
-    },
-    markdownContentEdit: {
-      backgroundColor: colors.full,
-      marginBottom: 32,
-    },
-  });
+  // const styles = StyleSheet.create({
+  //   markdownContent: {
+  //     backgroundColor: colors.gray50 + '5F',
+  //     marginBottom: 64,
+  //   },
+  //   markdownContentEdit: {
+  //     backgroundColor: colors.full,
+  //     marginBottom: 32,
+  //   },
+  // });
 
   // const markdownEditStyles = {
   //   ...fonts.size_16,
@@ -463,7 +457,7 @@ function ContentView({
               {/*//   style={[markdownEditStyles]}*/}
               {/*//   value={markdownText}*/}
               {/*// />*/}
-              <MarkdownEditor markdown={markdownText} />
+              <MarkdownEditor initialValue={markdownText} />
             </View>
           <StatisticsBar
             onNavigateToStatistics={onNavigateToStatistics}
