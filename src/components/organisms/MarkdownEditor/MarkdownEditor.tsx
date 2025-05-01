@@ -1,10 +1,12 @@
-import { useAtomValue } from 'jotai';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
 import type {
   ListRenderItemInfo,
   NativeSyntheticEvent,
   TextInputKeyPressEventData,
-  TextStyle} from 'react-native';
+  TextStyle,
+} from 'react-native';
+
+import { useAtomValue } from 'jotai';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   FlatList,
   Keyboard,
@@ -173,8 +175,7 @@ export default function MarkdownEditor({ initialValue = '' }) {
   }, []);
 
   useEffect(() => {
-
-    if(width > height !== isLandscape) {
+    if (width > height !== isLandscape) {
       setIsLandscape(!isLandscape);
     }
   }, [height, width]);
