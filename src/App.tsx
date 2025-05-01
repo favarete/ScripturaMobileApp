@@ -35,7 +35,7 @@ function App() {
 
   useEffect(() => {
     if (language && i18n.language !== language) {
-      i18n.changeLanguage(language);
+      void i18n.changeLanguage(language);
     }
   }, [language]);
 
