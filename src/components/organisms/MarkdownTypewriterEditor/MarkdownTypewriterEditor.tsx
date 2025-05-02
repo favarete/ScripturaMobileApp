@@ -1,24 +1,23 @@
-import type {
-  ListRenderItemInfo,
-  NativeSyntheticEvent,
-  TextInputKeyPressEventData,
-  TextStyle,
-} from 'react-native';
+import type { ListRenderItemInfo, NativeSyntheticEvent, TextInputKeyPressEventData, TextStyle } from 'react-native';
+
+
 
 import { useAtomValue } from 'jotai';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  FlatList,
-  Keyboard,
-  StyleSheet,
-  Text,
-  TextInput,
-  useWindowDimensions,
-  View,
-} from 'react-native';
+import { FlatList, Keyboard, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
+
+
+import { useTheme } from '@/theme';
+
+
+
 import { TypewriterModeStateAtom } from '@/state/atoms/persistentContent';
+
+
+
+
 
 /* ------------------------------------------------------------------ */
 /*  MARKDOWN → ESTILO DE LINHA                                         */
@@ -140,18 +139,22 @@ function renderInline(txt: string): React.ReactNode {
   ));
 }
 
-/* ------------------------------------------------------------------ */
-/*  COMPONENT                                                         */
-/* ------------------------------------------------------------------ */
-export default function MarkdownEditor({ initialValue = '' }) {
+type MarkdownTypewriterEditorProps = {
+  initialValue?: string;
+};
+export default function MarkdownTypewriterEditor({
+  initialValue = '',
+}: MarkdownTypewriterEditorProps) {
+  const { colors } = useTheme();
+
   const typewriterMode = useAtomValue(TypewriterModeStateAtom);
   const { height, width } = useWindowDimensions();
 
-  const [isTypewriter, setIsTypewriter] = useState(true);
+  const [isTypewriter] = useState(true);
   const [isLandscape, setIsLandscape] = useState(width > height); // px above(+)/below(-)
-  const [centerOffset, setCenterOffset] = useState(typewriterMode ? 60 : 180); // px above(+)/below(-)
+  const [centerOffset] = useState(typewriterMode ? 60 : 180); // px above(+)/below(-)
 
-  const [isKeyboardVisible, setKeyboardVisible] = useState(false);
+  const [, setKeyboardVisible] = useState(false);
 
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
@@ -195,6 +198,15 @@ export default function MarkdownEditor({ initialValue = '' }) {
   const selStart = useRef<Record<number, number>>({});
   const heightsRef = useRef<number[]>(lines.map(() => LH));
   const caret = useRef(0); // linha focada
+  const enterHeld = useRef(false);
+
+  const focusLineEnd = (idx: number) => {
+    const inp = inputsRef.current[idx];
+    if (!inp) {return;}
+    const len = (lines[idx] ?? '').length;
+    inp.setNativeProps({ selection: { end: len, start: len } });
+  };
+
 
   /* ---------- helpers -------------------------------------------- */
   const offsetBefore = useCallback(
@@ -245,27 +257,32 @@ export default function MarkdownEditor({ initialValue = '' }) {
   }, []);
 
   const mergeUp = useCallback((i: number) => {
-    if (i === 0) {
-      return;
-    }
-    setLines((p) => {
-      const n = [...p];
+    if (i === 0) {return;}
+
+    setLines(prev => {
+      const n = [...prev];
       n[i - 1] += n[i];
       n.splice(i, 1);
       return n;
     });
+
     heightsRef.current[i - 1] += heightsRef.current[i];
     heightsRef.current.splice(i, 1);
-    setTimeout(() => inputsRef.current[i - 1]?.focus(), 0);
+
+    /* foca a linha de cima e posiciona cursor no final */
+    setTimeout(() => {
+      focusLineEnd(i - 1);
+      inputsRef.current[i - 1]?.focus();
+    }, 0);
   }, []);
+
 
   const handleChange = useCallback(
     (i: number, txt: string) => {
       /* 1. Quebra de linha (Enter) -------------------------------- */
       if (txt.includes('\n')) {
-        const [before, ...after] = txt.split(/\n/);
-        insertBelow(i, before, after.join('\n'));
-        return;
+        /* já tratamos Enter em handleKey; aqui só removemos o \n */
+        txt = txt.replaceAll('\n', '');
       }
 
       /* 2. Conteúdo mudou na mesma linha --------------------------- */
@@ -298,23 +315,51 @@ export default function MarkdownEditor({ initialValue = '' }) {
     (i: number, e: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
       const native = e.nativeEvent as HWKeyPressEvent;
 
+      /* ---------------- ENTER ---------------- */
+      const isEnter =
+        native.key === 'Enter' ||
+        native.key === '\n'   ||
+        native.keyCode === 13 ||
+        native.keyCode === 66;
+
+      if (isEnter) {
+        if (!enterHeld.current) {
+          /* insere UMA quebra manualmente,
+             removendo o \n que o SO botou na string */
+          setLines(prev => {
+            const n = [...prev];
+            n[i] = n[i].replaceAll('\n', '');      // limpa \n gerado
+            n.splice(i + 1, 0, '');              // nova linha vazia
+            return n;
+          });
+          heightsRef.current.splice(i + 1, 0, LH);
+          requestAnimationFrame(() => {
+            inputsRef.current[i + 1]?.focus();
+          });
+        }
+        enterHeld.current = true;
+        return;
+      } else {
+        enterHeld.current = false;               // tecla diferente solta Enter
+      }
+
+      /* ---------------- BACKSPACE ------------ */
       const isBs =
         BACKSPACE_KEYS.has(native.key) ||
         BACKSPACE_CODES.has(native.keyCode ?? -1);
 
-      if (!isBs) {
-        return;
-      }
+      if (!isBs) {return;}
 
-      const col0 = (selStart.current[i] ?? 0) === 0;
-      const isEmpty = lines[i] === '';
+      const col0   = (selStart.current[i] ?? 0) === 0;
+      const empty  = lines[i] === '';
 
-      if (isEmpty || col0) {
+      if (empty || col0) {
         mergeUp(i);
       }
     },
     [lines, mergeUp],
   );
+
 
   /* ---------- centralizar 1.ª vez -------------------------------- */
   useEffect(() => {
@@ -330,9 +375,9 @@ export default function MarkdownEditor({ initialValue = '' }) {
         style={styles.lineContainer}
       >
         <Text style={[styles.textBase, dyn]}>{renderInline(item)}</Text>
-
         <TextInput
-          cursorColor="#111"
+          autoFocus={true}
+          cursorColor={colors.purple500}
           multiline
           onChangeText={(txt) => handleChange(index, txt)}
           onContentSizeChange={(e) =>
@@ -367,10 +412,6 @@ export default function MarkdownEditor({ initialValue = '' }) {
 
   return (
     <>
-      {/* Exemplo rápido de UI de controle – remova/integre como quiser */}
-      {/* <Switch value={isTypewriter} onValueChange={setIsTypewriter} /> */}
-      {/* <Slider value={centerOffset} onValueChange={setCenterOffset} /> */}
-
       <FlatList
         data={lines}
         extraData={lines}
@@ -389,7 +430,7 @@ export default function MarkdownEditor({ initialValue = '' }) {
         <LinearGradient
           colors={['white', 'transparent']}
           style={{
-            height: HALF + centerOffset, // até a linha do caret
+            height: HALF / 1.5 + centerOffset, // até a linha do caret
             left: 0,
             position: 'absolute',
             right: 0,
@@ -402,7 +443,7 @@ export default function MarkdownEditor({ initialValue = '' }) {
           colors={['transparent', 'white']}
           style={{
             bottom: 0,
-            height: HALF - centerOffset, // idem, parte de baixo
+            height: HALF * 1.5 - centerOffset, // idem, parte de baixo
             left: 0,
             position: 'absolute',
             right: 0,

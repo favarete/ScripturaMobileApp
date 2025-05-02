@@ -58,6 +58,7 @@ import {
   getSupportFile,
   projectListsAreEqual,
 } from '@/utils/projectHelpers';
+import useKeyboardShortcuts from '@/hooks/keyboard/useKeyboardShortcuts';
 
 function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
   useAtom(SaveAtomEffect);
@@ -75,6 +76,19 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
   const [editingId, setEditingId] = useState<string>('');
 
   const [usageStats, setUsageStats] = useAtom(UsageStatsStateAtom);
+
+  const [sequence, setSequence] = useState<null | string>(null);
+
+  useKeyboardShortcuts({
+    ctrlTimeout: 300,
+    letters: {
+      N: () => console.log('Próximo!'),
+      P: () => console.log('Anterior!'),
+    },
+    onSequence: (seq) => {
+      console.log('Ctrl +', seq);
+    }
+  });
 
   useEffect(() => {
     if (dailyWordsStats.length > 0) {
@@ -154,16 +168,19 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
                 }
               }
               let projectsSort = [...allProjectsSort];
-              projectsSort = projectsSort.filter((item): item is string => item != null);
+              projectsSort = projectsSort.filter(
+                (item): item is string => item != null,
+              );
               if (projectsSort.length === 0) {
                 projectsSort = allProjectsTemp.map((project) => project.id);
                 setAllProjectsSort(projectsSort);
-              }
-              else if (projectsSort.length !== allProjectsTemp.length) {
+              } else if (projectsSort.length !== allProjectsTemp.length) {
                 const setA = new Set(projectsSort);
                 const zllIds = allProjectsTemp.map((project) => project.id);
 
-                const uniqueItemsFromB = zllIds.filter(item => !setA.has(item));
+                const uniqueItemsFromB = zllIds.filter(
+                  (item) => !setA.has(item),
+                );
                 projectsSort = [...new Set([...uniqueItemsFromB, ...zllIds])];
                 setAllProjectsSort(projectsSort);
               }

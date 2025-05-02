@@ -28,7 +28,7 @@ import {
   HomeFolderStateAtom,
   LanguageStateAtom,
   ProjectsDataStateAtom,
-  SaveAtomEffect
+  SaveAtomEffect,
 } from '@/state/atoms/persistentContent';
 import { ChapterStatusType, getValidChapterEnum } from '@/state/defaults';
 import {
@@ -396,10 +396,10 @@ function ChaptersView({
   };
 
   return (
-    <View style={[gutters.marginTop_16]}>
+    <View>
       {loadingChapters ? (
-        <View>
-          <View>
+        <View style={layout.fullHeight}>
+          <View style={layout.flex_1}>
             <TitleBar onNavigateBack={onNavigateBack} title={projectTitle} />
           </View>
           <View style={styles.imageContainer}>
@@ -420,6 +420,7 @@ function ChaptersView({
           changeChapterTitle={changeChapterTitle}
           footerAction={createChapterFile}
           isEditingChapterTitle={isEditingChapterTitle}
+          isLoading={loadingChapters}
           lastChapterViewed={lastChapterViewed}
           onNavigate={onNavigate}
           onNavigateBack={onNavigateBack}

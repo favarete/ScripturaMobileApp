@@ -5,7 +5,16 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useAtom, useAtomValue } from 'jotai';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Keyboard, View } from 'react-native';
+import type {
+  NativeSyntheticEvent,
+  TextInputSelectionChangeEventData} from 'react-native';
+import {
+  Keyboard,
+  StyleSheet,
+  TextInput,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 import { readFile, writeFile } from 'react-native-saf-x';
 import Toast from 'react-native-toast-message';
 
@@ -14,6 +23,7 @@ import { Paths } from '@/navigation/paths';
 
 import { TitleBar } from '@/components/atoms';
 import StatisticsBar from '@/components/atoms/StatisticsBar/StatisticsBar';
+import MarkdownRenderer from '@/components/molecules/MarkdownRenderer/MarkdownRenderer';
 
 import {
   AutosaveModeStateAtom,
@@ -40,7 +50,6 @@ import {
   updateWordWrittenTodayRecords,
 } from '@/utils/common';
 import { print } from '@/utils/logger';
-import MarkdownEditor from '@/components/organisms/MarkdownEditor/MarkdownEditor';
 
 function ContentView({
   navigation,
@@ -50,7 +59,7 @@ function ContentView({
 
   const { t } = useTranslation();
 
-  const { gutters, layout } = useTheme();
+  const { colors, fonts, gutters, layout } = useTheme();
   const { chapterId, projectId } = route.params;
 
   const [allProjects, setAllProjects] = useAtom(ProjectsDataStateAtom);
@@ -63,7 +72,6 @@ function ContentView({
   );
 
   const typewriterMode = useAtomValue(TypewriterModeStateAtom);
-  //const focusedMode = useAtomValue(FocusedModeStateAtom);
   const autosaveMode = useAtomValue(AutosaveModeStateAtom);
 
   const [viewMode, setViewMode] = useState<boolean>(true);
@@ -85,18 +93,19 @@ function ContentView({
 
   const [selection, setSelection] = useState({ end: 0, start: 0 });
 
-  // const handleSelectionChange = (
-  //   event: NativeSyntheticEvent<TextInputSelectionChangeEventData>,
-  // ) => {
-  //   const { selection } = event.nativeEvent;
-  //   setSelection(selection);
-  // };
+  const handleSelectionChange = (
+    event: NativeSyntheticEvent<TextInputSelectionChangeEventData>,
+  ) => {
+    const { selection } = event.nativeEvent;
+    setSelection(selection);
+  };
 
   const dayRef = useRef<number>(getDateOnlyFromTimestamp(Date.now()));
 
   useFocusEffect(
     useCallback(() => {
       const chapter = getChapterById(projectId, chapterId, allProjects);
+
       if (chapter) {
         setSelectedChapter(chapter);
 
@@ -299,12 +308,12 @@ function ContentView({
     navigation.navigate(Paths.StatisticsView, { chapterId, projectId });
   };
 
-  // const handleTextChange = (newText: string) => {
-  //   if (!startAutosave.current) {
-  //     startAutosave.current = true;
-  //   }
-  //   setMarkdownText(newText);
-  // };
+  const handleTextChange = (newText: string) => {
+    if (!startAutosave.current) {
+      startAutosave.current = true;
+    }
+    setMarkdownText(newText);
+  };
 
   useEffect(() => {
     if (contentCount > 0 && contentCount % 1 === 0) {
@@ -354,111 +363,79 @@ function ContentView({
     setViewMode(!viewMode);
   };
 
-  // const styles = StyleSheet.create({
-  //   markdownContent: {
-  //     backgroundColor: colors.gray50 + '5F',
-  //     marginBottom: 64,
-  //   },
-  //   markdownContentEdit: {
-  //     backgroundColor: colors.full,
-  //     marginBottom: 32,
-  //   },
-  // });
+  const { height: winH } = useWindowDimensions();
 
-  // const markdownEditStyles = {
-  //   ...fonts.size_16,
-  //   ...fonts.gray800,
-  //   lineHeight: 24,
-  //   ...fonts.defaultFontFamilyRegular,
-  //   ...gutters.marginBottom_12,
-  // };
-
-  // const markdownStylesEdit: MarkdownStyle = {
-  //   blockquote: {
-  //     borderColor: colors.purple500,
-  //   },
-  //   code: {
-  //     backgroundColor: colors.fullOpposite + '1A',
-  //     ...gutters.padding_12,
-  //     ...Platform.select({
-  //       ['android']: {
-  //         fontFamily: 'monospace',
-  //       },
-  //       ['ios']: {
-  //         fontFamily: 'Courier New',
-  //       },
-  //     }),
-  //   },
-  //   emoji: {
-  //     ...fonts.size_24,
-  //   },
-  //   h1: {
-  //     ...fonts.size_24,
-  //     ...fonts.gray800,
-  //   },
-  //   link: {
-  //     color: colors.purple500,
-  //   },
-  //   mentionHere: {
-  //     backgroundColor: colors.gray100,
-  //     color: colors.purple500,
-  //   },
-  //   mentionUser: {
-  //     backgroundColor: colors.gray100,
-  //     color: colors.green500,
-  //   },
-  //   pre: {
-  //     backgroundColor: colors.fullOpposite + '1A',
-  //     ...gutters.padding_12,
-  //     ...Platform.select({
-  //       ['android']: {
-  //         fontFamily: 'monospace',
-  //       },
-  //       ['ios']: {
-  //         fontFamily: 'Courier New',
-  //       },
-  //     }),
-  //   },
-  // };
+  const styles = StyleSheet.create({
+    markdownContent: {
+      backgroundColor: colors.gray50 + '5F',
+      height: '100%',
+      marginBottom: 64,
+    },
+    markdownContentEdit: {
+      backgroundColor: colors.full,
+      marginBottom: 64,
+      marginTop: 0,
+      padding: 0,
+    },
+    markdownEditContainer: {
+      marginTop: -20,
+      paddingTop: 10,
+    },
+    markdownEditStyles: {
+      ...fonts.size_16,
+      ...fonts.gray800,
+      borderWidth: 0,
+      fontFamily: 'monospace',
+      height: winH - 91,
+      lineHeight: 24,
+      marginHorizontal: 0,
+      marginTop: 10,
+      padding: 0,
+      verticalAlign: 'middle',
+    },
+  });
 
   return (
-    <View style={layout.flex_1}>
+    <View style={[layout.flex_1, { margin: 0 }]}>
       {selectedChapter && (
         <View style={layout.flex_1}>
           <TitleBar
             onNavigateBack={onNavigateBack}
-            onToggleView={onToggleView}
+            onToggleView={!typewriterMode ? onToggleView : undefined}
             title={chapterTitle}
             viewMode={viewMode}
           />
+          <View
+            style={[gutters.paddingHorizontal_8, gutters.marginHorizontal_8]}
+          >
             <View
-              style={[
-                gutters.paddingHorizontal_8,
-                gutters.marginHorizontal_8,
-                gutters.marginTop_4,
-                gutters.marginBottom_12,
-                gutters.paddingVertical_4,
-              ]}
+              style={
+                viewMode ? styles.markdownContent : styles.markdownContentEdit
+              }
             >
-              {/*// <MarkdownTextInput*/}
-              {/*//   autoCapitalize="none"*/}
-              {/*//   autoFocus*/}
-              {/*//   cursorColor={colors.purple500}*/}
-              {/*//   keyboardType="default"*/}
-              {/*//   markdownStyle={markdownStylesEdit}*/}
-              {/*//   maxLength={30_000}*/}
-              {/*//   multiline*/}
-              {/*//   onChangeText={handleTextChange}*/}
-              {/*//   onSelectionChange={handleSelectionChange}*/}
-              {/*//   parser={parseExpensiMark}*/}
-              {/*//   selection={selection}*/}
-              {/*//   selectionColor={colors.gray200}*/}
-              {/*//   showSoftInputOnFocus={!typewriterMode}*/}
-              {/*//   style={[markdownEditStyles]}*/}
-              {/*//   value={markdownText}*/}
-              {/*// />*/}
-              <MarkdownEditor initialValue={markdownText} />
+              {viewMode ? (
+                <MarkdownRenderer markdown={markdownText} />
+              ) : (
+                <View style={styles.markdownEditContainer}>
+                  <TextInput
+                    autoCapitalize="none"
+                    autoFocus
+                    cursorColor={colors.purple500}
+                    inputMode="text"
+                    keyboardType="default"
+                    maxLength={30_000}
+                    multiline
+                    onChangeText={handleTextChange}
+                    onSelectionChange={handleSelectionChange}
+                    selection={selection}
+                    showSoftInputOnFocus={!typewriterMode}
+                    style={styles.markdownEditStyles}
+                    value={markdownText}
+                  />
+                </View>
+              )}
             </View>
+          </View>
           <StatisticsBar
             onNavigateToStatistics={onNavigateToStatistics}
             viewMode={viewMode}

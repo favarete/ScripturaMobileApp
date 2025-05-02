@@ -29,7 +29,10 @@ import { TitleBar } from '@/components/atoms';
 import ChapterCard from '@/components/molecules/ChapterCard/ChapterCard';
 import ContentCreator from '@/components/molecules/ContentCreator/ContentCreator';
 
-import { LanguageStateAtom, SaveAtomEffect } from '@/state/atoms/persistentContent';
+import {
+  LanguageStateAtom,
+  SaveAtomEffect,
+} from '@/state/atoms/persistentContent';
 import { formatNumber } from '@/utils/chapterHelpers';
 import { formatDateTime } from '@/utils/common';
 
@@ -40,6 +43,7 @@ type ChaptersDynamicListType = {
   changeChapterTitle: (chapterId: string, newTitle: string) => void;
   footerAction: (chapterName: string) => Promise<void>;
   isEditingChapterTitle: string;
+  isLoading: boolean;
   lastChapterViewed: string;
   onNavigate: (chapterId: string) => void;
   onNavigateBack: () => void;
@@ -63,6 +67,7 @@ export function ChaptersDynamicList({
   changeChapterTitle,
   footerAction,
   isEditingChapterTitle,
+  isLoading,
   lastChapterViewed,
   onNavigate,
   onNavigateBack,
@@ -202,42 +207,44 @@ export function ChaptersDynamicList({
 
   return (
     <View style={styles.flatList}>
-      <View style={styles.imageContainer}>
-        <Animated.Image
-          source={parallaxImage}
-          style={[styles.image, imageAnimatedStyle]}
-        />
-        <Animated.View
-          style={[
-            styles.overlay,
-            gutters.paddingHorizontal_16,
-            gutters.paddingVertical_12,
-            imageAnimatedStyle,
-          ]}
-        >
-          <View style={[gutters.paddingLeft_24, gutters.paddingBottom_24]}>
-            <Text
-              style={[
-                fonts.defaultFontFamilyBold,
-                fonts.size_12,
-                gutters.marginBottom_8,
-                styles.overlayText,
-              ]}
-            >
-              {`${t('screen_chapters.total_word_count')} ${formatedWordCount}`}
-            </Text>
-            <Text
-              style={[
-                fonts.defaultFontFamilySemibold,
-                fonts.size_12,
-                styles.overlayText,
-              ]}
-            >
-              {parallaxSubtitle}
-            </Text>
-          </View>
-        </Animated.View>
-      </View>
+      {!isLoading && (
+        <View style={styles.imageContainer}>
+          <Animated.Image
+            source={parallaxImage}
+            style={[styles.image, imageAnimatedStyle]}
+          />
+          <Animated.View
+            style={[
+              styles.overlay,
+              gutters.paddingHorizontal_16,
+              gutters.paddingVertical_12,
+              imageAnimatedStyle,
+            ]}
+          >
+            <View style={[gutters.paddingLeft_24, gutters.paddingBottom_24]}>
+              <Text
+                style={[
+                  fonts.defaultFontFamilyBold,
+                  fonts.size_12,
+                  gutters.marginBottom_8,
+                  styles.overlayText,
+                ]}
+              >
+                {`${t('screen_chapters.total_word_count')} ${formatedWordCount}`}
+              </Text>
+              <Text
+                style={[
+                  fonts.defaultFontFamilySemibold,
+                  fonts.size_12,
+                  styles.overlayText,
+                ]}
+              >
+                {parallaxSubtitle}
+              </Text>
+            </View>
+          </Animated.View>
+        </View>
+      )}
       <ReorderableList
         contentContainerStyle={styles.listContainer}
         data={allChaptersSorted}
@@ -248,7 +255,7 @@ export function ChaptersDynamicList({
               layout.itemsCenter,
               layout.fullWidth,
               { zIndex: -10 },
-              gutters.marginTop_4
+              gutters.marginTop_4,
             ]}
           >
             <ContentCreator

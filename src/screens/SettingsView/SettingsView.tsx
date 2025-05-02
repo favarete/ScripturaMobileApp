@@ -20,7 +20,6 @@ import { SafeScreen } from '@/components/templates';
 
 import {
   DailyGoalModeStateAtom,
-  //FocusedModeStateAtom,
   LanguageStateAtom,
   ThemeStateAtom,
   TypewriterModeStateAtom,
@@ -37,7 +36,6 @@ function SettingsView({
   const [selectedLanguage, setSelectedLanguage] = useAtom(LanguageStateAtom);
   const [dailyWordGoal, setDailyWordGoal] = useAtom(DailyGoalModeStateAtom);
   const [typewriterMode, setTypewriterMode] = useAtom(TypewriterModeStateAtom);
-  //const [focusedMode, setFocusedMode] = useAtom(FocusedModeStateAtom);
   const [variant, setVariant] = useAtom(ThemeStateAtom);
 
   const onNavigateBack = () => {

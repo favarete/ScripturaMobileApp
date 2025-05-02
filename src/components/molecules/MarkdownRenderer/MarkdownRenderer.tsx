@@ -1,6 +1,6 @@
 import Markdown from '@ronradtke/react-native-markdown-display';
 import React from 'react';
-import { Platform, StyleSheet } from 'react-native';
+import { Platform, ScrollView, StyleSheet } from 'react-native';
 
 import { useTheme } from '@/theme';
 
@@ -19,6 +19,8 @@ function MarkdownRenderer({ markdown }: MarkdownRendererProps) {
       lineHeight: 24,
       ...fonts.defaultFontFamilyRegular,
       ...gutters.marginBottom_12,
+      paddingBottom: 180,
+      verticalAlign: 'middle',
     },
 
     // Headings
@@ -252,7 +254,11 @@ function MarkdownRenderer({ markdown }: MarkdownRendererProps) {
     span: {},
   });
 
-  return <Markdown style={markdownStyles}>{markdown}</Markdown>;
+  return (
+    <ScrollView>
+      <Markdown style={markdownStyles}>{markdown}</Markdown>
+    </ScrollView>
+  );
 }
 
 export default MarkdownRenderer;
