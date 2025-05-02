@@ -28,6 +28,7 @@ import {
 import Toast from 'react-native-toast-message';
 
 import { useTheme } from '@/theme';
+import useKeyboardShortcuts from '@/hooks/keyboard/useKeyboardShortcuts';
 import { Paths } from '@/navigation/paths';
 
 import { TitleBar } from '@/components/atoms';
@@ -58,7 +59,6 @@ import {
   getSupportFile,
   projectListsAreEqual,
 } from '@/utils/projectHelpers';
-import useKeyboardShortcuts from '@/hooks/keyboard/useKeyboardShortcuts';
 
 function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
   useAtom(SaveAtomEffect);
@@ -77,8 +77,6 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
 
   const [usageStats, setUsageStats] = useAtom(UsageStatsStateAtom);
 
-  const [sequence, setSequence] = useState<null | string>(null);
-
   useKeyboardShortcuts({
     ctrlTimeout: 300,
     letters: {
@@ -87,7 +85,7 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
     },
     onSequence: (seq) => {
       console.log('Ctrl +', seq);
-    }
+    },
   });
 
   useEffect(() => {
