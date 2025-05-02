@@ -3,6 +3,7 @@ import KeyEvent from 'react-native-keyevent';
 
 export interface ShortcutConfig {
   ctrlTimeout?: number;
+  enabled?: boolean;
   letters?: Record<string, () => void>;
   onSequence?: (sequence: string) => void;
   sequences?: Record<string, () => void>;
@@ -49,6 +50,7 @@ const getLetter = (keyCode: number): null | string => {
 
 export default function useKeyboardShortcuts({
   ctrlTimeout = 200,
+  enabled = true,
   letters = {},
   onSequence,
   sequences = {},
@@ -61,6 +63,8 @@ export default function useKeyboardShortcuts({
   const CTRL_RIGHT = 114;
 
   useEffect(() => {
+    if (!enabled) {return;}
+
     const onKeyDown = ({ keyCode }: { keyCode: number }) => {
       if (keyCode === CTRL_LEFT || keyCode === CTRL_RIGHT) {
         ctrlPressed.current = true;
@@ -115,5 +119,5 @@ export default function useKeyboardShortcuts({
         clearTimeout(timeoutId.current);
       }
     };
-  }, [letters, sequences, onSequence, ctrlTimeout]);
+  }, [enabled, letters, sequences, onSequence, ctrlTimeout]);
 }

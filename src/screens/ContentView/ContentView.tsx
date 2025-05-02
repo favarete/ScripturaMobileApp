@@ -1,7 +1,7 @@
 import type { RootScreenProps } from '@/navigation/types';
 import type { Chapter, DailyStats, Project } from '@/state/defaults';
 
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import { useAtom, useAtomValue } from 'jotai';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -50,6 +50,7 @@ import {
   updateWordWrittenTodayRecords,
 } from '@/utils/common';
 import { print } from '@/utils/logger';
+import useKeyboardShortcuts from '@/hooks/keyboard/useKeyboardShortcuts';
 
 function ContentView({
   navigation,
@@ -308,6 +309,18 @@ function ContentView({
     navigation.navigate(Paths.StatisticsView, { chapterId, projectId });
   };
 
+  const isFocused = useIsFocused();
+
+  useKeyboardShortcuts({
+    ctrlTimeout: 300,
+    enabled: isFocused,
+    letters: {
+      B: () => onNavigateBack(),
+      S: () => onNavigateToStatistics(),
+      T: () => onToggleView(),
+    },
+  });
+
   const handleTextChange = (newText: string) => {
     if (!startAutosave.current) {
       startAutosave.current = true;
@@ -401,7 +414,7 @@ function ContentView({
         <View style={layout.flex_1}>
           <TitleBar
             onNavigateBack={onNavigateBack}
-            onToggleView={!typewriterMode ? onToggleView : undefined}
+            onToggleView={onToggleView}
             title={chapterTitle}
             viewMode={viewMode}
           />

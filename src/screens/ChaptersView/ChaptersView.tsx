@@ -17,6 +17,7 @@ import Toast from 'react-native-toast-message';
 
 import { useTheme } from '@/theme';
 import PlaceholderImage from '@/theme/assets/images/placeholder_book_cover.png';
+import useKeyboardShortcuts from '@/hooks/keyboard/useKeyboardShortcuts';
 import { Paths } from '@/navigation/paths';
 
 import { TitleBar } from '@/components/atoms';
@@ -48,6 +49,7 @@ import {
 } from '@/utils/common';
 import { print } from '@/utils/logger';
 import { findProjectById, getSupportFile } from '@/utils/projectHelpers';
+import { useIsFocused } from '@react-navigation/native';
 
 function ChaptersView({
   navigation,
@@ -146,6 +148,26 @@ function ChaptersView({
       willNavigate: 'forward',
     });
   };
+
+  const isFocused = useIsFocused();
+
+  useKeyboardShortcuts({
+    ctrlTimeout: 300,
+    enabled: isFocused,
+    letters: {
+      B: () => onNavigateBack(),
+    },
+    onSequence: (seq) => {
+      if (isEditingChapterTitle === '') {
+        const parsedNumber = Number(seq);
+        if (Number.isInteger(parsedNumber)) {
+          if (parsedNumber > 0 && parsedNumber <= allChaptersSorted.length) {
+            onNavigate(allChaptersSorted[parsedNumber - 1].id);
+          }
+        }
+      }
+    },
+  });
 
   const updateChaptersStatus = (
     projectId: string,
@@ -440,9 +462,11 @@ function ChaptersView({
             <View>
               <TitleBar onNavigateBack={onNavigateBack} title={projectTitle} />
             </View>
-            <View style={styles.imageContainer}>
-              <Image source={PlaceholderImage} style={[styles.image]} />
-            </View>
+            {!loadingChapters && (
+              <View style={styles.imageContainer}>
+                <Image source={PlaceholderImage} style={[styles.image]} />
+              </View>
+            )}
             <Text
               style={[
                 gutters.marginHorizontal_32,

@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { useTheme } from '@/theme';
+import useKeyboardShortcuts from '@/hooks/keyboard/useKeyboardShortcuts';
 import { languages } from '@/hooks/language/schema';
 import { Paths } from '@/navigation/paths';
 
@@ -24,6 +25,7 @@ import {
   ThemeStateAtom,
   TypewriterModeStateAtom,
 } from '@/state/atoms/persistentContent';
+import { useIsFocused } from '@react-navigation/native';
 
 function SettingsView({
   navigation,
@@ -45,6 +47,16 @@ function SettingsView({
       navigation.navigate(Paths.StatisticsView, { chapterId, projectId });
     }
   };
+
+  const isFocused = useIsFocused();
+
+  useKeyboardShortcuts({
+    ctrlTimeout: 300,
+    enabled: isFocused,
+    letters: {
+      B: () => onNavigateBack(),
+    },
+  });
 
   const onChangeLanguage = (newLanguage: SupportedLanguages) => {
     setSelectedLanguage(newLanguage);

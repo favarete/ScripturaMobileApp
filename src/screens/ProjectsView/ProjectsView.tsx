@@ -59,6 +59,7 @@ import {
   getSupportFile,
   projectListsAreEqual,
 } from '@/utils/projectHelpers';
+import { useIsFocused } from '@react-navigation/native';
 
 function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
   useAtom(SaveAtomEffect);
@@ -76,17 +77,6 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
   const [editingId, setEditingId] = useState<string>('');
 
   const [usageStats, setUsageStats] = useAtom(UsageStatsStateAtom);
-
-  useKeyboardShortcuts({
-    ctrlTimeout: 300,
-    letters: {
-      N: () => console.log('Próximo!'),
-      P: () => console.log('Anterior!'),
-    },
-    onSequence: (seq) => {
-      console.log('Ctrl +', seq);
-    },
-  });
 
   useEffect(() => {
     if (dailyWordsStats.length > 0) {
@@ -218,6 +208,26 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
   const onNavigateSettings = () => {
     navigation.navigate(Paths.SettingsView, { chapterId: '', projectId: '' });
   };
+
+  const isFocused = useIsFocused();
+
+  useKeyboardShortcuts({
+    ctrlTimeout: 300,
+    enabled: isFocused,
+    letters: {
+      S: () => onNavigateSettings(),
+    },
+    onSequence: (seq) => {
+      if (editingId === '') {
+        const parsedNumber = Number(seq);
+        if (Number.isInteger(parsedNumber)) {
+          if (parsedNumber > 0 && parsedNumber <= allProjectsSort.length) {
+            onNavigate(allProjectsSort[parsedNumber - 1])
+          }
+        }
+      }
+    },
+  });
 
   // Change the exhibition title and the folder name
   const changeProjectTitle = (projectId: string, newTitle: string) => {

@@ -37,6 +37,8 @@ import {
   getAverageWrittenWords,
 } from '@/utils/common';
 import { findProjectById } from '@/utils/projectHelpers';
+import useKeyboardShortcuts from '@/hooks/keyboard/useKeyboardShortcuts';
+import { useIsFocused } from '@react-navigation/native';
 
 function StatisticsView({
   navigation,
@@ -62,6 +64,17 @@ function StatisticsView({
   const onNavigateSettings = () => {
     navigation.navigate(Paths.SettingsView, { chapterId, projectId });
   };
+
+  const isFocused = useIsFocused();
+
+  useKeyboardShortcuts({
+    ctrlTimeout: 300,
+    enabled: isFocused,
+    letters: {
+      B: () => onNavigateBack(),
+      S: () => onNavigateSettings(),
+    },
+  });
 
   const styles = StyleSheet.create({
     editButton: {
