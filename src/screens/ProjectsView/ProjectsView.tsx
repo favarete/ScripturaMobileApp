@@ -153,9 +153,18 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
                   }
                 }
               }
-              let projectsSort = allProjectsSort;
+              let projectsSort = [...allProjectsSort];
+              projectsSort = projectsSort.filter((item): item is string => item != null);
               if (projectsSort.length === 0) {
                 projectsSort = allProjectsTemp.map((project) => project.id);
+                setAllProjectsSort(projectsSort);
+              }
+              else if (projectsSort.length !== allProjectsTemp.length) {
+                const setA = new Set(projectsSort);
+                const zllIds = allProjectsTemp.map((project) => project.id);
+
+                const uniqueItemsFromB = zllIds.filter(item => !setA.has(item));
+                projectsSort = [...new Set([...uniqueItemsFromB, ...zllIds])];
                 setAllProjectsSort(projectsSort);
               }
               const orderMap = new Map(
@@ -167,7 +176,6 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
                   (orderMap.get(b.id) ?? Infinity)
                 );
               });
-
               setAllProjects(sortedArray);
             }
           }
@@ -346,10 +354,6 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
   const renderItem = ({ item }: ListRenderItemInfo<Project>) => (
     <ProjectCardInstance {...item} />
   );
-
-  // useEffect(() => {
-  //   setLoadingProjects(true);
-  // }, [allProjectsSort]);
 
   const handleReorder = ({ from, to }: ReorderableListReorderEvent) => {
     setAllProjectsSort((value) => reorderItems(value, from, to));
