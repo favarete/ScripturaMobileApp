@@ -14,7 +14,7 @@ import {
 
 import { useTheme } from '@/theme';
 
-import { SelectedChapterStateAtom } from '@/state/atoms/temporaryContent';
+import { SelectedItemStateAtom } from '@/state/atoms/temporaryContent';
 
 export type ContextMenuItem = {
   color: string;
@@ -44,7 +44,7 @@ function CustomContextMenu({
   menuTitleBackgroundColor,
   onPress,
 }: CustomContextMenuProps) {
-  const setSelectedChapterId = useSetAtom(SelectedChapterStateAtom);
+  const setSelectedItem = useSetAtom(SelectedItemStateAtom);
   const { colors } = useTheme();
 
   const [menuVisible, setMenuVisible] = useState(false);
@@ -124,11 +124,11 @@ function CustomContextMenu({
 
   useEffect(() => {
     if (menuVisible) {
-      setSelectedChapterId(id);
+      setSelectedItem(id);
     } else {
-      setSelectedChapterId('');
+      setSelectedItem('');
     }
-  }, [id, menuVisible, setSelectedChapterId]);
+  }, [id, menuVisible]);
 
   return (
     <View>

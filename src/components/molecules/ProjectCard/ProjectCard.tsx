@@ -1,3 +1,4 @@
+import type { ImageURISource } from 'react-native';
 import type { DocumentFileDetail } from 'react-native-saf-x';
 import type { ContextMenuItem } from '@/components/atoms/CustomContextMenu/CustomContextMenu';
 import type { Project } from '@/state/defaults';
@@ -5,11 +6,9 @@ import type { Project } from '@/state/defaults';
 import FeatherIcons from '@react-native-vector-icons/feather';
 import MaterialIcons from '@react-native-vector-icons/material-icons';
 import SimpleLineIcons from '@react-native-vector-icons/simple-line-icons';
-import { useAtomValue, useSetAtom } from 'jotai';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type {
-  ImageURISource} from 'react-native';
 import {
   Image,
   Keyboard,
@@ -41,7 +40,10 @@ import {
   ThemeStateAtom,
   TypewriterModeStateAtom,
 } from '@/state/atoms/persistentContent';
-import { DisableAllNavigationStateAtom } from '@/state/atoms/temporaryContent';
+import {
+  DisableAllNavigationStateAtom,
+  ItemEditStateAtom,
+} from '@/state/atoms/temporaryContent';
 import { getProjectById } from '@/utils/chapterHelpers';
 import { print } from '@/utils/logger';
 import { getSupportFile } from '@/utils/projectHelpers';
@@ -52,12 +54,10 @@ type ProjectProps = {
   changeProjectTitle: (projectId: string, newTitle: string) => void;
   description: string;
   drag: () => void;
-  editingId: string;
   id: string;
   image: null | string;
   isActive: boolean;
   onNavigate: (id: string) => void;
-  setEditingId: React.Dispatch<React.SetStateAction<string>>;
   title: string;
   triggerUpdate: React.Dispatch<React.SetStateAction<boolean>>;
 };
@@ -79,12 +79,10 @@ function ProjectCard({
   changeProjectTitle,
   description,
   drag,
-  editingId,
   id,
   image,
   isActive,
   onNavigate,
-  setEditingId,
   title,
   triggerUpdate,
 }: ProjectProps) {
@@ -95,6 +93,7 @@ function ProjectCard({
   const variant = useAtomValue(ThemeStateAtom);
   const setAllProjects = useSetAtom(ProjectsDataStateAtom);
   const setDisableAllNavigation = useSetAtom(DisableAllNavigationStateAtom);
+  const [editingId, setEditingId] = useAtom(ItemEditStateAtom);
 
   const [imageToLoad, setImageToLoad] = useState<ImageURISource>(
     variant === 'default' ? PlaceholderImage : PlaceholderImageDark,
@@ -121,7 +120,6 @@ function ProjectCard({
   }, [homeFolder, image]);
 
   const [tempImage, setTempImage] = useState<ImageURISource | null>(null);
-  const [isEditing, setIsEditing] = useState<string>('');
   const [editedTitle, setEditedTitle] = useState(title);
   const [editedDescription, setEditedDescription] = useState(description);
   const [deleteDialog, setDeleteDialog] = useState<boolean>(false);
@@ -129,12 +127,12 @@ function ProjectCard({
   const ICON_SIZE = 20;
 
   useEffect(() => {
-    if (isEditing.length !== 0) {
+    if (editingId.id.length !== 0 && editingId.id === id) {
       setDisableAllNavigation(true);
     } else {
       setDisableAllNavigation(false);
     }
-  }, [isEditing]);
+  }, [editingId]);
 
   useEffect(() => {
     const checkKeyboard = async () => {
@@ -163,8 +161,11 @@ function ProjectCard({
         };
         if (result?.length === 1 && isValidImage(result[0])) {
           setTempImage({ uri: result[0].uri });
-          setIsEditing(CHANGE_IMAGE_TYPE);
-          setEditingId(id);
+          setEditingId({
+            id,
+            screen: 'projects-view',
+            type: CHANGE_IMAGE_TYPE,
+          });
         }
       } catch (error) {
         print(error);
@@ -180,8 +181,11 @@ function ProjectCard({
       ),
       label: t('screen_projects.cards.edit_title'),
       onPress: () => {
-        setIsEditing(EDIT_TITLE_TYPE);
-        setEditingId(id);
+        setEditingId({
+          id,
+          screen: 'projects-view',
+          type: EDIT_TITLE_TYPE,
+        });
       },
     },
     {
@@ -191,8 +195,11 @@ function ProjectCard({
       ),
       label: t('screen_projects.cards.edit_description'),
       onPress: () => {
-        setIsEditing(EDIT_DESCRIPTION_TYPE);
-        setEditingId(id);
+        setEditingId({
+          id,
+          screen: 'projects-view',
+          type: EDIT_DESCRIPTION_TYPE,
+        });
       },
     },
     {
@@ -243,8 +250,11 @@ function ProjectCard({
           break;
       }
     }
-    setEditingId('');
-    setIsEditing('');
+    setEditingId({
+      id: '',
+      screen: '',
+      type: '',
+    });
     setTempImage(null);
   };
 
@@ -259,6 +269,7 @@ function ProjectCard({
       paddingHorizontal: 8,
       paddingVertical: 2,
       textAlign: 'center',
+      zIndex: 100_000,
     },
     adornmentContainerDescription: {
       backgroundColor:
@@ -266,7 +277,7 @@ function ProjectCard({
     },
     adornmentContainerTitle: {
       backgroundColor:
-        editedTitle.length < 25 ? colors.purple500 : colors.red500,
+        editedTitle.length < 20 ? colors.purple500 : colors.red500,
     },
     elevatedBox: {
       backgroundColor: colors.purple100 + '4E',
@@ -283,6 +294,7 @@ function ProjectCard({
       borderBottomWidth: 1,
       height: 115,
       marginBottom: 11,
+      width: 200,
     },
     inputDescriptionContent: {
       backgroundColor: 'transparent',
@@ -291,8 +303,10 @@ function ProjectCard({
       lineHeight: 24,
       paddingBottom: 1,
       paddingLeft: 0,
+      paddingRight: 35,
       paddingTop: 1,
       textAlignVertical: 'center',
+      zIndex: 999_999,
     },
     inputTitleContainer: {
       backgroundColor: 'transparent',
@@ -300,6 +314,7 @@ function ProjectCard({
       borderBottomWidth: 1,
       height: 24,
       marginBottom: 11,
+      width: 180,
     },
     inputTitleContent: {
       backgroundColor: 'transparent',
@@ -308,25 +323,11 @@ function ProjectCard({
       lineHeight: 24,
       paddingBottom: 1,
       paddingLeft: 0,
+      paddingRight: 15,
       paddingTop: 1,
       textAlignVertical: 'center',
     },
-    sendToBackground: {
-      opacity: 0.5,
-      zIndex: 1,
-    },
-    sendToForeground: {
-      zIndex: 200,
-    },
   });
-
-  let editingStyle;
-  if (editingId.length > 0) {
-    editingStyle =
-      editingId === id ? styles.sendToForeground : styles.sendToBackground;
-  } else {
-    editingStyle = undefined;
-  }
 
   const destroyContent = async (shouldDestroy: boolean) => {
     if (shouldDestroy) {
@@ -361,16 +362,10 @@ function ProjectCard({
   };
 
   return (
-    <View
-      style={[
-        gutters.marginBottom_12,
-        isActive && styles.elevatedBox,
-        editingStyle,
-      ]}
-    >
+    <View style={[gutters.marginBottom_12, isActive && styles.elevatedBox]}>
       <CustomContextMenu
         backgroundColor={colors.full}
-        id={title}
+        id={id}
         menuItems={menuItems}
         menuTitle={title}
         menuTitleBackgroundColor={colors.purple100}
@@ -381,20 +376,16 @@ function ProjectCard({
             <Image
               resizeMode="cover"
               source={tempImage ?? imageToLoad}
-              style={[
-                styles.image,
-                editingId.length === 0 ||
-                (editingId === id && isEditing === CHANGE_IMAGE_TYPE)
-                  ? styles.sendToForeground
-                  : styles.sendToBackground,
-              ]}
+              style={[styles.image]}
             />
-            {isEditing === CHANGE_IMAGE_TYPE && (
-              <ConfirmationDialog
-                dialogType={CHANGE_IMAGE_TYPE}
-                handleDialogClick={handleDialogClick}
-              />
-            )}
+            {editingId.id === id &&
+              editingId.screen === 'projects-view' &&
+              editingId.type === CHANGE_IMAGE_TYPE && (
+                <ConfirmationDialog
+                  dialogType={CHANGE_IMAGE_TYPE}
+                  handleDialogClick={handleDialogClick}
+                />
+              )}
           </View>
           <View
             style={[
@@ -403,13 +394,15 @@ function ProjectCard({
               gutters.paddingHorizontal_12,
             ]}
           >
-            {isEditing === EDIT_TITLE_TYPE ? (
+            {editingId.id === id &&
+            editingId.screen === 'projects-view' &&
+            editingId.type === EDIT_TITLE_TYPE ? (
               <View style={styles.inputTitleContainer}>
                 <TextInput
                   autoFocus
                   cursorColor={colors.purple500}
                   keyboardType="default"
-                  maxLength={25}
+                  maxLength={20}
                   onChangeText={setEditedTitle}
                   returnKeyType="default"
                   selectionColor={colors.gray200}
@@ -435,7 +428,7 @@ function ProjectCard({
                       styles.adornmentContainerTitle,
                     ]}
                   >
-                    {editedTitle.length}/25
+                    {editedTitle.length}/20
                   </Text>
                 </ConfirmationDialog>
               </View>
@@ -446,16 +439,14 @@ function ProjectCard({
                   fonts.size_16,
                   fonts.gray800,
                   gutters.marginBottom_12,
-                  editingId.length === 0 ||
-                  (editingId === id && isEditing === EDIT_TITLE_TYPE)
-                    ? styles.sendToForeground
-                    : styles.sendToBackground,
                 ]}
               >
                 {title}
               </Text>
             )}
-            {isEditing === EDIT_DESCRIPTION_TYPE ? (
+            {editingId.id === id &&
+            editingId.screen === 'projects-view' &&
+            editingId.type === EDIT_DESCRIPTION_TYPE ? (
               <View style={styles.inputDescriptionContainer}>
                 <TextInput
                   autoFocus
@@ -501,23 +492,21 @@ function ProjectCard({
                   fonts.gray400,
                   fonts.size_12,
                   fonts.lineGap,
-                  editingId.length === 0 ||
-                  (editingId === id && isEditing === EDIT_DESCRIPTION_TYPE)
-                    ? styles.sendToForeground
-                    : styles.sendToBackground,
                 ]}
               >
                 {descriptionContent}
               </Text>
             )}
           </View>
-          <View>
-            <TouchableOpacity onLongPress={drag}>
-              <Text>
-                <MaterialIcons color={colors.gray800} name="sort" size={30} />
-              </Text>
-            </TouchableOpacity>
-          </View>
+          {
+            editingId.id === '' && <View>
+              <TouchableOpacity onLongPress={drag}>
+                <Text>
+                  <MaterialIcons color={colors.gray800} name="sort" size={30} />
+                </Text>
+              </TouchableOpacity>
+            </View>
+          }
         </View>
       </CustomContextMenu>
       <ContentDestroyer

@@ -4,6 +4,7 @@ import type { ReorderableListReorderEvent } from 'react-native-reorderable-list'
 import type { RootScreenProps } from '@/navigation/types';
 import type { Project } from '@/state/defaults';
 
+import { useIsFocused } from '@react-navigation/native';
 import { useAtom, useAtomValue } from 'jotai';
 import React, { memo, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -48,6 +49,7 @@ import {
   SaveAtomEffect,
   UsageStatsStateAtom,
 } from '@/state/atoms/persistentContent';
+import { ItemEditStateAtom } from '@/state/atoms/temporaryContent';
 import { initialProjectContent } from '@/state/defaults';
 import { createNewUUID, updateLastSegment } from '@/utils/common';
 import { print } from '@/utils/logger';
@@ -59,7 +61,6 @@ import {
   getSupportFile,
   projectListsAreEqual,
 } from '@/utils/projectHelpers';
-import { useIsFocused } from '@react-navigation/native';
 
 function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
   useAtom(SaveAtomEffect);
@@ -74,7 +75,7 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
   const dailyWordsStats = useAtomValue(DailyWordsStatsStateAtom);
 
   const [loadingProjects, setLoadingProjects] = useState<boolean>(true);
-  const [editingId, setEditingId] = useState<string>('');
+  const editingItem = useAtomValue(ItemEditStateAtom);
 
   const [usageStats, setUsageStats] = useAtom(UsageStatsStateAtom);
 
@@ -200,7 +201,7 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
   }, [allProjects, homeFolder, language, loadingProjects, setAllProjects, t]);
 
   const onNavigate = (projectId: string) => {
-    if (editingId === '') {
+    if (editingItem.id === '') {
       navigation.navigate(Paths.ChaptersView, { projectId });
     }
   };
@@ -218,11 +219,11 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
       S: () => onNavigateSettings(),
     },
     onSequence: (seq) => {
-      if (editingId === '') {
+      if (editingItem.id === '') {
         const parsedNumber = Number(seq);
         if (Number.isInteger(parsedNumber)) {
           if (parsedNumber > 0 && parsedNumber <= allProjectsSort.length) {
-            onNavigate(allProjectsSort[parsedNumber - 1])
+            onNavigate(allProjectsSort[parsedNumber - 1]);
           }
         }
       }
@@ -352,22 +353,48 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
     ({ blurb, coverPath, id, title }) => {
       const drag = useReorderableDrag();
       const isActive = useIsActive();
+      const [zIndex, setZIndex] = useState({
+        opacity: 1,
+        zIndex: -20,
+      });
+
+      useEffect(() => {
+        if (
+          editingItem.screen === 'projects-view' &&
+          editingItem.id.length !== 0
+        ) {
+          if (editingItem.id === id) {
+            setZIndex({
+              opacity: 1,
+              zIndex: -99_999,
+            });
+          } else {
+            setZIndex({
+              opacity: 0.25,
+              zIndex: -99_999,
+            });
+          }
+        } else {
+          setZIndex({
+            opacity: 1,
+            zIndex: -99_999,
+          });
+        }
+      }, [editingItem]);
 
       return (
-        <View style={[gutters.paddingHorizontal_24]}>
+        <View style={[gutters.paddingHorizontal_24, zIndex]}>
           <ProjectCard
             changeProjectDescription={changeProjectDescription}
             changeProjectImage={changeProjectImage}
             changeProjectTitle={changeProjectTitle}
             description={blurb}
             drag={drag}
-            editingId={editingId}
             id={id}
             image={coverPath}
             isActive={isActive}
             key={title}
             onNavigate={onNavigate}
-            setEditingId={setEditingId}
             title={title}
             triggerUpdate={setLoadingProjects}
           />
@@ -393,7 +420,7 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
   });
 
   return (
-    <View style={layout.flex_1}>
+    <View>
       {loadingProjects ? (
         <BounceLoader
           animationDuration={800}
@@ -413,6 +440,9 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
                 layout.itemsCenter,
                 layout.fullWidth,
                 gutters.marginTop_4,
+                {
+                  zIndex: -999,
+                },
               ]}
             >
               {!loadingProjects && (

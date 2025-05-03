@@ -6,6 +6,11 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { useTheme } from '@/theme';
 
+import {
+  EDIT_DESCRIPTION_TYPE,
+  EDIT_TITLE_TYPE,
+} from '@/components/molecules/ProjectCard/ProjectCard';
+
 type ConfirmationDialogProps = PropsWithChildren<{
   dialogType: string;
   handleDialogClick: (dialogType: string, action: string) => void;
@@ -18,9 +23,17 @@ function ConfirmationDialog({
 }: ConfirmationDialogProps) {
   const { colors, gutters, layout } = useTheme();
 
+  // This is fucking ugly, but I am tired of debugging the zIndex of the
+  // reordering component
+  // Probably I will need to come up with a fiz for the library
   const styles = StyleSheet.create({
     cancelButton: {
       backgroundColor: colors.full,
+    },
+    countLabel: {
+      right: dialogType === EDIT_DESCRIPTION_TYPE ? 10 : -10,
+      top: dialogType === EDIT_DESCRIPTION_TYPE ? 8 : -4,
+      width: 50,
     },
     customButton: {
       alignItems: 'center',
@@ -29,6 +42,7 @@ function ConfirmationDialog({
       elevation: 3,
       height: 60,
       justifyContent: 'center',
+      marginRight: 11,
       padding: 5,
       shadowColor: colors.gray800,
       shadowOffset: { height: 4, width: 0 },
@@ -37,10 +51,22 @@ function ConfirmationDialog({
       width: 60,
     },
     dialogContainer: {
-      top: '100%',
+      right:
+        dialogType === EDIT_DESCRIPTION_TYPE
+          ? -40
+          : dialogType === EDIT_TITLE_TYPE
+            ? -10
+            : -60,
+      top:
+        dialogType === EDIT_DESCRIPTION_TYPE
+          ? -50
+          : dialogType === EDIT_TITLE_TYPE
+            ? 15
+            : 0,
+      zIndex: 999_999,
     },
     positionForeground: {
-      zIndex: 999,
+      zIndex: 999_999,
     },
     saveButton: {
       backgroundColor: colors.purple100,
@@ -51,9 +77,10 @@ function ConfirmationDialog({
     <View
       style={[
         styles.dialogContainer,
-        layout.row,
+        dialogType === EDIT_TITLE_TYPE ? layout.row : layout.col,
         layout.absolute,
         gutters.marginTop_12,
+        styles.positionForeground,
       ]}
     >
       <TouchableOpacity
@@ -62,7 +89,7 @@ function ConfirmationDialog({
           styles.customButton,
           styles.positionForeground,
           styles.saveButton,
-          gutters.marginRight_12,
+          gutters.marginBottom_12,
         ]}
       >
         <Text>
@@ -74,7 +101,7 @@ function ConfirmationDialog({
         style={[
           styles.customButton,
           styles.cancelButton,
-          gutters.marginRight_12,
+          gutters.marginBottom_12,
           styles.positionForeground,
         ]}
       >
@@ -82,7 +109,9 @@ function ConfirmationDialog({
           <Icon color={colors.red500} name="clear" size={30} />
         </Text>
       </TouchableOpacity>
-      <View style={styles.positionForeground}>{children}</View>
+      <View style={[styles.positionForeground, styles.countLabel]}>
+        {children}
+      </View>
     </View>
   );
 }

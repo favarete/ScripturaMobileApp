@@ -30,7 +30,7 @@ import {
 } from '@/state/atoms/persistentContent';
 import {
   DisableAllNavigationStateAtom,
-  SelectedChapterStateAtom,
+  SelectedItemStateAtom,
 } from '@/state/atoms/temporaryContent';
 import { getChapterById } from '@/utils/chapterHelpers';
 import { print } from '@/utils/logger';
@@ -88,7 +88,7 @@ function ChapterCard({
 
   const { t } = useTranslation();
 
-  const selectedChapterId = useAtomValue(SelectedChapterStateAtom);
+  const selectedChapterId = useAtomValue(SelectedItemStateAtom);
   const setAllProjects = useSetAtom(ProjectsDataStateAtom);
   const homeFolder = useAtomValue(HomeFolderStateAtom);
   const typewriterMode = useAtomValue(TypewriterModeStateAtom);
