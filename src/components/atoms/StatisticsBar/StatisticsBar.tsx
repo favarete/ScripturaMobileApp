@@ -51,7 +51,7 @@ function StatisticsBar({
       paddingVertical: viewMode ? 12 : 4,
     },
     statisticsBarContainer: {
-      bottom: -1,
+      bottom: 50,
       height: viewMode ? 64 : 32,
       left: 0,
       position: 'absolute',

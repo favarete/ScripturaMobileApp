@@ -1,5 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import KeyEvent from 'react-native-keyevent';
+import { Keyboard } from 'react-native';
 
 export interface ShortcutConfig {
   ctrlTimeout?: number;
@@ -47,6 +48,21 @@ const getLetter = (keyCode: number): null | string => {
   };
   return codeToLetter[keyCode as keyof typeof codeToLetter] || null;
 };
+
+export function useKeyboardVisible(): boolean {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const show = Keyboard.addListener('keyboardDidShow', () => setVisible(true));
+    const hide = Keyboard.addListener('keyboardDidHide', () => setVisible(false));
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, []);
+
+  return visible;
+}
 
 export default function useKeyboardShortcuts({
   ctrlTimeout = 200,

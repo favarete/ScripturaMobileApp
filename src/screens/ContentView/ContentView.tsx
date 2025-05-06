@@ -1,3 +1,7 @@
+import type {
+  NativeSyntheticEvent,
+  TextInputSelectionChangeEventData,
+} from 'react-native';
 import type { RootScreenProps } from '@/navigation/types';
 import type { Chapter, DailyStats, Project } from '@/state/defaults';
 
@@ -5,20 +9,12 @@ import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import { useAtom, useAtomValue } from 'jotai';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type {
-  NativeSyntheticEvent,
-  TextInputSelectionChangeEventData} from 'react-native';
-import {
-  Keyboard,
-  StyleSheet,
-  TextInput,
-  useWindowDimensions,
-  View,
-} from 'react-native';
+import { Keyboard, StyleSheet, TextInput, View } from 'react-native';
 import { readFile, writeFile } from 'react-native-saf-x';
 import Toast from 'react-native-toast-message';
 
 import { useTheme } from '@/theme';
+import useKeyboardShortcuts from '@/hooks/keyboard/useKeyboardShortcuts';
 import { Paths } from '@/navigation/paths';
 
 import { TitleBar } from '@/components/atoms';
@@ -50,7 +46,6 @@ import {
   updateWordWrittenTodayRecords,
 } from '@/utils/common';
 import { print } from '@/utils/logger';
-import useKeyboardShortcuts from '@/hooks/keyboard/useKeyboardShortcuts';
 
 function ContentView({
   navigation,
@@ -60,7 +55,7 @@ function ContentView({
 
   const { t } = useTranslation();
 
-  const { colors, fonts, gutters, layout } = useTheme();
+  const { colors, fonts, gutters } = useTheme();
   const { chapterId, projectId } = route.params;
 
   const [allProjects, setAllProjects] = useAtom(ProjectsDataStateAtom);
@@ -94,7 +89,7 @@ function ContentView({
 
   const [selection, setSelection] = useState({ end: 0, start: 0 });
 
-  const handleSelectionChange = (
+  const handleSelectionChange = async (
     event: NativeSyntheticEvent<TextInputSelectionChangeEventData>,
   ) => {
     const { selection } = event.nativeEvent;
@@ -376,87 +371,59 @@ function ContentView({
     setViewMode(!viewMode);
   };
 
-  const { height: winH } = useWindowDimensions();
-
   const styles = StyleSheet.create({
-    markdownContent: {
-      backgroundColor: colors.gray50 + '5F',
-      height: '100%',
-      marginBottom: 64,
-    },
-    markdownContentEdit: {
-      backgroundColor: colors.full,
-      marginBottom: 64,
-      marginTop: 0,
-      padding: 0,
-    },
-    markdownEditContainer: {
-      marginTop: -20,
-      paddingTop: 10,
-    },
     markdownEditStyles: {
       ...fonts.size_16,
       ...fonts.gray800,
       borderWidth: 0,
       fontFamily: 'monospace',
-      height: winH - 91,
       lineHeight: 24,
-      marginHorizontal: 0,
-      marginTop: 10,
-      padding: 0,
+      marginTop: -10,
+      paddingBottom: 135,
       verticalAlign: 'middle',
     },
   });
 
   return (
-    <View style={[layout.flex_1, { margin: 0 }]}>
+    <View>
+      <TitleBar
+        onNavigateBack={onNavigateBack}
+        onToggleView={selectedChapter && onToggleView}
+        title={chapterTitle}
+        viewMode={viewMode}
+      />
       {selectedChapter && (
-        <View style={layout.flex_1}>
-          <TitleBar
-            onNavigateBack={onNavigateBack}
-            onToggleView={onToggleView}
-            title={chapterTitle}
-            viewMode={viewMode}
-          />
-          <View
-            style={[gutters.paddingHorizontal_8, gutters.marginHorizontal_8]}
-          >
-            <View
-              style={
-                viewMode ? styles.markdownContent : styles.markdownContentEdit
-              }
-            >
-              {viewMode ? (
-                <MarkdownRenderer markdown={markdownText} />
-              ) : (
-                <View style={styles.markdownEditContainer}>
-                  <TextInput
-                    autoCapitalize="none"
-                    autoFocus
-                    cursorColor={colors.purple500}
-                    inputMode="text"
-                    keyboardType="default"
-                    maxLength={30_000}
-                    multiline
-                    onChangeText={handleTextChange}
-                    onSelectionChange={handleSelectionChange}
-                    selection={selection}
-                    showSoftInputOnFocus={!typewriterMode}
-                    style={styles.markdownEditStyles}
-                    value={markdownText}
-                  />
-                </View>
-              )}
-            </View>
-          </View>
-          <StatisticsBar
-            onNavigateToStatistics={onNavigateToStatistics}
-            viewMode={viewMode}
-            wordCount={minimizeMarkdownTextLength(markdownText)}
-            wordGoal={dailyGoalMode.enabled ? dailyGoalMode.target : -1}
-            wordsWrittenToday={wordWrittenToday.value}
-          />
+        <View style={[gutters.paddingHorizontal_8, gutters.marginHorizontal_8]}>
+          {viewMode ? (
+            <MarkdownRenderer markdown={markdownText} />
+          ) : (
+            <TextInput
+              autoCapitalize="none"
+              autoFocus
+              cursorColor={colors.purple500}
+              inputMode="text"
+              keyboardType="default"
+              maxLength={30_000}
+              multiline
+              onChangeText={handleTextChange}
+              onSelectionChange={handleSelectionChange}
+              scrollEnabled={true}
+              selection={selection}
+              showSoftInputOnFocus={!typewriterMode}
+              style={[styles.markdownEditStyles]}
+              value={markdownText}
+            />
+          )}
         </View>
+      )}
+      {selectedChapter && (
+        <StatisticsBar
+          onNavigateToStatistics={onNavigateToStatistics}
+          viewMode={viewMode}
+          wordCount={minimizeMarkdownTextLength(markdownText)}
+          wordGoal={dailyGoalMode.enabled ? dailyGoalMode.target : -1}
+          wordsWrittenToday={wordWrittenToday.value}
+        />
       )}
     </View>
   );
