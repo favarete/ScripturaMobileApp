@@ -2,6 +2,7 @@ import type { ImageURISource } from 'react-native';
 import type { RootScreenProps } from '@/navigation/types';
 import type { Chapter, Project } from '@/state/defaults';
 
+import { useIsFocused } from '@react-navigation/native';
 import { useAtom, useAtomValue } from 'jotai';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -49,7 +50,6 @@ import {
 } from '@/utils/common';
 import { print } from '@/utils/logger';
 import { findProjectById, getSupportFile } from '@/utils/projectHelpers';
-import { useIsFocused } from '@react-navigation/native';
 
 function ChaptersView({
   navigation,
@@ -421,12 +421,19 @@ function ChaptersView({
     <View>
       {loadingChapters ? (
         <View style={layout.fullHeight}>
-          <View style={layout.flex_1}>
-            <TitleBar onNavigateBack={onNavigateBack} title={projectTitle} />
-          </View>
-          <View style={styles.imageContainer}>
-            <Image source={PlaceholderImage} style={[styles.image]} />
-          </View>
+          {!loadingChapters && (
+            <View>
+              <View style={layout.flex_1}>
+                <TitleBar
+                  onNavigateBack={onNavigateBack}
+                  title={projectTitle}
+                />
+              </View>
+              <View style={styles.imageContainer}>
+                <Image source={PlaceholderImage} style={[styles.image]} />
+              </View>
+            </View>
+          )}
           <BounceLoader
             animationDuration={800}
             bounceHeight={20}

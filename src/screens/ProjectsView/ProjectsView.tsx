@@ -409,6 +409,7 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
 
   const handleReorder = ({ from, to }: ReorderableListReorderEvent) => {
     setAllProjectsSort((value) => reorderItems(value, from, to));
+    setLoadingProjects(true)
   };
   const listRef = useRef<FlatList<Project>>(null);
   const scrollY = useSharedValue(0);
@@ -422,14 +423,21 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
   return (
     <View>
       {loadingProjects ? (
-        <BounceLoader
-          animationDuration={800}
-          bounceHeight={20}
-          color={colors.gray800}
-          dotCount={3}
-          size={14}
-          staggerDelay={200}
-        />
+        <View
+          style={[
+            layout.itemsCenter,
+            layout.fullHeight
+          ]}
+        >
+          <BounceLoader
+            animationDuration={800}
+            bounceHeight={20}
+            color={colors.gray800}
+            dotCount={3}
+            size={14}
+            staggerDelay={200}
+          />
+        </View>
       ) : (
         <ReorderableList
           data={allProjects}
