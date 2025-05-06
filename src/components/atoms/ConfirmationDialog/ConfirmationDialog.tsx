@@ -6,6 +6,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { useTheme } from '@/theme';
 
+import { EDIT_CHAPTER_TITLE_TYPE } from '@/components/molecules/ChapterCard/ChapterCard';
 import {
   EDIT_DESCRIPTION_TYPE,
   EDIT_TITLE_TYPE,
@@ -31,7 +32,12 @@ function ConfirmationDialog({
       backgroundColor: colors.full,
     },
     countLabel: {
-      right: dialogType === EDIT_DESCRIPTION_TYPE ? 10 : -10,
+      right:
+        dialogType === EDIT_DESCRIPTION_TYPE
+          ? 20
+          : dialogType === EDIT_CHAPTER_TITLE_TYPE
+            ? 0
+            : -10,
       top: dialogType === EDIT_DESCRIPTION_TYPE ? 8 : -4,
       width: 50,
     },
@@ -53,14 +59,17 @@ function ConfirmationDialog({
     dialogContainer: {
       right:
         dialogType === EDIT_DESCRIPTION_TYPE
-          ? -40
+          ? -65
           : dialogType === EDIT_TITLE_TYPE
             ? -10
-            : -60,
+            : dialogType === EDIT_CHAPTER_TITLE_TYPE
+              ? -40
+              : -60,
       top:
         dialogType === EDIT_DESCRIPTION_TYPE
           ? -50
-          : dialogType === EDIT_TITLE_TYPE
+          : dialogType === EDIT_TITLE_TYPE ||
+              dialogType === EDIT_CHAPTER_TITLE_TYPE
             ? 15
             : 0,
       zIndex: 999_999,
@@ -77,7 +86,9 @@ function ConfirmationDialog({
     <View
       style={[
         styles.dialogContainer,
-        dialogType === EDIT_TITLE_TYPE ? layout.row : layout.col,
+        dialogType === EDIT_TITLE_TYPE || dialogType === EDIT_CHAPTER_TITLE_TYPE
+          ? layout.row
+          : layout.col,
         layout.absolute,
         gutters.marginTop_12,
         styles.positionForeground,

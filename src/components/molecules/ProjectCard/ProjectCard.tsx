@@ -11,7 +11,6 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Image,
-  Keyboard,
   StyleSheet,
   Text,
   TextInput,
@@ -133,20 +132,6 @@ function ProjectCard({
       setDisableAllNavigation(false);
     }
   }, [editingId]);
-
-  useEffect(() => {
-    const checkKeyboard = async () => {
-      try {
-        if (typewriterMode) {
-          Keyboard.dismiss();
-        }
-      } catch (error) {
-        print(error);
-      }
-    };
-
-    void checkKeyboard();
-  }, []);
 
   const changeImage = () => {
     (async () => {
@@ -273,7 +258,7 @@ function ProjectCard({
     },
     adornmentContainerDescription: {
       backgroundColor:
-        editedDescription.length < 130 ? colors.purple500 : colors.red500,
+        editedDescription.length < 80 ? colors.purple500 : colors.red500,
     },
     adornmentContainerTitle: {
       backgroundColor:
@@ -294,7 +279,7 @@ function ProjectCard({
       borderBottomWidth: 1,
       height: 115,
       marginBottom: 11,
-      width: 200,
+      width: 150,
     },
     inputDescriptionContent: {
       backgroundColor: 'transparent',
@@ -452,7 +437,7 @@ function ProjectCard({
                   autoFocus
                   cursorColor={colors.purple500}
                   keyboardType="default"
-                  maxLength={130}
+                  maxLength={80}
                   multiline
                   onChangeText={setEditedDescription}
                   returnKeyType="default"
@@ -480,7 +465,7 @@ function ProjectCard({
                       styles.adornmentContainerDescription,
                     ]}
                   >
-                    {editedDescription.length}/130
+                    {editedDescription.length}/80
                   </Text>
                 </ConfirmationDialog>
               </View>

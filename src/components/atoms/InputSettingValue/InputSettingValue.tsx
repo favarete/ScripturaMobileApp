@@ -1,7 +1,10 @@
+import { useAtomValue } from 'jotai';
 import React from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { useTheme } from '@/theme';
+
+import { TypewriterModeStateAtom } from '@/state/atoms/persistentContent';
 
 type Props = {
   disabled?: boolean;
@@ -12,6 +15,7 @@ type Props = {
 
 function InputSettingValue({ disabled = false, getter, setter, title }: Props) {
   const { borders, colors, fonts, gutters, layout } = useTheme();
+  const typewriterMode = useAtomValue(TypewriterModeStateAtom);
 
   const styles = StyleSheet.create({
     disabled: {
@@ -61,6 +65,7 @@ function InputSettingValue({ disabled = false, getter, setter, title }: Props) {
           keyboardType="numeric"
           onChangeText={(text) => setter(Number.parseInt(text, 10) || 0)}
           selectionColor={colors.purple100}
+          showSoftInputOnFocus={!typewriterMode}
           style={styles.input}
           value={getter.toString()}
         />
