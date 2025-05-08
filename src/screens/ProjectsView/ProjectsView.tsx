@@ -49,7 +49,7 @@ import {
   SaveAtomEffect,
   UsageStatsStateAtom,
 } from '@/state/atoms/persistentContent';
-import { ItemEditStateAtom } from '@/state/atoms/temporaryContent';
+import { IsPortraitStateAtom, ItemEditStateAtom } from '@/state/atoms/temporaryContent';
 import { initialProjectContent } from '@/state/defaults';
 import { createNewUUID, updateLastSegment } from '@/utils/common';
 import { print } from '@/utils/logger';
@@ -383,7 +383,7 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
       }, [editingItem]);
 
       return (
-        <View style={[gutters.paddingHorizontal_24, zIndex]}>
+        <View style={[gutters.paddingHorizontal_24, zIndex, !isPortrait && gutters.marginHorizontal_160]}>
           <ProjectCard
             changeProjectDescription={changeProjectDescription}
             changeProjectImage={changeProjectImage}
@@ -419,6 +419,8 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
       scrollY.value = event.contentOffset.y;
     },
   });
+
+  const isPortrait = useAtomValue(IsPortraitStateAtom);
 
   return (
     <View>
@@ -465,7 +467,7 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
           ListHeaderComponent={
             <View>
               <View style={[gutters.paddingHorizontal_32]}>
-                <View style={[gutters.marginTop_40]}>
+                <View style={[gutters.marginTop_40, !isPortrait && gutters.marginHorizontal_160]}>
                   <Text
                     style={[
                       fonts.size_24,
@@ -482,7 +484,7 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
                 maxStreak={usageStats.writingStreak}
                 onNavigateSettings={onNavigateSettings}
               />
-              <View style={[gutters.paddingHorizontal_32]}>
+              <View style={[gutters.paddingHorizontal_32, !isPortrait && gutters.marginHorizontal_160]}>
                 <FolderSelector />
               </View>
               <Averages
@@ -500,6 +502,7 @@ function ProjectsView({ navigation }: RootScreenProps<Paths.ProjectsView>) {
                     layout.itemsCenter,
                     gutters.marginTop_4,
                     gutters.marginVertical_20,
+                    !isPortrait && gutters.marginHorizontal_160
                   ]}
                 >
                   <Text

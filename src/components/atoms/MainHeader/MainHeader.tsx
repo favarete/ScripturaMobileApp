@@ -7,7 +7,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '@/theme';
 
 import { LanguageStateAtom } from '@/state/atoms/persistentContent';
-import { DisableAllNavigationStateAtom } from '@/state/atoms/temporaryContent';
+import { DisableAllNavigationStateAtom, IsPortraitStateAtom } from '@/state/atoms/temporaryContent';
 import { formatNumber } from '@/utils/chapterHelpers';
 
 type MainHeaderProps = {
@@ -46,8 +46,10 @@ function MainHeader({
       ? t('screen_projects.days').slice(0, -1)
       : t('screen_projects.days');
 
+  const isPortrait = useAtomValue(IsPortraitStateAtom);
+
   return (
-    <View>
+    <View style={!isPortrait && gutters.marginHorizontal_160}>
       <View style={[gutters.paddingLeft_32, gutters.marginTop_20]}>
         <Text
           style={[fonts.defaultFontFamilyBold, fonts.gray200, fonts.size_12]}

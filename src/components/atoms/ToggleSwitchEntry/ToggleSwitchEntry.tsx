@@ -7,6 +7,8 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { useTheme } from '@/theme';
+import { useAtomValue } from 'jotai';
+import { IsPortraitStateAtom } from '@/state/atoms/temporaryContent';
 
 type Props = {
   getter: boolean;
@@ -66,8 +68,9 @@ function ToggleSwitchEntry({ getter, setter, title }: Props) {
     transform: [{ translateX: (animValue.value + 0.1) * 24 }], // Move entre 0 e 20px
   }));
 
+  const isPortrait = useAtomValue(IsPortraitStateAtom);
   return (
-    <View style={styles.itemContainer}>
+    <View style={[styles.itemContainer, !isPortrait && gutters.marginHorizontal_160]}>
       <Text style={styles.label}>{title}</Text>
       <TouchableOpacity activeOpacity={0.8} onPress={toggleSwitch}>
         <View

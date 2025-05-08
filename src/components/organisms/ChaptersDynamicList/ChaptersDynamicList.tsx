@@ -35,6 +35,7 @@ import {
 } from '@/state/atoms/persistentContent';
 import { formatNumber } from '@/utils/chapterHelpers';
 import { formatDateTime } from '@/utils/common';
+import { IsPortraitStateAtom } from '@/state/atoms/temporaryContent';
 
 const IMG_HEIGHT = 180;
 
@@ -89,6 +90,7 @@ export function ChaptersDynamicList({
 
   const listRef = useRef<FlatList<Chapter>>(null);
   const scrollY = useSharedValue(0);
+  const isPortrait = useAtomValue(IsPortraitStateAtom);
 
   const ChapterCardInstance: FC<Chapter> = memo(
     ({ id, lastUpdate, status, title, wordCount }) => {
@@ -96,24 +98,26 @@ export function ChaptersDynamicList({
       const isActive = useIsActive();
 
       return (
-        <ChapterCard
-          changeChapterTitle={changeChapterTitle}
-          drag={drag}
-          id={id}
-          isActive={isActive}
-          isEditingChapterTitle={isEditingChapterTitle}
-          key={id}
-          lastUpdate={chapterUpdatedOn(lastUpdate)}
-          lastViewedId={lastChapterViewed}
-          onNavigate={onNavigate}
-          projectId={projectId}
-          setIsEditingChapterTitle={setIsEditingChapterTitle}
-          status={status}
-          title={title}
-          triggerUpdate={triggerUpdate}
-          updateChaptersStatus={updateChaptersStatus}
-          wordCount={wordCount}
-        />
+        <View style={!isPortrait && gutters.marginHorizontal_160}>
+          <ChapterCard
+            changeChapterTitle={changeChapterTitle}
+            drag={drag}
+            id={id}
+            isActive={isActive}
+            isEditingChapterTitle={isEditingChapterTitle}
+            key={id}
+            lastUpdate={chapterUpdatedOn(lastUpdate)}
+            lastViewedId={lastChapterViewed}
+            onNavigate={onNavigate}
+            projectId={projectId}
+            setIsEditingChapterTitle={setIsEditingChapterTitle}
+            status={status}
+            title={title}
+            triggerUpdate={triggerUpdate}
+            updateChaptersStatus={updateChaptersStatus}
+            wordCount={wordCount}
+          />
+        </View>
       );
     },
   );

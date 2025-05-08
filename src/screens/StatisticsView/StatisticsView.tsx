@@ -1,5 +1,6 @@
 import type { RootScreenProps } from '@/navigation/types';
 
+import { useIsFocused } from '@react-navigation/native';
 import { useAtomValue } from 'jotai';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -12,6 +13,7 @@ import {
 } from 'react-native';
 
 import { useTheme } from '@/theme';
+import useKeyboardShortcuts from '@/hooks/keyboard/useKeyboardShortcuts';
 import { Paths } from '@/navigation/paths';
 
 import { TitleBar } from '@/components/atoms';
@@ -27,6 +29,7 @@ import {
   WordsWrittenTodayStateAtom,
   WritingStatsStateAtom,
 } from '@/state/atoms/persistentContent';
+import { IsPortraitStateAtom } from '@/state/atoms/temporaryContent';
 import {
   calculatePages,
   formatNumber,
@@ -37,8 +40,6 @@ import {
   getAverageWrittenWords,
 } from '@/utils/common';
 import { findProjectById } from '@/utils/projectHelpers';
-import useKeyboardShortcuts from '@/hooks/keyboard/useKeyboardShortcuts';
-import { useIsFocused } from '@react-navigation/native';
 
 function StatisticsView({
   navigation,
@@ -131,6 +132,8 @@ function StatisticsView({
       : `${t('screen_statistics.toGo')} ${wordToGo}`;
   };
 
+  const isPortrait = useAtomValue(IsPortraitStateAtom);
+
   return (
     <ScrollView style={layout.flex_1}>
       <View style={gutters.marginBottom_24}>
@@ -140,7 +143,12 @@ function StatisticsView({
         />
       </View>
       {actualProject && (
-        <View style={gutters.marginBottom_40}>
+        <View
+          style={[
+            gutters.marginBottom_40,
+            !isPortrait && gutters.marginHorizontal_160,
+          ]}
+        >
           <Text
             style={[
               fonts.defaultFontFamilyBold,
@@ -189,7 +197,14 @@ function StatisticsView({
                 : ''
             }`}
           </Text>
-          <View style={[layout.row, gutters.marginHorizontal_40]}>
+          <View
+            style={[
+              layout.row,
+              !isPortrait
+                ? gutters.marginHorizontal_160
+                : gutters.marginHorizontal_40,
+            ]}
+          >
             <View style={!dailyGoalMode.enabled && styles.hide}>
               <CircleProgress
                 backgroundColor={colors.gray200 + '2F'}

@@ -2,7 +2,7 @@
   "scripturaeditor": {
     "common_appName": {
       "full": "Scriptura",
-      "code": "Beta 1.0.0",
+      "code": "Beta 0.1.0",
       "version": "Versão $t(common_appName.code)",
       "initials": "SCR"
     },

@@ -14,10 +14,12 @@ import '@/translations';
 import type { JSX } from 'react';
 
 import i18n from 'i18next';
-import { useAtomValue } from 'jotai';
-import { useEffect } from 'react';
+import { useAtomValue, useSetAtom } from 'jotai';
+import { useEffect, useLayoutEffect } from 'react';
+import { Dimensions, useWindowDimensions } from 'react-native';
 
 import { LanguageStateAtom } from '@/state/atoms/persistentContent';
+import { IsPortraitStateAtom } from '@/state/atoms/temporaryContent';
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -38,6 +40,23 @@ function App() {
       void i18n.changeLanguage(language);
     }
   }, [language]);
+
+  const setIsPortrait = useSetAtom(IsPortraitStateAtom);
+
+  const { height, width } = useWindowDimensions();
+
+  useLayoutEffect(() => {
+    setIsPortrait(height > width);
+  }, []);
+
+  useEffect(() => {
+    const subscription = Dimensions.addEventListener('change', ({ window }) => {
+      setIsPortrait(window.height > window.width);
+    });
+
+    return () => subscription.remove();
+  }, []);
+
 
   return (
     <GestureHandlerRootView>

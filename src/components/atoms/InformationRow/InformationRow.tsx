@@ -6,6 +6,8 @@ import {
 } from 'react-native';
 
 import { useTheme } from '@/theme';
+import { useAtomValue } from 'jotai';
+import { IsPortraitStateAtom } from '@/state/atoms/temporaryContent';
 
 type Props = {
   title: string;
@@ -37,9 +39,9 @@ function InformationRow({ title, value }: Props) {
       ...fonts.size_16,
     },
   });
-
+  const isPortrait = useAtomValue(IsPortraitStateAtom);
   return (
-      <View style={styles.itemContainer}>
+      <View style={[styles.itemContainer, !isPortrait && gutters.marginHorizontal_160]}>
         <Text style={styles.label}>{title}</Text>
         <Text style={styles.info}>{value}</Text>
       </View>

@@ -14,6 +14,8 @@ import Toast from 'react-native-toast-message';
 import { useTheme } from '@/theme';
 
 import { print } from '@/utils/logger';
+import { useAtomValue } from 'jotai';
+import { IsPortraitStateAtom } from '@/state/atoms/temporaryContent';
 
 type Props = {
   command: {
@@ -26,7 +28,7 @@ type Props = {
 function ActionLongButton({ command, title }: Props) {
   const { t } = useTranslation();
   const { borders, colors, fonts, gutters, layout } = useTheme();
-
+  const isPortrait = useAtomValue(IsPortraitStateAtom);
   const openURL = () => {
     Linking.openURL(command.data).catch((error) => {
       Toast.show({
@@ -99,7 +101,7 @@ function ActionLongButton({ command, title }: Props) {
 
   return (
     <TouchableOpacity onPress={getAction}>
-      <View style={styles.itemContainer}>
+      <View style={[styles.itemContainer, !isPortrait && gutters.marginHorizontal_160]}>
         <Text style={styles.label}>{title}</Text>
         <FeatherIcons
           color={colors.fullOpposite}

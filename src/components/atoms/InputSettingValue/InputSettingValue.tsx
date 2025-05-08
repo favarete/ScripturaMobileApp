@@ -5,6 +5,7 @@ import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { useTheme } from '@/theme';
 
 import { TypewriterModeStateAtom } from '@/state/atoms/persistentContent';
+import { IsPortraitStateAtom } from '@/state/atoms/temporaryContent';
 
 type Props = {
   disabled?: boolean;
@@ -16,6 +17,8 @@ type Props = {
 function InputSettingValue({ disabled = false, getter, setter, title }: Props) {
   const { borders, colors, fonts, gutters, layout } = useTheme();
   const typewriterMode = useAtomValue(TypewriterModeStateAtom);
+
+  const isPortrait = useAtomValue(IsPortraitStateAtom);
 
   const styles = StyleSheet.create({
     disabled: {
@@ -38,7 +41,6 @@ function InputSettingValue({ disabled = false, getter, setter, title }: Props) {
       ...layout.row,
       ...layout.justifyBetween,
       ...gutters.marginVertical_8,
-      ...gutters.marginLeft_16,
       ...borders.rounded_4,
       backgroundColor: colors.full,
     },
@@ -54,11 +56,27 @@ function InputSettingValue({ disabled = false, getter, setter, title }: Props) {
   });
 
   return (
-    <View style={[styles.mainContainer, styles.disabled]}>
-      <View style={[styles.itemContainer, gutters.padding_16, layout.flex_1]}>
+    <View
+      style={[
+        styles.mainContainer,
+        styles.disabled,
+        !isPortrait && gutters.marginHorizontal_160,
+      ]}
+    >
+      <View
+        style={[
+          styles.itemContainer,
+          gutters.padding_16,
+          layout.flex_1,
+          gutters.marginRight_16,
+          isPortrait && gutters.marginLeft_16,
+        ]}
+      >
         <Text style={styles.label}>{title}</Text>
       </View>
-      <View style={[styles.itemContainer, gutters.marginRight_16]}>
+      <View
+        style={[styles.itemContainer, isPortrait && gutters.marginRight_16]}
+      >
         <TextInput
           cursorColor={colors.purple500}
           editable={!disabled}

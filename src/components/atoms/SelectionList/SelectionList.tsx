@@ -13,6 +13,8 @@ import {
 } from 'react-native';
 
 import { useTheme } from '@/theme';
+import { useAtomValue } from 'jotai';
+import { IsPortraitStateAtom } from '@/state/atoms/temporaryContent';
 
 type OptionsType = {
   code: SupportedLanguages;
@@ -156,9 +158,9 @@ function SelectionList({
       color: colors.fullOpposite,
     },
   });
-
+  const isPortrait = useAtomValue(IsPortraitStateAtom);
   return (
-    <View style={styles.itemContainer}>
+    <View style={[styles.itemContainer, !isPortrait && gutters.marginHorizontal_160]}>
       <Text style={styles.label}>{title}</Text>
       <View style={layout.itemsCenter}>
         <TouchableOpacity

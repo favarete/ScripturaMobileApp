@@ -5,6 +5,8 @@ import { Text, View } from 'react-native';
 import { useTheme } from '@/theme';
 
 import CardInformation from '@/components/atoms/CardInformation/CardInformation';
+import { useAtomValue } from 'jotai';
+import { IsPortraitStateAtom } from '@/state/atoms/temporaryContent';
 
 type AveragesProps = {
   daily: number;
@@ -15,9 +17,9 @@ type AveragesProps = {
 function Averages({ daily, monthly, weekly }: AveragesProps) {
   const { fonts, gutters, layout } = useTheme();
   const { t } = useTranslation();
-
+  const isPortrait = useAtomValue(IsPortraitStateAtom);
   return (
-    <View style={[layout.col, gutters.marginTop_16, gutters.paddingLeft_32]}>
+    <View style={[layout.col, gutters.marginTop_16, gutters.paddingLeft_32, !isPortrait && gutters.marginHorizontal_160]}>
       <View>
         <Text
           style={[fonts.defaultFontFamilyBold, fonts.gray200, fonts.size_16]}

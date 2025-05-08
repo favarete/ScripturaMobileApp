@@ -14,3 +14,4 @@ export const ItemEditStateAtom = atom<ItemEditStateAtomType>({
 });
 
 export const DisableAllNavigationStateAtom = atom<boolean>(false);
+export const IsPortraitStateAtom = atom<boolean>(true);

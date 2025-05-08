@@ -46,6 +46,7 @@ import {
   updateWordWrittenTodayRecords,
 } from '@/utils/common';
 import { print } from '@/utils/logger';
+import { IsPortraitStateAtom } from '@/state/atoms/temporaryContent';
 
 function ContentView({
   navigation,
@@ -384,6 +385,8 @@ function ContentView({
     },
   });
 
+  const isPortrait = useAtomValue(IsPortraitStateAtom);
+
   return (
     <View>
       <TitleBar
@@ -410,7 +413,7 @@ function ContentView({
               scrollEnabled={true}
               selection={selection}
               showSoftInputOnFocus={!typewriterMode}
-              style={[styles.markdownEditStyles]}
+              style={[styles.markdownEditStyles, !isPortrait && gutters.marginHorizontal_160]}
               value={markdownText}
             />
           )}

@@ -1,12 +1,13 @@
 import type { PropsWithChildren, ReactElement } from 'react';
 import type { GestureResponderEvent, LayoutChangeEvent } from 'react-native';
 
-import { useSetAtom } from 'jotai';
+import { useAtomValue, useSetAtom } from 'jotai';
 import React, { useEffect, useState } from 'react';
 import {
   Dimensions,
   Modal,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -14,7 +15,10 @@ import {
 
 import { useTheme } from '@/theme';
 
-import { SelectedItemStateAtom } from '@/state/atoms/temporaryContent';
+import {
+  IsPortraitStateAtom,
+  SelectedItemStateAtom,
+} from '@/state/atoms/temporaryContent';
 
 export type ContextMenuItem = {
   color: string;
@@ -130,6 +134,23 @@ function CustomContextMenu({
     }
   }, [id, menuVisible]);
 
+  const isPortrait = useAtomValue(IsPortraitStateAtom);
+
+  const elements = menuItems.map((item, i) => (
+    <Pressable
+      disabled={item.disabled}
+      key={i}
+      onPress={() => {
+        item.onPress?.();
+        handleCloseMenu();
+      }}
+      style={item.disabled ? styles.menuItemDisabled : styles.menuItem}
+    >
+      <Text style={styles.menuIcon}>{item.icon}</Text>
+      <Text style={{ color: item.color, fontSize: 16 }}>{item.label}</Text>
+    </Pressable>
+  ));
+
   return (
     <View>
       <Pressable onLongPress={handleLongPress} onPress={onPress}>
@@ -153,27 +174,15 @@ function CustomContextMenu({
                 left: finalPosition.x,
                 top: finalPosition.y,
               },
+              !isPortrait && { height: '50%' },
             ]}
           >
             <Text style={styles.menuTitle}>{menuTitle}</Text>
-            {menuItems.map((item, i) => (
-              <Pressable
-                disabled={item.disabled}
-                key={i}
-                onPress={() => {
-                  item.onPress?.();
-                  handleCloseMenu();
-                }}
-                style={
-                  item.disabled ? styles.menuItemDisabled : styles.menuItem
-                }
-              >
-                <Text style={styles.menuIcon}>{item.icon}</Text>
-                <Text style={{ color: item.color, fontSize: 16 }}>
-                  {item.label}
-                </Text>
-              </Pressable>
-            ))}
+            {!isPortrait ? (
+              <ScrollView>{elements}</ScrollView>
+            ) : (
+              <View>{elements}</View>
+            )}
           </View>
         </Modal>
       )}

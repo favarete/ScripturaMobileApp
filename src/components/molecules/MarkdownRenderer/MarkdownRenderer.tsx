@@ -1,8 +1,11 @@
 import Markdown from '@ronradtke/react-native-markdown-display';
+import { useAtomValue } from 'jotai';
 import React from 'react';
-import { Platform, ScrollView, StyleSheet } from 'react-native';
+import { Platform, ScrollView, StyleSheet, View } from 'react-native';
 
 import { useTheme } from '@/theme';
+
+import { IsPortraitStateAtom } from '@/state/atoms/temporaryContent';
 
 type MarkdownRendererProps = {
   markdown: string;
@@ -253,10 +256,12 @@ function MarkdownRenderer({ markdown }: MarkdownRendererProps) {
     pre: {},
     span: {},
   });
-
+  const isPortrait = useAtomValue(IsPortraitStateAtom);
   return (
-    <ScrollView>
-      <Markdown style={markdownStyles}>{markdown}</Markdown>
+    <ScrollView showsVerticalScrollIndicator={false}>
+      <View style={!isPortrait && gutters.marginHorizontal_160}>
+        <Markdown style={markdownStyles}>{markdown}</Markdown>
+      </View>
     </ScrollView>
   );
 }
