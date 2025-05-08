@@ -7,8 +7,13 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme';
 import { Paths } from '@/navigation/paths';
 
-import { ChaptersView, ContentView, Home, SettingsView, Startup, StatisticsView } from '@/screens';
-import ProjectsView from '@/screens/ProjectsView/ProjectsView';
+import {
+  ChaptersView,
+  ContentView,
+  SettingsView,
+  StatisticsView,
+} from '@/screens';
+import { ProjectsView } from '@/screens/index';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -18,19 +23,39 @@ function ApplicationNavigator() {
   return (
     <SafeAreaProvider>
       <NavigationContainer theme={navigationTheme}>
-        <Stack.Navigator key={variant} screenOptions={{
-          headerShown: false
-        }}>
-          <Stack.Screen component={Startup} name={Paths.Startup} />
-          <Stack.Screen component={Home} name={Paths.Home} />
-          <Stack.Screen component={ProjectsView} name={Paths.ProjectsView} />
-          <Stack.Screen component={ChaptersView} name={Paths.ChaptersView} />
-          <Stack.Screen component={ContentView} name={Paths.ContentView} />
+        <Stack.Navigator
+          initialRouteName={Paths.ProjectsView}
+          key={variant}
+          screenOptions={{
+            detachPreviousScreen: true,
+            headerShown: false,
+          }}
+        >
+          <Stack.Screen
+            component={ProjectsView}
+            key={'ProjectsView-' + Date.now()}
+            name={Paths.ProjectsView}
+          />
+          <Stack.Screen
+            component={ChaptersView}
+            key={'ChaptersView-' + Date.now()}
+            name={Paths.ChaptersView}
+          />
+          <Stack.Screen
+            component={ContentView}
+            key={'ContentView-' + Date.now()}
+            name={Paths.ContentView}
+          />
           <Stack.Screen
             component={StatisticsView}
+            key={'StatisticsView-' + Date.now()}
             name={Paths.StatisticsView}
           />
-          <Stack.Screen component={SettingsView} name={Paths.SettingsView} />
+          <Stack.Screen
+            component={SettingsView}
+            key={'SettingsView-' + Date.now()}
+            name={Paths.SettingsView}
+          />
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>

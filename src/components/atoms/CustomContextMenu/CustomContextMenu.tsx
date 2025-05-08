@@ -1,15 +1,24 @@
 import type { PropsWithChildren, ReactElement } from 'react';
 import type { GestureResponderEvent, LayoutChangeEvent } from 'react-native';
 
-import React, { useState } from 'react';
+import { useAtomValue, useSetAtom } from 'jotai';
+import React, { useEffect, useState } from 'react';
 import {
   Dimensions,
   Modal,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
+
+import { useTheme } from '@/theme';
+
+import {
+  IsPortraitStateAtom,
+  SelectedItemStateAtom,
+} from '@/state/atoms/temporaryContent';
 
 export type ContextMenuItem = {
   color: string;
@@ -21,6 +30,7 @@ export type ContextMenuItem = {
 
 type CustomContextMenuProps = PropsWithChildren<{
   backgroundColor: string;
+  id: string;
   menuItems: ContextMenuItem[];
   menuTitle: string;
   menuTitleBackgroundColor: string;
@@ -32,11 +42,15 @@ const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
 function CustomContextMenu({
   backgroundColor,
   children = false,
+  id,
   menuItems,
   menuTitle,
   menuTitleBackgroundColor,
   onPress,
 }: CustomContextMenuProps) {
+  const setSelectedItem = useSetAtom(SelectedItemStateAtom);
+  const { colors } = useTheme();
+
   const [menuVisible, setMenuVisible] = useState(false);
   const [touchPosition, setTouchPosition] = useState({ x: 0, y: 0 });
   const [finalPosition, setFinalPosition] = useState({ x: -9999, y: -9999 });
@@ -48,7 +62,7 @@ function CustomContextMenu({
       elevation: 5,
       paddingBottom: 4,
       position: 'absolute',
-      shadowColor: '#000', // iOS
+      shadowColor: 'rgba(0,0,0,0.4)', // iOS
       shadowOffset: { height: 2, width: 2 },
       shadowOpacity: 0.3,
     },
@@ -71,6 +85,7 @@ function CustomContextMenu({
     },
     menuTitle: {
       backgroundColor: menuTitleBackgroundColor + '80',
+      color: colors.gray800,
       fontSize: 12,
       paddingHorizontal: 16,
       paddingVertical: 8,
@@ -97,8 +112,8 @@ function CustomContextMenu({
       px = SCREEN_WIDTH - width - 5;
     }
 
-    if (py + height > SCREEN_HEIGHT) {
-      py = SCREEN_HEIGHT - height - 5;
+    if (py + height > SCREEN_HEIGHT - 65) {
+      py = SCREEN_HEIGHT - height - 65;
     }
 
     if (px < 0) {
@@ -110,6 +125,31 @@ function CustomContextMenu({
 
     setFinalPosition({ x: px, y: py });
   };
+
+  useEffect(() => {
+    if (menuVisible) {
+      setSelectedItem(id);
+    } else {
+      setSelectedItem('');
+    }
+  }, [id, menuVisible]);
+
+  const isPortrait = useAtomValue(IsPortraitStateAtom);
+
+  const elements = menuItems.map((item, i) => (
+    <Pressable
+      disabled={item.disabled}
+      key={i}
+      onPress={() => {
+        item.onPress?.();
+        handleCloseMenu();
+      }}
+      style={item.disabled ? styles.menuItemDisabled : styles.menuItem}
+    >
+      <Text style={styles.menuIcon}>{item.icon}</Text>
+      <Text style={{ color: item.color, fontSize: 16 }}>{item.label}</Text>
+    </Pressable>
+  ));
 
   return (
     <View>
@@ -134,27 +174,15 @@ function CustomContextMenu({
                 left: finalPosition.x,
                 top: finalPosition.y,
               },
+              !isPortrait && { height: '50%' },
             ]}
           >
             <Text style={styles.menuTitle}>{menuTitle}</Text>
-            {menuItems.map((item, i) => (
-              <Pressable
-                disabled={item.disabled}
-                key={i}
-                onPress={() => {
-                  item.onPress?.();
-                  handleCloseMenu();
-                }}
-                style={
-                  item.disabled ? styles.menuItemDisabled : styles.menuItem
-                }
-              >
-                <Text style={styles.menuIcon}>{item.icon}</Text>
-                <Text style={{ color: item.color, fontSize: 16 }}>
-                  {item.label}
-                </Text>
-              </Pressable>
-            ))}
+            {!isPortrait ? (
+              <ScrollView>{elements}</ScrollView>
+            ) : (
+              <View>{elements}</View>
+            )}
           </View>
         </Modal>
       )}

@@ -2,9 +2,14 @@
   "scripturaeditor": {
     "common_appName": {
       "full": "Scriptura",
+      "code": "Beta 0.1.0",
+      "version": "Version $t(common_appName.code)",
       "initials": "SCR"
     },
     "components": {
+      "delete_project": "Delete",
+      "yes": "Yes",
+      "no": "No",
       "folder_selector": {
         "directory_selected_success": {
           "text1": "Directory selected!",
@@ -28,6 +33,22 @@
       "text1": "Oops! =/",
       "text2": "Something went wrong."
     },
+    "creating_folder_error": {
+      "text1": "Error trying to create project! =/",
+      "text2": "Something happened and your project wasn't created."
+    },
+    "creating_file_error": {
+      "text1": "Error trying to create a chapter! =/",
+      "text2": "Something happened and your chapter wasn't created."
+    },
+    "creating_folder_success": {
+      "text1": "New project created!",
+      "text2": "Your project was created successfully."
+    },
+    "creating_file_success": {
+      "text1": "New chapter created!",
+      "text2": "Your chapter was created successfully."
+    },
     "saving_error": {
       "text1": "Error trying to save! =/",
       "text2": "Something happened and your file wasn't saved."
@@ -41,6 +62,41 @@
       "title": "$t(common_appName.full)",
       "view": "Projects",
       "placeholder": "Home Folder",
+      "nothing_found": "No projects available",
+      "writing_streak": "Max Streak",
+      "current_writing_streak": "Streak",
+      "days": "Days",
+      "create": "Create",
+      "cancel": "Cancel",
+      "chapter_default": "Chapter 1",
+      "settings": "Settings",
+      "averages_title": "Average Words Written",
+      "daily": "Daily",
+      "monthly": "Monthly",
+      "weekly": "Weekly",
+      "create_folder": "New Project",
+      "folder_name": "Folder Name",
+      "enter_name": "Enter Name",
+      "folder_deleted": {
+        "text1": "Project Deleted!",
+        "text2": "The project was removed from the list."
+      },
+      "folder_renamed": {
+        "text1": "Folder Renamed!",
+        "text2": "The project's folder was renamed."
+      },
+      "description_updated": {
+        "text1": "Description Updated!",
+        "text2": "The new description was saved."
+      },
+      "folder_not_renamed": {
+        "text1": "Something went wrong!",
+        "text2": "The project's folder wasn't renamed."
+      },
+      "image_changed": {
+        "text1": "Image Updated!",
+        "text2": "The new image was saved."
+      },
       "project_description_placeholder": "Enter a description for the book (maximum 130 characters)",
       "fetch_projects_data": {
         "error": {
@@ -56,24 +112,43 @@
     },
     "screen_chapters": {
       "title": "$t(common_appName.full)",
+      "file_deleted": {
+        "text1": "Chapter Deleted!",
+        "text2": "The chapter was removed from the list."
+      },
       "view": "Chapters Screen",
       "word_count": "Words",
+      "total_word_count": "Total Words",
       "status_header": "Status for",
-      "updated_at": "Last Updated at",
+      "updated_at": "Last Updated on",
+      "create_file": "New Chapter",
+      "file_name": "Chapter Name",
+      "chapter_updated_at": {
+        "today": "Last Updated at",
+        "past": "Last Updated on"
+      },
+      "chapter_renamed": {
+        "text1": "File Renamed!",
+        "text2": "The chapters's file was renamed."
+      },
+      "chapter_not_renamed": {
+        "text1": "Something went wrong!",
+        "text2": "The chapter's file wasn't renamed."
+      },
       "no_title": "No title! Use '# Some title' on your file",
       "no_chapters": "No chapters available",
       "status": {
-        "draft_ready":  "Draft Ready",
-        "first_revision_done":  "First Revision Done",
-        "in_first_revision":  "First Revision",
-        "in_progress":  "In Progress",
-        "in_second_revision":  "Second Revision",
-        "in_third_revision":  "Third Revision",
-        "manuscript_done":  "Manuscript Done",
-        "planning":  "In Planning",
-        "second_revision_done":  "Second Revision Done",
-        "third_revision_done":  "Third Revision Done",
-        "to_do":  "To Do",
+        "draft_ready": "Draft Ready",
+        "first_revision_done": "First Revision Done",
+        "in_first_revision": "First Revision",
+        "in_progress": "In Progress",
+        "in_second_revision": "Second Revision",
+        "in_third_revision": "Third Revision",
+        "manuscript_done": "Manuscript Done",
+        "planning": "In Planning",
+        "second_revision_done": "Second Revision Done",
+        "third_revision_done": "Third Revision Done",
+        "to_do": "To Do",
         "indeterminate": "Indeterminate"
       }
     },
@@ -87,11 +162,50 @@
     },
     "screen_statistics": {
       "title": "$t(common_appName.full)",
-      "view": "Statistics Screen"
+      "view": "Statistics Screen",
+      "view_title": "Statistics",
+      "most_prolific_days": "Most Prolific Days",
+      "daily_word_goal": "Daily Word Goal",
+      "daily_word_goal_disabled": "(Disabled)",
+      "to_write_today": "Write Today",
+      "edit": "Edit",
+      "chapter_data": "Chapter's Data",
+      "project_data": "Project's Data",
+      "words": "Words",
+      "sentences": "Sentences",
+      "pages": "Pages",
+      "toGo": "left to go",
+      "week": {
+        "sun": "SUN",
+        "mon": "MON",
+        "tue": "TUE",
+        "wed": "WED",
+        "thu": "THU",
+        "fri": "FRI",
+        "sat": "SAT"
+      }
     },
     "screen_settings": {
       "title": "$t(common_appName.full)",
-      "view": "Settings Screen"
+      "view_title": "Settings",
+      "daily_word_goal": "Daily Word Goal",
+      "word_count_target": "Word Count Target",
+      "typewriter_mode": "Typewriter Mode",
+      "focused_mode": "Focused Mode",
+      "dark_mode": "Dark Mode",
+      "language": "Language",
+      "select_language": "Select a Language",
+      "donate": "Donate",
+      "share": "Share",
+      "contact_me": "Contact Me",
+      "version": "Version",
+      "action_buttons": {
+        "main": "Something went wrong!",
+        "link": "Unable to open link",
+        "share": "Unable to share",
+        "share_text": "$t(common_appName.full) is a minimalist book writing app that you might like!",
+        "mail": "Unable to open email app"
+      }
     },
     "screen_example": {
       "hello_user": "Hi, my name is {{name}}",

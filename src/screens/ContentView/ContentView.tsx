@@ -1,77 +1,288 @@
-import type { MarkdownStyle } from '@expensify/react-native-live-markdown';
+import type {
+  NativeSyntheticEvent,
+  TextInputSelectionChangeEventData,
+} from 'react-native';
 import type { RootScreenProps } from '@/navigation/types';
-import type { Chapter } from '@/state/defaults';
+import type { Chapter, DailyStats, Project } from '@/state/defaults';
 
-
-
-import { MarkdownTextInput, parseExpensiMark } from '@expensify/react-native-live-markdown';
-import { useAtomValue } from 'jotai/index';
-import { useAtom } from 'jotai/react';
-import React, { useCallback, useEffect, useState } from 'react';
+import { useFocusEffect, useIsFocused } from '@react-navigation/native';
+import { useAtom, useAtomValue } from 'jotai';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Keyboard, NativeModules, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Keyboard, StyleSheet, TextInput, View } from 'react-native';
 import { readFile, writeFile } from 'react-native-saf-x';
 import Toast from 'react-native-toast-message';
 
-
-const { KeyboardModule } = NativeModules;
-
-if (!KeyboardModule) {
-  console.error("KeyboardModule não foi encontrado! Verifique o código nativo.");
-}
-
 import { useTheme } from '@/theme';
+import useKeyboardShortcuts from '@/hooks/keyboard/useKeyboardShortcuts';
 import { Paths } from '@/navigation/paths';
-
-
 
 import { TitleBar } from '@/components/atoms';
 import StatisticsBar from '@/components/atoms/StatisticsBar/StatisticsBar';
 import MarkdownRenderer from '@/components/molecules/MarkdownRenderer/MarkdownRenderer';
 
-
-
-import { AutosaveModeStateAtom, ProjectsDataStateAtom, SaveAtomEffect } from '@/state/atoms/persistentContent';
-import { countWordsFromHTML, getChapterById, getTitleFromChapterFile, updateChapterValue } from '@/utils/chapterHelpers';
+import {
+  AutosaveModeStateAtom,
+  DailyGoalModeStateAtom,
+  DailyWordsStatsStateAtom,
+  ProjectsDataStateAtom,
+  SaveAtomEffect,
+  TypewriterModeStateAtom,
+  WordsWrittenTodayStateAtom,
+  WritingStatsStateAtom,
+} from '@/state/atoms/persistentContent';
+import {
+  countWordsFromHTML,
+  getChapterById,
+  getProjectById,
+} from '@/utils/chapterHelpers';
+import {
+  compareWordFrequencies,
+  countOccurrences,
+  getDateOnlyFromTimestamp,
+  getWeekdayKey,
+  minimizeMarkdownText,
+  minimizeMarkdownTextLength,
+  updateWordWrittenTodayRecords,
+} from '@/utils/common';
 import { print } from '@/utils/logger';
-
-
-
-
+import { IsPortraitStateAtom } from '@/state/atoms/temporaryContent';
 
 function ContentView({
   navigation,
   route,
 }: RootScreenProps<Paths.ContentView>) {
   useAtom(SaveAtomEffect);
+
   const { t } = useTranslation();
 
-  const { colors, fonts, gutters, layout } = useTheme();
-  const { chapterId, id } = route.params;
+  const { colors, fonts, gutters } = useTheme();
+  const { chapterId, projectId } = route.params;
 
   const [allProjects, setAllProjects] = useAtom(ProjectsDataStateAtom);
+  const [wordWrittenToday, setWordsWrittenToday] = useAtom(
+    WordsWrittenTodayStateAtom,
+  );
+
+  const [dailyWordsStats, setDailyWordsStats] = useAtom(
+    DailyWordsStatsStateAtom,
+  );
+
+  const typewriterMode = useAtomValue(TypewriterModeStateAtom);
   const autosaveMode = useAtomValue(AutosaveModeStateAtom);
 
   const [viewMode, setViewMode] = useState<boolean>(true);
-  const [isPhysicalKeyboard, setIsPhysicalKeyboard] = useState<boolean>(false);
-
-  const [chapterTitle, setChapterTitle] = useState<string>();
+  const [chapterTitle, setChapterTitle] = useState<string>(
+    t('screen_chapters.no_title'),
+  );
   const [selectedChapter, setSelectedChapter] = useState<Chapter>();
+
+  const [localCountOccurrences, setLocalCountOccurrences] = useState<
+    Record<string, number>
+  >({});
+
   const [markdownText, setMarkdownText] = useState<string>('');
 
   const [contentCount, setContentCount] = useState<number>(0);
+  const prevMarkdownTextRef = useRef<null | string>(null);
+  const startAutosave = useRef<boolean>(false);
+  const lastSaveRef = useRef<number>(0);
 
-  const onSave = useCallback(() => {
-    if (selectedChapter) {
-      const saveFileContent = async () => {
-        try {
-          await writeFile(selectedChapter.androidFilePath, markdownText);
-          updateChapterValue(setAllProjects, id, chapterId, {
-            title:
-              getTitleFromChapterFile(markdownText) ??
-              t('screen_chapters.no_title'),
-            wordCount: countWordsFromHTML(markdownText),
+  const [selection, setSelection] = useState({ end: 0, start: 0 });
+
+  const handleSelectionChange = async (
+    event: NativeSyntheticEvent<TextInputSelectionChangeEventData>,
+  ) => {
+    const { selection } = event.nativeEvent;
+    setSelection(selection);
+  };
+
+  const dayRef = useRef<number>(getDateOnlyFromTimestamp(Date.now()));
+
+  useFocusEffect(
+    useCallback(() => {
+      const chapter = getChapterById(projectId, chapterId, allProjects);
+
+      if (chapter) {
+        setSelectedChapter(chapter);
+
+        if (wordWrittenToday.date !== dayRef.current) {
+          setWordsWrittenToday({
+            date: dayRef.current,
+            value: 0,
           });
+        }
+
+        (async () => {
+          try {
+            setChapterTitle(chapter.title);
+            const markdownTextContent: string = await readFile(
+              chapter.androidFilePath,
+            );
+            setLocalCountOccurrences(countOccurrences(markdownTextContent));
+            setMarkdownText(markdownTextContent);
+
+            const selectedProject: Project | undefined = getProjectById(
+              projectId,
+              allProjects,
+            );
+
+            if (selectedProject?.chapterLastViewed === chapterId) {
+              setSelection({
+                end: chapter.revisionPosition,
+                start: chapter.revisionPosition,
+              });
+            }
+            if (markdownTextContent.length === 0) {
+              setViewMode(false);
+            }
+          } catch (error) {
+            Toast.show({
+              text1: t('saving_error.text1'),
+              text2: t('saving_error.text2'),
+              type: 'error',
+            });
+            print(error);
+          }
+        })();
+      }
+    }, []),
+  );
+
+  useEffect(() => {
+    const lastEntry = dailyWordsStats.at(-1);
+    if (lastEntry?.date === dayRef.current) {
+      setDailyWordsStats((prevStats) => {
+        const newDailyWordsStats = [...prevStats];
+        const lastIndex = newDailyWordsStats.length - 1;
+        newDailyWordsStats[lastIndex] = {
+          ...newDailyWordsStats[lastIndex],
+          totalWords: wordWrittenToday.value,
+        };
+        return newDailyWordsStats;
+      });
+    } else {
+      const completedRecords = updateWordWrittenTodayRecords(dailyWordsStats, {
+        date: dayRef.current,
+        totalWords: wordWrittenToday.value,
+      });
+      setDailyWordsStats(completedRecords);
+    }
+  }, [wordWrittenToday]);
+
+  const [writingStats, setWritingStats] = useAtom(WritingStatsStateAtom);
+  const dailyGoalMode = useAtomValue(DailyGoalModeStateAtom);
+
+  const saveAndUpdate = () => {
+    (async () => {
+      if (selectedChapter && startAutosave.current) {
+        try {
+          const minimizedMarkdownText = minimizeMarkdownText(markdownText);
+          const dynamicOccurrences = countOccurrences(minimizedMarkdownText);
+
+          const { totalAdded, totalRemoved } = compareWordFrequencies(
+            localCountOccurrences,
+            dynamicOccurrences,
+          );
+          setLocalCountOccurrences(dynamicOccurrences);
+
+          // This check ignores words that are being changed
+          if (totalAdded !== totalRemoved) {
+            const weekdayKey = getWeekdayKey(dayRef.current);
+            const lastEntry = writingStats[weekdayKey].at(-1);
+
+            if (
+              lastEntry &&
+              dayRef.current &&
+              lastEntry.date === dayRef.current
+            ) {
+              setWritingStats((prevStats) => {
+                const newLastEntry = [...prevStats[weekdayKey]];
+                const lastIndex = newLastEntry.length - 1;
+
+                const currentAdded = newLastEntry[lastIndex].writtenWords;
+                const currentRemoved = newLastEntry[lastIndex].deletedWords;
+                const currentTotal = newLastEntry[lastIndex].totalWords;
+
+                setWordsWrittenToday((prevState) => ({
+                  ...prevState,
+                  value: prevState.value + totalAdded,
+                }));
+
+                if (lastIndex >= 0) {
+                  newLastEntry[lastIndex] = {
+                    ...newLastEntry[lastIndex],
+                    deletedWords: currentRemoved + totalRemoved,
+                    totalWords: currentTotal + (totalAdded - totalRemoved),
+                    writtenWords: currentAdded + totalAdded,
+                  };
+                }
+                return {
+                  ...prevStats,
+                  [weekdayKey]: newLastEntry,
+                };
+              });
+            } else {
+              setWordsWrittenToday((prevState) => ({
+                ...prevState,
+                value: totalAdded,
+              }));
+              setWritingStats((prevStats) => {
+                const newDailyStats: DailyStats = {
+                  date: dayRef.current,
+                  deletedWords: totalRemoved,
+                  totalWords: totalAdded - totalRemoved,
+                  writtenWords: totalAdded,
+                };
+                return {
+                  ...prevStats,
+                  [weekdayKey]: [...prevStats[weekdayKey], newDailyStats],
+                };
+              });
+            }
+          }
+
+          await writeFile(selectedChapter.androidFilePath, markdownText);
+
+          const now = Date.now();
+          setAllProjects((prevProjects) =>
+            prevProjects.map((project) => {
+              if (project.id !== projectId) {
+                return project;
+              }
+
+              const updatedChapters = project.chapters.map((chapter) =>
+                chapter.id === chapterId
+                  ? {
+                      ...chapter,
+                      lastUpdate: now,
+                      revisionPosition: selection.start,
+                      wordCount: countWordsFromHTML(markdownText),
+                    }
+                  : chapter,
+              );
+
+              const totalWordCount = updatedChapters.reduce(
+                (acc, chap) => acc + (chap.wordCount ?? 0),
+                0,
+              );
+
+              const totalSentenceCount = updatedChapters.reduce(
+                (acc, chap) => acc + (chap.sentencesCount ?? 0),
+                0,
+              );
+
+              return {
+                ...project,
+                chapterLastViewed: chapterId,
+                chapters: updatedChapters,
+                lastUpdate: now,
+                sentencesCount: totalSentenceCount,
+                wordCount: totalWordCount,
+              };
+            }),
+          );
+          prevMarkdownTextRef.current = markdownText;
         } catch (error) {
           Toast.show({
             text1: t('saving_error.text1'),
@@ -80,32 +291,49 @@ function ContentView({
           });
           print(error);
         }
-      };
-      void saveFileContent();
-    }
-  }, [
-    selectedChapter,
-    markdownText,
-    setAllProjects,
-    id,
-    chapterId,
-    t,
-  ]);
+      }
+    })();
+  };
 
   const onNavigateBack = () => {
-    onSave();
-    navigation.navigate(Paths.ChaptersView, { id });
+    saveAndUpdate();
+    navigation.navigate(Paths.ChaptersView, { projectId });
   };
 
   const onNavigateToStatistics = () => {
-    Alert.alert('onNavigateToStatistics');
+    saveAndUpdate();
+    navigation.navigate(Paths.StatisticsView, { chapterId, projectId });
+  };
+
+  const isFocused = useIsFocused();
+
+  useKeyboardShortcuts({
+    ctrlTimeout: 300,
+    enabled: isFocused,
+    letters: {
+      B: () => onNavigateBack(),
+      S: () => onNavigateToStatistics(),
+      T: () => onToggleView(),
+    },
+  });
+
+  const handleTextChange = (newText: string) => {
+    if (!startAutosave.current) {
+      startAutosave.current = true;
+    }
+    setMarkdownText(newText);
   };
 
   useEffect(() => {
-    if (contentCount > 0 && contentCount % 5 === 0) {
-      onSave();
+    if (contentCount > 0 && contentCount % 1 === 0) {
+      const now = Date.now();
+      if (now - lastSaveRef.current < 1500) {
+        return;
+      }
+      lastSaveRef.current = now;
+      saveAndUpdate();
     }
-  }, [chapterId, contentCount, id, markdownText, onSave, selectedChapter, setAllProjects, t]);
+  }, [contentCount]);
 
   useEffect(() => {
     setContentCount(0);
@@ -113,19 +341,21 @@ function ContentView({
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (autosaveMode && !viewMode) {
-        setContentCount((prevState) => prevState + 1);
+      if (autosaveMode) {
+        setContentCount(
+          prevMarkdownTextRef.current === markdownText
+            ? 0
+            : (count) => count + 1,
+        );
       }
-    }, 1000);
+    }, 500);
     return () => clearInterval(interval);
-  }, [autosaveMode, viewMode]);
+  }, [autosaveMode, markdownText]);
 
   useEffect(() => {
     const checkKeyboard = async () => {
       try {
-        const isPhysical = await KeyboardModule.isPhysicalKeyboardConnected();
-        setIsPhysicalKeyboard(isPhysical);
-        if (isPhysical) {
+        if (typewriterMode) {
           Keyboard.dismiss();
         }
       } catch (error) {
@@ -136,151 +366,67 @@ function ContentView({
     void checkKeyboard();
   }, []);
 
-
   const onToggleView = () => {
-    onSave();
+    saveAndUpdate();
     setContentCount(0);
     setViewMode(!viewMode);
   };
 
   const styles = StyleSheet.create({
-    markdownContent: {
-      backgroundColor: colors.gray50 + '5F',
-      marginBottom: 64,
-    },
-    markdownContentEdit: {
-      backgroundColor: colors.full,
-      marginBottom: 32,
+    markdownEditStyles: {
+      ...fonts.size_16,
+      ...fonts.gray800,
+      borderWidth: 0,
+      fontFamily: 'monospace',
+      lineHeight: 24,
+      marginTop: -10,
+      paddingBottom: 135,
+      verticalAlign: 'middle',
     },
   });
 
-  useEffect(() => {
-    const chapter = getChapterById(id, chapterId, allProjects);
-    if (chapter) {
-      setSelectedChapter(chapter);
-    }
-  }, [allProjects, chapterId, id]);
-
-  useEffect(() => {
-    if (selectedChapter) {
-      setChapterTitle(selectedChapter.title);
-
-      const fetchFileContent = async () => {
-        const markdownTextContent: string = await readFile(
-          selectedChapter.androidFilePath,
-        );
-        setMarkdownText(markdownTextContent);
-      };
-      void fetchFileContent();
-    }
-  }, [selectedChapter]);
-
-  const markdownEditStyles = {
-    ...fonts.size_16,
-    lineHeight: 24,
-    ...fonts.defaultFontFamilyRegular,
-    ...gutters.marginBottom_12,
-  };
-
-  const markdownStylesEdit: MarkdownStyle = {
-    blockquote: {
-      borderColor: colors.purple500,
-    },
-    code: {
-      backgroundColor: colors.fullOpposite + '1A',
-      ...gutters.padding_12,
-      ...Platform.select({
-        ['android']: {
-          fontFamily: 'monospace',
-        },
-        ['ios']: {
-          fontFamily: 'Courier New',
-        },
-      }),
-    },
-    emoji: {
-      ...fonts.size_24,
-    },
-    h1: {
-      ...fonts.size_24,
-    },
-    link: {
-      color: colors.purple500,
-    },
-    mentionHere: {
-      backgroundColor: colors.gray100,
-      color: colors.purple500,
-    },
-    mentionUser: {
-      backgroundColor: colors.gray100,
-      color: colors.green500,
-    },
-    pre: {
-      backgroundColor: colors.fullOpposite + '1A',
-      ...gutters.padding_12,
-      ...Platform.select({
-        ['android']: {
-          fontFamily: 'monospace',
-        },
-        ['ios']: {
-          fontFamily: 'Courier New',
-        },
-      }),
-    },
-  };
+  const isPortrait = useAtomValue(IsPortraitStateAtom);
 
   return (
-    <View style={layout.flex_1}>
+    <View>
+      <TitleBar
+        onNavigateBack={onNavigateBack}
+        onToggleView={selectedChapter && onToggleView}
+        title={chapterTitle}
+        viewMode={viewMode}
+      />
       {selectedChapter && (
-        <View style={layout.flex_1}>
-          <TitleBar
-            onNavigateBack={onNavigateBack}
-            onToggleView={onToggleView}
-            title={chapterTitle ?? t('screen_content.view')}
-            viewMode={viewMode}
-          />
-          <ScrollView
-            style={
-              viewMode ? styles.markdownContent : styles.markdownContentEdit
-            }
-          >
-            <Text>{contentCount}</Text>
-            <View
-              style={[
-                gutters.paddingHorizontal_8,
-                gutters.marginHorizontal_8,
-                gutters.marginTop_4,
-                gutters.marginBottom_12,
-                gutters.paddingVertical_4,
-              ]}
-            >
-              {viewMode ? (
-                <MarkdownRenderer markdown={markdownText} />
-              ) : (
-                <MarkdownTextInput
-                  autoCapitalize="none"
-                  autoFocus
-                  keyboardType='visible-password'
-                  markdownStyle={markdownStylesEdit}
-                  maxLength={30_000}
-                  multiline
-                  onChangeText={setMarkdownText}
-                  parser={parseExpensiMark}
-                  showSoftInputOnFocus={!isPhysicalKeyboard}
-                  style={[markdownEditStyles]}
-                  value={markdownText}
-                />
-              )}
-            </View>
-          </ScrollView>
-          <StatisticsBar
-            onNavigateToStatistics={onNavigateToStatistics}
-            viewMode={viewMode}
-            wordCount={selectedChapter.wordCount}
-            wordGoal={1000}
-            wordsWrittenToday={357}
-          />
+        <View style={[gutters.paddingHorizontal_8, gutters.marginHorizontal_8]}>
+          {viewMode ? (
+            <MarkdownRenderer markdown={markdownText} />
+          ) : (
+            <TextInput
+              autoCapitalize="none"
+              autoFocus
+              cursorColor={colors.purple500}
+              inputMode="text"
+              keyboardType="default"
+              maxLength={30_000}
+              multiline
+              onChangeText={handleTextChange}
+              onSelectionChange={handleSelectionChange}
+              scrollEnabled={true}
+              selection={selection}
+              showSoftInputOnFocus={!typewriterMode}
+              style={[styles.markdownEditStyles, !isPortrait && gutters.marginHorizontal_160]}
+              value={markdownText}
+            />
+          )}
         </View>
+      )}
+      {selectedChapter && (
+        <StatisticsBar
+          onNavigateToStatistics={onNavigateToStatistics}
+          viewMode={viewMode}
+          wordCount={minimizeMarkdownTextLength(markdownText)}
+          wordGoal={dailyGoalMode.enabled ? dailyGoalMode.target : -1}
+          wordsWrittenToday={wordWrittenToday.value}
+        />
       )}
     </View>
   );

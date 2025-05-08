@@ -2,9 +2,14 @@
   "scripturaeditor": {
     "common_appName": {
       "full": "Scriptura",
+      "code": "Beta 0.1.0",
+      "version": "Versão $t(common_appName.code)",
       "initials": "SCR"
     },
     "components": {
+      "delete_project": "Apagar",
+      "yes": "Sim",
+      "no": "Não",
       "folder_selector": {
         "directory_selected_success": {
           "text1": "Diretório selecionado!",
@@ -28,6 +33,22 @@
       "text1": "Eita! =/",
       "text2": "Algo deu errado."
     },
+    "creating_folder_error": {
+      "text1": "Erro ao tentar criar o projeto! =/",
+      "text2": "Algo ocorreu e seu projeto não pôde ser criado."
+    },
+    "creating_file_error": {
+      "text1": "Erro ao tentar criar o capítulo! =/",
+      "text2": "Algo ocorreu e seu capítulo não pôde ser criado."
+    },
+    "creating_folder_success": {
+      "text1": "Novo projeto criado!",
+      "text2": "Seu projeto foi criado com sucesso."
+    },
+    "creating_file_success": {
+      "text1": "Novo capítulo criado!",
+      "text2": "Seu capítulo foi criado com sucesso"
+    },
     "saving_error": {
       "text1": "Erro ao tentar salvar! =/",
       "text2": "Algo ocorreu e seu arquivo não pôde ser salvo."
@@ -41,6 +62,41 @@
       "title": "$t(common_appName.full)",
       "view": "Projetos",
       "placeholder": "Pasta Principal",
+      "nothing_found": "Nenhum projeto disponível",
+      "writing_streak": "Maior Sequência",
+      "current_writing_streak": "Sequência",
+      "days": "Dias",
+      "create": "Criar",
+      "cancel": "Cancelar",
+      "chapter_default": "Capítulo 1",
+      "settings": "Definições",
+      "averages_title": "Média de Palavras Escritas",
+      "daily": "Diárias",
+      "monthly": "Mensais",
+      "weekly": "Semanais",
+      "create_folder": "Novo Projeto",
+      "folder_name": "Nome do Projeto",
+      "enter_name": "Escreva o Nome",
+      "folder_deleted": {
+        "text1": "Projeto Apagado!",
+        "text2": "O projeto foi removido da lista."
+      },
+      "folder_renamed": {
+        "text1": "Pasta renomeada!",
+        "text2": "A pasta do projeto foi renomeada."
+      },
+      "folder_not_renamed": {
+        "text1": "Algo deu Errado!",
+        "text2": "A pasta do projeto não foi renomeada."
+      },
+      "image_changed": {
+        "text1": "Imagem Atualizada!",
+        "text2": "A nova imagem foi salva."
+      },
+      "description_updated": {
+        "text1": "Descrição atualizada!",
+        "text2": "A nova descrição foi salva."
+      },
       "project_description_placeholder": "Insira uma descrição para o livro (máximo de 130 caracteres)",
       "fetch_projects_data": {
         "error": {
@@ -56,24 +112,43 @@
     },
     "screen_chapters": {
       "title": "$t(common_appName.full)",
+      "file_deleted": {
+        "text1": "Capítulo Apagado!",
+        "text2": "O capítulo foi removido da lista."
+      },
       "view": "Tela de Capítulos",
       "word_count": "Palavras",
       "status_header": "Status para",
-      "updated_at": "Atualizado por último em",
+      "total_word_count": "Palavras Totais",
+      "updated_at": "Última atualização em",
+      "create_file": "Novo Capítulo",
+      "file_name": "Nome do Capítulo",
+      "chapter_updated_at": {
+        "today": "Atualizado às",
+        "past": "Atualizado em"
+      },
+      "chapter_renamed": {
+        "text1": "Arquivo renomeado!",
+        "text2": "O arquivo do capítulo foi renomeado."
+      },
+      "chapter_not_renamed": {
+        "text1": "Algo deu Errado!",
+        "text2": "O arquivo do capítulo não foi renomeada."
+      },
       "no_title": "Sem título! Use '# Título' no seu arquivo",
       "no_chapters": "Nenhum capítulo disponível",
       "status": {
-        "draft_ready":  "Rascunho Pronto",
-        "first_revision_done":  "Primeira Revisão Feita",
-        "in_first_revision":  "Primeira Revisão",
-        "in_progress":  "Em Andamento",
-        "in_second_revision":  "Segunda Revisão",
-        "in_third_revision":  "Terceira Revisão",
-        "manuscript_done":  "Manuscrito Feito",
-        "planning":  "Em Planejamento",
-        "second_revision_done":  "Segunda Revisão Feita",
-        "third_revision_done":  "Terceira Revisão Feita",
-        "to_do":  "Pendente",
+        "draft_ready": "Rascunho Pronto",
+        "first_revision_done": "Primeira Revisão Feita",
+        "in_first_revision": "Primeira Revisão",
+        "in_progress": "Em Andamento",
+        "in_second_revision": "Segunda Revisão",
+        "in_third_revision": "Terceira Revisão",
+        "manuscript_done": "Manuscrito Feito",
+        "planning": "Em Planejamento",
+        "second_revision_done": "Segunda Revisão Feita",
+        "third_revision_done": "Terceira Revisão Feita",
+        "to_do": "Pendente",
         "indeterminate": "Indeterminado"
       }
     },
@@ -87,11 +162,50 @@
     },
     "screen_statistics": {
       "title": "$t(common_appName.full)",
-      "view": "Tela de Estatísticas"
+      "view": "Tela de Estatísticas",
+      "view_title": "Estatísticas",
+      "most_prolific_days": "Dias mais Prolíficos",
+      "daily_word_goal": "Meta de Palavras Diárias",
+      "daily_word_goal_disabled": "(Desativado)",
+      "to_write_today": "Escreva Hoje",
+      "edit": "Editar",
+      "chapter_data": "Dados do Capítulo",
+      "project_data": "Dados do Projeto",
+      "words": "Palavras",
+      "sentences": "Frases",
+      "pages": "Páginas",
+      "toGo": "Faltam",
+      "week": {
+        "sun": "DOM",
+        "mon": "SEG",
+        "tue": "TER",
+        "wed": "QUA",
+        "thu": "QUI",
+        "fri": "SEX",
+        "sat": "SAB"
+      }
     },
     "screen_settings": {
       "title": "$t(common_appName.full)",
-      "view": "Tela de Configurações"
+      "view_title": "Configurações",
+      "daily_word_goal": "Meta de Palavras Diárias",
+      "word_count_target": "Meta de Palavras",
+      "typewriter_mode": "Modo Máquina de Escrever",
+      "focused_mode": "Modo Focado",
+      "dark_mode": "Modo Escuro",
+      "language": "Idioma",
+      "select_language": "Escolha um Idioma",
+      "donate": "Doe",
+      "share": "Compartilhe",
+      "contact_me": "Fale Comigo",
+      "version": "Versão",
+      "action_buttons": {
+        "main": "Algo deu Errado!",
+        "link": "Não foi possível abrir o link",
+        "share": "Não foi possível compartilhar",
+        "share_text": "$t(common_appName.full) é um aplicativo minimalista para escrever livros que você pode gostar!",
+        "mail": "Não foi possível abrir o app de email"
+      }
     },
     "screen_example": {
       "hello_user": "Oi, meu nome é {{name}}",

@@ -1,17 +1,19 @@
 import type { Translations } from '@/translations/types';
 
 import MaterialIcons from '@react-native-vector-icons/material-icons';
-import { useAtom } from 'jotai';
+import { useAtom, useAtomValue } from 'jotai';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { exists, mkdir, createFile, openDocumentTree } from 'react-native-saf-x';
+import { createFile, exists, mkdir, openDocumentTree, writeFile } from 'react-native-saf-x';
 import Toast from 'react-native-toast-message';
 
 import { useTheme } from '@/theme';
 
 import { HomeFolderStateAtom } from '@/state/atoms/persistentContent';
 import { print } from '@/utils/logger';
+import { getNameAlias } from '@/utils/common';
+import { DisableAllNavigationStateAtom } from '@/state/atoms/temporaryContent';
 
 const pickFolder =
   (setHomeFolder: (folderPath: string) => void, t: Translations) =>
@@ -24,7 +26,12 @@ const pickFolder =
         const supportFolderExists = await exists(supportFolder);
         if (!supportFolderExists) {
           await mkdir(supportFolder);
-          await createFile(`${supportFolder}/projects.json`)
+          await mkdir(`${supportFolder}/covers`);
+          const nameAlias = getNameAlias(uri);
+
+          const projectsFile = `${supportFolder}/${nameAlias}.json`
+          await createFile(projectsFile)
+          await writeFile(projectsFile, JSON.stringify([], null, 2));
         }
 
         // Create Default Persistent Values
@@ -86,6 +93,7 @@ const extractFriendlyPath = (
 function FolderSelector() {
   const { borders, colors, fonts, gutters } = useTheme();
   const [homeFolder, setHomeFolder] = useAtom(HomeFolderStateAtom);
+  const disableAllNavigation = useAtomValue(DisableAllNavigationStateAtom);
 
   const { t } = useTranslation();
 
@@ -108,13 +116,13 @@ function FolderSelector() {
     <View
       style={[
         gutters.padding_16,
-        gutters.marginVertical_24,
+        gutters.marginVertical_12,
         borders.rounded_4,
         borders.gray400,
         borders.w_1,
       ]}
     >
-      <TouchableOpacity onPress={pickFolder(setHomeFolder, t)}>
+      <TouchableOpacity disabled={disableAllNavigation} onPress={pickFolder(setHomeFolder, t)}>
         <View>
           <Text style={[fonts.defaultFontFamilyRegular, fonts.gray400]}>
             {friendlyFolderName}

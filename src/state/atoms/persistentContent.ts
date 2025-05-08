@@ -1,8 +1,11 @@
+import type { SupportedLanguages } from '@/hooks/language/schema';
 import type {
-  DailyGoalMode,
+  DailyGoalMode, DailyWordsStatsType,
   ElementUUID,
-  Project,
-  WritingStats,
+  Project, WordsWrittenTodayType,
+  WritingStats
+} from '@/state/defaults';
+import { type UsageStatsType
 } from '@/state/defaults';
 import type { Variant } from '@/theme/types/config';
 
@@ -12,14 +15,22 @@ import { MMKV } from 'react-native-mmkv';
 import { writeFile } from 'react-native-saf-x';
 
 import { DEFAULT_DATA, DEFAULT_STORAGE_VALUES } from '@/state/defaults';
+import { getNameAlias } from '@/utils/common';
 import { print } from '@/utils/logger';
 
 export const SaveAtomEffect = atomEffect((get) => {
   const allProjectsData = get(ProjectsDataStateAtom);
-  const homeFolder = get(HomeFolderStateAtom);
-  if (homeFolder) {
-    const supportFolder = `${homeFolder}/.scriptura`;
-    const projectsFile = `${supportFolder}/projects.json`;
+
+  const homeFolder = get.peek(HomeFolderStateAtom);
+  if (!homeFolder) {
+    return;
+  }
+
+  const supportFolder = `${homeFolder}/.scriptura`;
+  const nameAlias = getNameAlias(homeFolder);
+
+  if (nameAlias) {
+    const projectsFile = `${supportFolder}/${nameAlias}.json`;
     try {
       const jsonString = JSON.stringify(allProjectsData, null, 2);
       void writeFile(projectsFile, jsonString);
@@ -71,7 +82,7 @@ export const ThemeStateAtom = atomWithMMKV<Variant>(
   DeviceOnlyStorage,
 );
 
-export const LanguageStateAtom = atomWithMMKV<string>(
+export const LanguageStateAtom = atomWithMMKV<SupportedLanguages>(
   'language',
   DEFAULT_DATA.language,
   DeviceOnlyStorage,
@@ -80,6 +91,12 @@ export const LanguageStateAtom = atomWithMMKV<string>(
 export const TypewriterModeStateAtom = atomWithMMKV<boolean>(
   'typewriter_mode',
   DEFAULT_DATA.typewriterMode,
+  DeviceOnlyStorage,
+);
+
+export const FocusedModeStateAtom = atomWithMMKV<boolean>(
+  'focused_mode',
+  DEFAULT_DATA.focusedMode,
   DeviceOnlyStorage,
 );
 
@@ -97,19 +114,19 @@ export const DailyGoalModeStateAtom = atomWithMMKV<DailyGoalMode>(
   CommonStorage,
 );
 
-export const MaxStreakStateAtom = atomWithMMKV<number>(
-  'max_streak',
-  DEFAULT_DATA.maxStreak,
+export const DailyWordsStatsStateAtom = atomWithMMKV<DailyWordsStatsType[]>(
+  'daily_words_stats',
+  DEFAULT_DATA.dailyWordsStats,
   CommonStorage,
 );
 
-export const CurrentStreakStateAtom = atomWithMMKV<number>(
-  'current_streak',
-  DEFAULT_DATA.currentStreak,
+export const UsageStatsStateAtom = atomWithMMKV<UsageStatsType>(
+  'usage_stats',
+  DEFAULT_DATA.usageStats,
   CommonStorage,
 );
 
-export const WordsWrittenTodayStateAtom = atomWithMMKV<number>(
+export const WordsWrittenTodayStateAtom = atomWithMMKV<WordsWrittenTodayType>(
   'words_written_today',
   DEFAULT_DATA.wordWrittenToday,
   CommonStorage,
@@ -133,20 +150,8 @@ export const ProjectsDataStateAtom = atomWithMMKV<Project[]>(
   CommonStorage,
 );
 
-// export const CommonStorageStateAtom = atom((get) => {
-//   const homeFolder = get(HomeFolderStateAtom);
-//   if (homeFolder.length === 0) {
-//     return `PASSO 1: ${homeFolder}`;
-//   }
-//   return `PASSO 2: ${homeFolder}`
-// });
-
-// export const DailyGoalModeStateAtom = atom(
-//   (get) => {
-//     return get(HomeFolderStateAtom);
-//   },
-//   (get, set, dailyGoalData: DailyGoalMode) => {
-//     const homeFolder = get(HomeFolderStateAtom);
-//     set(HomeFolderStateAtom, homeFolder);
-//   },
-// );
+export const ProjectsSortStateAtom = atomWithMMKV<ElementUUID[]>(
+  'projects_sort_projects',
+  DEFAULT_DATA.projectsSort,
+  CommonStorage,
+);
